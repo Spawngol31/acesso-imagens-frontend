@@ -1,0 +1,16 @@
+# Arquivo .gitignore para o Frontend React
+
+# Dependências
+node_modules/
+
+# Ficheiros de Build
+dist/
+.vite/
+
+# Segredos
+.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
