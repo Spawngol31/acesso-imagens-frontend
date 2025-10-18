@@ -26,14 +26,21 @@ function AboutPage() {
             <h1 style={{ color: '#6c0464' }}>Quem somos</h1>
 
             <div className="about-section">
-                <h2>Nossa história</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada.</p>
+                <h2>A agência</h2>
+                <p>Somos uma empresa de comunicação e assessoria esportiva. Nosso propósito é fortalecer a imagem de clubes, atletas e eventos esportivos por meio de soluções criativas e estratégias que conectam o esporte ao público.
+
+                   Unimos experiência em jornalismo, marketing e produção audiovisual para entregar resultados que valorizam cada projeto. Atuamos em diferentes frentes, como assessoria de imprensa, gestão de redes sociais, fotografia esportiva, produção audiovisual e cobertura de eventos, sempre com foco em qualidade, credibilidade e visibilidade para nossos clientes.
+
+                   Mais do que registrar momentos, contamos histórias. Acreditamos que cada imagem, texto e ação de comunicação tem o poder de inspirar, engajar e transformar percepções.</p>
 
                 <h2>Nossos objetivos</h2>
-                <p>Praesent ac sem eget est egestas volutpat. Morbi vitae tortor id nisl finibus auctor. Etiam vitae leo et diam pellentesque porta.</p>
+                <p>Na Acesso Imagens, trabalhamos com o propósito de impulsionar a visibilidade e o reconhecimento de clubes, atletas e projetos esportivos. Nossos objetivos estão voltados para fortalecer a comunicação, ampliar o alcance das marcas e transformar a forma como o esporte é contado e percebido pelo público.
 
-                <h2>Área de atuação</h2>
-                <p>Curabitur sit amet magna quam. Praesent in libero vel turpis pellentesque egestas sit amet vel nunc. Nunc nonummy metus.</p>
+                   Buscamos oferecer estratégias eficazes que gerem engajamento, credibilidade e resultados reais. Cada ação é planejada para destacar histórias, consolidar identidades e aproximar o esporte de quem o vive e de quem o acompanha.
+
+                   Também temos o compromisso de contribuir para o desenvolvimento do cenário esportivo amazonense, promovendo a valorização dos profissionais, das competições e dos talentos locais.
+
+                   Nosso foco é construir uma comunicação que inspire, conecte e gere impacto, dentro e fora de campo, do Norte ao Sul do Brasil.</p>
             </div>
 
             <h1 style={{ color: '#6c0464', marginTop: '4rem' }}>Nossa equipe</h1>
