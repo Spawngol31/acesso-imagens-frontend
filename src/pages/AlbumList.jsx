@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 
 function AlbumList() {
+  // --- 1. GARANTIA: O estado DEVE começar como um array vazio ---
   const [albuns, setAlbuns] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,9 +14,15 @@ function AlbumList() {
       try {
         setLoading(true);
         const response = await axiosInstance.get('/albuns/');
-        setAlbuns(response.data);
+        // Garante que o que recebemos é um array
+        if (Array.isArray(response.data)) {
+            setAlbuns(response.data);
+        } else {
+            setAlbuns([]); // Define como array vazio em caso de resposta inesperada
+        }
       } catch (error) {
         console.error("Erro ao buscar os álbuns:", error);
+        setAlbuns([]); // Define como array vazio em caso de erro
       } finally {
         setLoading(false);
       }
@@ -23,31 +30,35 @@ function AlbumList() {
     getAlbuns();
   }, []);
 
-  if (loading) return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar álbuns...</p>;
-
   return (
-    // Usamos o page-container para manter o padding e a centralização
     <div className="page-container">
       <h1>Álbuns</h1>
       
-      {/* Reutilizamos a mesma classe 'album-grid' da página inicial */}
-      <div className='album-grid'>
-        {albuns.map(album => (
-          <Link to={`/album/${album.id}`} key={album.id} className="album-card">
-            <div 
-              className="album-card-image"
-              style={{ backgroundImage: `url(${album.capa_url})` }}
-            ></div>
-            <div className="album-card-info">
-              <h3>{album.titulo}</h3>
-              {/* Adicionamos a data do evento para mais contexto */}
-              <p style={{color: '#555', fontSize: '0.9rem', marginTop: '0.25rem'}}>
-                {new Date(album.data_evento).toLocaleDateString()}
-              </p>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {loading ? (
+        <p style={{textAlign: 'center'}}>A carregar álbuns...</p>
+      ) : (
+        <div className='album-grid'>
+          {/* --- 2. GARANTIA EXTRA: Verifica se é um array E se tem itens --- */}
+          {Array.isArray(albuns) && albuns.length > 0 ? (
+            albuns.map(album => (
+              <Link to={`/album/${album.id}`} key={album.id} className="album-card">
+                <div 
+                  className="album-card-image"
+                  style={{ backgroundImage: `url(${album.capa_url})` }}
+                ></div>
+                <div className="album-card-info">
+                  <h3>{album.titulo}</h3>
+                  <p style={{color: '#555', fontSize: '0.9rem', marginTop: '0.25rem'}}>
+                    {new Date(album.data_evento).toLocaleDateString()}
+                  </p>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p style={{textAlign: 'center'}}>Nenhum álbum foi encontrado.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

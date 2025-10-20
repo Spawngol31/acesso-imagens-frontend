@@ -1565,7 +1565,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   border-radius: 10px;
   margin-bottom: 1.5rem;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.295);
-  width: 800px;
+  width: auto;
+  max-width: 800px;
   height: 150px;
   margin-left: auto;
   margin-right: auto;
