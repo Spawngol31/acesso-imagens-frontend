@@ -1,140 +1,83 @@
 // src/contexts/AuthContext.jsx
-
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import axios from 'axios'; // Vamos precisar do axios base para o refresh
-import axiosInstance from '../api/axiosInstance';
-import { jwtDecode } from 'jwt-decode';
+import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
+import axiosInstance from "../api/axiosInstance";
+import { jwtDecode } from 'jwt-decode'; // Importe o jwt-decode
 
 const AuthContext = createContext();
 
-// Lê a URL da API do nosso ficheiro .env
-const API_URL = import.meta.env.VITE_API_URL;
-
-export const AuthProvider = ({ children }) => {
+// 2. Cria o Provedor do Contexto
+export function AuthProvider({ children }) {
+    const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken'));
     const [user, setUser] = useState(null);
-    const [authToken, setAuthToken] = useState(() => localStorage.getItem('authToken') || null);
-    const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('refreshToken') || null);
+    // 1. O 'loading' é crucial para evitar "crashes"
     const [loading, setLoading] = useState(true);
 
-    const login = async (email, password) => {
-        const response = await axios.post(`${API_URL}/token/`, {
-            email,
-            password
-        });
-        const data = response.data;
-        setAuthToken(data.access);
-        setRefreshToken(data.refresh);
-        localStorage.setItem('authToken', data.access);
-        localStorage.setItem('refreshToken', data.refresh);
-        const decodedUser = jwtDecode(data.access);
-        setUser(decodedUser);
-        axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + data.access;
-    };
-
+    // Função de Logout (envolvida em useCallback para ser estável)
     const logout = useCallback(() => {
-        setAuthToken(null);
-        setRefreshToken(null);
-        setUser(null);
         localStorage.removeItem('authToken');
         localStorage.removeItem('refreshToken');
+        setAuthToken(null);
+        setUser(null);
         delete axiosInstance.defaults.headers['Authorization'];
     }, []);
 
+    // Efeito para buscar dados do usuário se um token existir
     useEffect(() => {
-        // --- LÓGICA DE INTERCETORES (O CORAÇÃO DO REFRESH) ---
-
-        // 1. Intercetor de Pedido (Adiciona o token a cada pedido)
-        const requestInterceptor = axiosInstance.interceptors.request.use(
-            (config) => {
-                const token = localStorage.getItem('authToken');
-                if (token) {
-                    config.headers['Authorization'] = 'Bearer ' + token;
-                }
-                return config;
-            },
-            (error) => Promise.reject(error)
-        );
-
-        // 2. Intercetor de Resposta (Lida com tokens expirados)
-        const responseInterceptor = axiosInstance.interceptors.response.use(
-            (response) => response, // Passa se a resposta for bem-sucedida
-            
-            // Lida com erros
-            async (error) => {
-                const originalRequest = error.config;
-                
-                // Se o erro for 401 (Não Autorizado) e ainda não tentámos refrescar o token
-                if (error.response.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true; // Marca que já tentámos uma vez
+        const fetchUser = async () => {
+            if (authToken) {
+                try {
+                    // Adiciona o token aos cabeçalhos para este pedido
+                    axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + authToken;
                     
-                    const currentRefreshToken = localStorage.getItem('refreshToken');
-                    
-                    if (currentRefreshToken) {
-                        try {
-                            // Tenta obter um novo Access Token usando o Refresh Token
-                            const response = await axios.post(`${API_URL}/token/refresh/`, {
-                                refresh: currentRefreshToken
-                            });
-                            
-                            const newAuthToken = response.data.access;
-                            
-                            // Guarda o novo token
-                            localStorage.setItem('authToken', newAuthToken);
-                            setAuthToken(newAuthToken);
-                            
-                            // Atualiza o 'default' do axios e o pedido original
-                            axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + newAuthToken;
-                            originalRequest.headers['Authorization'] = 'Bearer ' + newAuthToken;
-                            
-                            // Tenta o pedido original novamente com o novo token
-                            return axiosInstance(originalRequest);
-
-                        } catch (refreshError) {
-                            // Se o REFRESH token falhar (ex: também expirou), aí sim, desconectamos o utilizador
-                            console.error("Refresh token é inválido ou expirou. A desconectar.");
-                            logout();
-                            return Promise.reject(refreshError);
-                        }
-                    } else {
-                        // Se não houver refresh token, apenas desconecta
-                        logout();
-                    }
+                    const response = await axiosInstance.get('/me/');
+                    setUser(response.data);
+                } catch (error) {
+                    console.error("Token inválido ou expirado, fazendo logout.", error);
+                    logout();
                 }
-                
-                // Retorna qualquer outro erro que não seja 401
-                return Promise.reject(error);
             }
-        );
-
-        // Função de limpeza para remover os intercetores quando o componente for desmontado
-        return () => {
-            axiosInstance.interceptors.request.eject(requestInterceptor);
-            axiosInstance.interceptors.response.eject(responseInterceptor);
+            // --- CORREÇÃO 1: O 'setLoading(false)' DEVE estar fora do 'if' ---
+            // Isto garante que o site é carregado, mesmo para utilizadores não logados.
+            setLoading(false);
         };
-    }, [logout]);
+        fetchUser();
+    }, [authToken, logout]); // 'logout' é uma dependência do useEffect
 
-    useEffect(() => {
-        // Esta função verifica se o utilizador já está logado ao carregar a página
-        if (authToken) {
-            try {
-                const decodedUser = jwtDecode(authToken);
-                // TODO: Verificar se o token expirou (embora o intercetor vá tratar disso)
+
+    // Função de Login
+    const login = async (email, password) => {
+        try {
+            const response = await axiosInstance.post('/token/', { email, password });
+            if (response.data) {
+                const { access, refresh } = response.data;
+
+                // Armazena AMBOS os tokens
+                localStorage.setItem('authToken', access);
+                localStorage.setItem('refreshToken', refresh);
+                
+                // --- CORREÇÃO 2: Define o utilizador e o token IMEDIATAMENTE ---
+                setAuthToken(access);
+                const decodedUser = jwtDecode(access);
                 setUser(decodedUser);
-            } catch (error) {
-                console.error("Token de autenticação inválido.");
-                logout(); // Limpa se o token estiver corrompido
+                
+                // Define o cabeçalho padrão para todos os pedidos futuros
+                axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + access;
             }
+        } catch (error) {
+            console.error("Erro no login", error);
+            throw new Error("Falha no login");
         }
-        setLoading(false);
-    }, [authToken, logout]);
+    };
 
     return (
-        <AuthContext.Provider value={{ user, authToken, login, logout, loading }}>
-            {children}
+        <AuthContext.Provider value={{ authToken, user, login, logout, loading }}>
+            {/* --- CORREÇÃO 3: Só renderiza o site se não estiver a carregar --- */}
+            {!loading && children}
         </AuthContext.Provider>
     );
-};
+}
 
-export const useAuth = () => {
+// 3. Cria um Hook customizado para facilitar o uso do contexto
+export function useAuth() {
     return useContext(AuthContext);
-};
+}
