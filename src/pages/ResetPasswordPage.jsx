@@ -1,7 +1,7 @@
 // src/pages/ResetPasswordPage.jsx
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 function ResetPasswordPage() {
     const [password, setPassword] = useState('');
@@ -13,22 +13,17 @@ function ResetPasswordPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (password !== password2) {
-            setError("As senhas não coincidem.");
-            return;
-        }
         setError('');
+        setMessage('');
         try {
-            const response = await axios.post('http://localhost:8000/api/password-reset/confirm/', {
-                uidb64,
-                token,
-                password
-            });
+            // Use o axiosInstance e o caminho relativo
+            const response = await axiosInstance.post('/password-reset/', { email });
             setMessage(response.data.message);
-            // Redireciona para o login após alguns segundos
-            setTimeout(() => navigate('/login'), 3000);
         } catch (err) {
-            setError(err.response?.data?.error || "Ocorreu um erro.");
+            // --- MELHORIA DE DEBUG AQUI ---
+            console.error("Erro real do backend (Recuperar Senha):", err.response?.data || err.message);
+            setError(err.response?.data?.error || 'Ocorreu um erro. Tente novamente.');
+            // -----------------------------
         }
     };
 
