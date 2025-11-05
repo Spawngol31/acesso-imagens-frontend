@@ -10,13 +10,17 @@ function ForgotPasswordPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage('');
         setError('');
+        setMessage('');
         try {
-            const response = await axios.post('http://localhost:8000/api/password-reset/', { email });
+            // Use o axiosInstance e o caminho relativo
+            const response = await axiosInstance.post('/password-reset/', { email });
             setMessage(response.data.message);
         } catch (err) {
-            setError("Ocorreu um erro. Tente novamente.");
+            // --- MELHORIA DE DEBUG AQUI ---
+            console.error("Erro real do backend (Recuperar Senha):", err.response?.data || err.message);
+            setError(err.response?.data?.error || 'Ocorreu um erro. Tente novamente.');
+            // -----------------------------
         }
     };
 

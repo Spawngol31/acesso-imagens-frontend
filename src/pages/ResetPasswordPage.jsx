@@ -13,17 +13,33 @@ function ResetPasswordPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (password !== password2) {
+            setError("As senhas não coincidem.");
+            return;
+        }
+        
         setError('');
         setMessage('');
+
         try {
-            // Use o axiosInstance e o caminho relativo
-            const response = await axiosInstance.post('/password-reset/', { email });
+            // --- CORREÇÃO AQUI ---
+            // 1. O endpoint correto é '/password-reset/confirm/'
+            // 2. Os dados a enviar são uidb64, token, e a nova password
+            const response = await axiosInstance.post('/password-reset/confirm/', {
+                uidb64,
+                token,
+                password
+            });
+            // ---------------------
+            
             setMessage(response.data.message);
+            // Redireciona para o login após 3 segundos
+            setTimeout(() => navigate('/login'), 3000);
+
         } catch (err) {
-            // --- MELHORIA DE DEBUG AQUI ---
-            console.error("Erro real do backend (Recuperar Senha):", err.response?.data || err.message);
-            setError(err.response?.data?.error || 'Ocorreu um erro. Tente novamente.');
-            // -----------------------------
+            console.error("Erro real do backend (Resetar Senha):", err.response?.data || err.message);
+            setError(err.response?.data?.error || 'Ocorreu um erro. Este link pode ter expirado.');
         }
     };
 
