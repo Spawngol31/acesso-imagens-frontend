@@ -29,6 +29,19 @@ function AboutPage() {
         fetchColaboradores();
     }, []);
 
+    // --- NOVA FUNÇÃO AUXILIAR ---
+    // Esta função torna o nosso código mais inteligente
+    const getRoleText = (specialty) => {
+        // Se o campo estiver vazio OU for exatamente "Fotógrafo",
+        // retorna a nossa versão unissexo.
+        if (!specialty || specialty.trim().toLowerCase() === 'fotógrafo') {
+            return 'Fotógrafo(a)';
+        }
+        // Caso contrário, retorna a especialidade que está na base de dados
+        // (ex: "Fotógrafo Esportivo", "Editora de Imagens", etc.)
+        return specialty;
+    };
+
     return (
         <div className="page-container">
             <h1 style={{ color: '#6c0464' }}>Quem Somos</h1>
@@ -67,8 +80,26 @@ function AboutPage() {
                                 />
                                 <div className="collaborator-info">
                                     <h3>{colaborador.nome_completo}</h3>
-                                    <p className="collaborator-role">{colaborador.especialidade || 'Fotógrafo'}</p>
-                                    <p className="collaborator-social">{colaborador.rede_social || ''}</p>
+                                    
+                                    {/* --- CORREÇÃO AQUI --- */}
+                                    {/* Agora usamos a nossa nova função inteligente */}
+                                    <p className="collaborator-role">{getRoleText(colaborador.especialidade)}</p>
+                                    {/* --- CORREÇÃO AQUI --- */}
+                                    {/* Verifica se a rede social existe */}
+                                    {colaborador.rede_social ? (
+                                        <a 
+                                            // Constrói o link do Instagram, removendo o '@' para o URL
+                                            href={`https://www.instagram.com/${colaborador.rede_social.replace('@', '')}`}
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="collaborator-social"
+                                        >
+                                            {colaborador.rede_social}
+                                        </a>
+                                    ) : (
+                                        // Deixa um espaço vazio se não houver rede social
+                                        <p className="collaborator-social">&nbsp;</p> 
+                                    )}
                                 </div>
                             </div>
                         ))

@@ -40,7 +40,7 @@ function AdminUserDetailPage() {
                 <h3>Informações Gerais</h3>
                 <p><strong>ID:</strong> {user.id}</p>
                 <p><strong>Email:</strong> {user.email}</p>
-                <p><strong>Nome de utilizador:</strong> {user.username}</p>
+                <p><strong>Usuário:</strong> {user.nome_completo}</p>
                 <p><strong>Papel:</strong> {user.papel}</p>
                 <p><strong>Status:</strong> <span className={`status ${user.is_active ? 'status-active' : 'status-inactive'}`}>{user.is_active ? 'Ativo' : 'Bloqueado'}</span></p>
             </div>
@@ -57,7 +57,8 @@ function AdminUserDetailPage() {
             {user.papel === 'FOTOGRAFO' && user.perfil_fotografo && (
                 <div className="detail-card">
                     <hr/>
-                    <h3>Perfil de fotógrafo</h3>
+                    <h3>Perfil do fotógrafo(a)</h3>
+                    <p><strong>Rede social:</strong> {user.perfil_fotografo.rede_social || 'Não informado'}</p>
                     <p><strong>CPF:</strong> {user.perfil_fotografo.cpf || 'Não informado'}</p>
                     <p><strong>Endereço:</strong> {user.perfil_fotografo.endereco || 'Não informado'}</p>
                     <p><strong>CEP:</strong> {user.perfil_fotografo.cep || 'Não informado'}</p>

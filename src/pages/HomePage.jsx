@@ -56,7 +56,7 @@ function HomePage() {
 
     return (
         <div className="homepage">
-            <section className="hero-section" style={{ backgroundImage: `url(/images/capa_site.jpg)` }}>
+            <section className="hero-section">
                 <div className="hero-overlay"></div>
             </section>
 

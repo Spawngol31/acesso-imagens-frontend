@@ -97,7 +97,7 @@ function AdminStatsPage() {
                             <tr>
                                 <th>ID da foto</th>
                                 <th>Legenda</th>
-                                <th>Fotógrafo</th>
+                                <th>Fotógrafo(a)</th>
                                 <th>Nº de vendas</th>
                             </tr>
                         </thead>

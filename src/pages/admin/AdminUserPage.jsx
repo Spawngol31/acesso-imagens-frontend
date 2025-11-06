@@ -56,7 +56,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                     <input name="nome_completo" value={formData.nome_completo || ''} onChange={handleChange} placeholder="Nome Completo" />
                     <select name="papel" value={formData.papel} onChange={handleChange}>
                         <option value="CLIENTE">Cliente</option>
-                        <option value="FOTOGRAFO">Fotógrafo</option>
+                        <option value="FOTOGRAFO">Fotógrafo(a)</option>
                         <option value="ADMIN">Admin</option>
                     </select>
                     
@@ -71,7 +71,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
 
                     {formData.papel === 'FOTOGRAFO' && formData.perfil_fotografo && (
                         <fieldset>
-                            <legend>Perfil de fotógrafo</legend>
+                            <legend>Perfil do fotógrafo(a)</legend>
                             <p>Dados pessoais:</p>
                             <div className="profile-pic-section">
                                 <img 
@@ -91,6 +91,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                                 </div>
                             </div>
                             <hr />
+                            <input name="rede_social" value={formData.perfil_fotografo.rede_social || ''} onChange={(e) => handleProfileChange('perfil_fotografo', e)} placeholder="Rede Social" />
                             <input name="cpf" value={formData.perfil_fotografo.cpf || ''} onChange={(e) => handleProfileChange('perfil_fotografo', e)} placeholder="CPF" />
                             <input name="endereco" value={formData.perfil_fotografo.endereco || ''} onChange={(e) => handleProfileChange('perfil_fotografo', e)} placeholder="Endereço Completo" />
                             <input name="cep" value={formData.perfil_fotografo.cep || ''} onChange={(e) => handleProfileChange('perfil_fotografo', e)} placeholder="CEP" />
