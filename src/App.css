@@ -616,6 +616,32 @@ input[type="file"] {
   text-align: center;
   border-top: 1px solid #eee;
 }
+/*======================================================================
+ --- Estilos da Página de Checkout --- 
+ =======================================================================*/
+
+/* Título "Finalizar Compra" */
+.checkout-card h2 {
+  text-align: center; /* Centralizado */
+  color: var(--primary-purple); /* Sua cor roxa principal */
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+/* Texto "Valor Total" */
+.checkout-total {
+  text-align: center; /* Também fica melhor centralizado abaixo do título */
+  color: var(--hover-purple-dark); /* A cor mais escura que pediu */
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1.5rem;
+}
+
+.checkout-total strong {
+  font-size: 1.5rem; /* Deixa o número um pouco maior */
+  margin-left: 0.5rem;
+}
 /* ==========================================================================
    4. Painéis de Controle (Fotógrafo e Admin)
    ========================================================================== */
@@ -1299,6 +1325,100 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   color: white;
   border: 1px solid var(--primary-purple);
 }
+.status-archived {
+  background-color: var(--hover-purple-dark);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+  font-weight: bold;
+}
+.status-archived-small {
+  display: block;
+  text-align: center;
+  color: var(--hover-purple-dark);
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.dashboard-media-card.archived {
+  opacity: 0.6;
+  border: 2px solid var(--hover-purple-light);
+}
+.archive-button-pill {
+  background-color: white;
+  color: var(--primary-purple);
+  border: 1px solid var(--primary-purple);
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  
+}
+.archive-button-pill:hover {
+  background-color: var(--hover-purple-light); 
+  border: 1px solid var(--hover-purple-light);
+}
+.activate-button-pill {
+  background-color: var(--hover-purple-dark);
+  color: white;
+  border: 1px solid var(--hover-purple-dark);
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.activate-button-pill:hover {
+  background-color: var(--primary-purple);
+}
+.divider {
+  margin: 2rem 0;
+  border-top: 1px solid #eee;
+  border-bottom: none;
+}
+
+.bulk-edit-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.bulk-edit-form {
+  flex: 1;
+  padding: 1.5rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.bulk-edit-form h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.bulk-edit-form input[type="number"] {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  font-family: var(--font-main);
+  background-color: #fff;
+  color: var(--text-dark);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Responsivo para telemóveis */
+@media (max-width: 768px) {
+  .bulk-edit-section {
+    flex-direction: column;
+  }
+}
+
 /* ==========================================================================
    5. Conteúdo Específico das Páginas
    ========================================================================== */
@@ -1953,3 +2073,132 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   box-shadow: none;
 }
 .table-wrapper table { min-width: 600px; }
+/*==========================================================================================
+ --- ESTILOS DE COMPATIBILIDADE COM WORDPRESS --- 
+ ===========================================================================================*/
+/* Estes estilos garantem que o conteúdo vindo do WP seja formatado corretamente */
+
+/* 1. Regras Gerais de Texto */
+.news-content {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Fonte limpa de leitura */
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+.news-content p {
+  margin-bottom: 1.5rem;
+}
+
+.news-content h1, .news-content h2, .news-content h3, .news-content h4 {
+  color: var(--primary-purple);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.news-content ul, .news-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 2rem;
+}
+
+.news-content li {
+  margin-bottom: 0.5rem;
+}
+
+.news-content a {
+  color: var(--primary-purple);
+  text-decoration: underline;
+}
+
+/* 2. Imagens e Figuras (O mais importante) */
+.news-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.news-content figure {
+  margin: 2rem 0;
+  width: 100%;
+}
+
+.news-content figcaption {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* 3. Alinhamentos do WordPress (Esquerda, Direita, Centro) */
+.news-content .aligncenter {
+  text-align: center;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.news-content .alignleft {
+  float: left;
+  margin-right: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.news-content .alignright {
+  float: right;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Limpa os floats para não quebrar o layout */
+.news-content::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* 4. Blocos Especiais (Citações, Tabelas, etc.) */
+.news-content blockquote {
+  border-left: 5px solid var(--primary-purple);
+  margin: 2rem 0;
+  padding: 1rem 1.5rem;
+  background-color: #f9f9f9;
+  font-style: italic;
+  color: #555;
+}
+
+.news-content .wp-block-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+.news-content .wp-block-table td, .news-content .wp-block-table th {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+}
+
+/* 5. Embeds (YouTube, Twitter, etc.) */
+.news-content iframe {
+  max-width: 100%;
+  margin: 2rem auto;
+  display: block;
+}
+
+/* Ajuste para vídeos responsivos do WP */
+.news-content .wp-block-embed-youtube {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.news-content .wp-block-embed-youtube iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

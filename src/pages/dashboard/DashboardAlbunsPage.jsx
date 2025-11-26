@@ -55,13 +55,18 @@ function DashboardAlbunsPage() {
         }
     };
     
-    const handleDelete = async (albumId) => {
-        if (window.confirm("Tem certeza que deseja apagar este álbum e todas as suas fotos?")) {
+    const handleToggleArchive = async (album) => {
+        const acao = album.is_arquivado ? 'desarquivar' : 'arquivar';
+        const confirmMessage = album.is_arquivado 
+            ? "Tem certeza que deseja desarquivar este álbum? Ele voltará a ser público."
+            : "Tem certeza que deseja arquivar este álbum? Ele não poderá mais ser comprado. (Isto não afeta vendas já concluídas)";
+        
+        if (window.confirm(confirmMessage)) {
             try {
-                await axiosInstance.delete(`/dashboard/albuns/${albumId}/`);
-                fetchAlbuns();
-            } catch (error) { 
-                console.error("Erro ao apagar álbum:", error); 
+                await axiosInstance.post(`/dashboard/albuns/${album.id}/${acao}/`);
+                fetchAlbuns(); // Recarrega a lista
+            } catch (error) {
+                console.error(`Erro ao ${acao} álbum:`, error);
             }
         }
     };
@@ -98,10 +103,15 @@ function DashboardAlbunsPage() {
                                 <td><Link to={`/dashboard/albuns/${album.id}`}>{album.titulo}</Link></td>
                                 <td>{new Date(album.data_evento).toLocaleDateString()}</td>
                                 <td className="hide-mobile">{album.categoria.replace('_', ' ')}</td> {/* Esconder no telemóvel */}
-                                <td className="hide-mobile">{album.is_publico ? 'Público' : 'Privado'}</td> {/* Esconder no telemóvel */}
+                                <td className="hide-mobile">
+                                    {album.is_publico ? 'Público' : 'Privado'}
+                                    {album.is_arquivado && <span className="status-archived">Arquivado</span>}
+                                </td> {/* Esconder no telemóvel */}
                                 <td className="action-cell">
                                     <button onClick={() => { setEditingAlbum(album); setIsModalOpen(true); }} className="edit-button-pill">Editar</button>
-                                    <button onClick={() => handleDelete(album.id)} className="delete-button-pill">Excluir</button>
+                                    <button onClick={() => handleToggleArchive(album)} className={album.is_arquivado ? 'activate-button' : 'delete-button-pill'}>
+                                        {album.is_arquivado ? 'Desarquivar' : 'Arquivar'}
+                                    </button>
                                 </td>
                             </tr>
                         )) : (

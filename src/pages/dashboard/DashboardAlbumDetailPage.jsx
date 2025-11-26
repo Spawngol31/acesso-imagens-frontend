@@ -82,6 +82,8 @@ function DashboardAlbumDetailPage() {
     const [isPolling, setIsPolling] = useState(false);
     const [editingMedia, setEditingMedia] = useState(null);
     const [mediaType, setMediaType] = useState('');
+    const [newPhotoPrice, setNewPhotoPrice] = useState('');
+    const [newVideoPrice, setNewVideoPrice] = useState('');
 
     const fetchAlbumDetails = useCallback(async () => {
         try {
@@ -182,12 +184,33 @@ function DashboardAlbumDetailPage() {
         startPolling();
     };
 
+    const handleToggleArchivePhoto = async (foto) => {
+        const acao = foto.is_arquivado ? 'desarquivar' : 'arquivar';
+        if (window.confirm(`Tem certeza que deseja ${acao} esta foto?`)) {
+            try {
+                await axiosInstance.post(`/dashboard/fotos/${foto.id}/${acao}/`);
+                fetchAlbumDetails(); // Recarrega os detalhes do álbum
+            } catch (error) {
+                console.error(`Erro ao ${acao} foto:`, error);
+            }
+        }
+    };
+    
+    // --- SUBSTITUA A FUNÇÃO 'handleDeleteMedia' ---
     const handleDeleteMedia = async (mediaId, type) => {
-        if (window.confirm(`Tem a certeza que deseja apagar est${type === 'foto' ? 'a foto' : 'e vídeo'}?`)) {
+        if (window.confirm(`Tem a certeza que deseja APAGAR ${type === 'foto' ? 'esta foto' : 'este vídeo'}? Esta ação é PERMANENTE e não pode ser desfeita.`)) {
             try {
                 await axiosInstance.delete(`/dashboard/${type}s/${mediaId}/`);
                 fetchAlbumDetails();
-            } catch (error) { console.error(`Erro ao apagar ${type}:`, error); }
+            } catch (error) {
+                // O erro 500 (ProtectedError) será apanhado aqui
+                console.error(`Erro ao apagar ${type}:`, error);
+                if (error.response?.status === 500) {
+                    alert("Erro: Esta foto não pode ser apagada pois já faz parte de um pedido de cliente. Por favor, use a opção 'Arquivar' em vez disso.");
+                } else {
+                    alert(`Erro ao apagar ${type}.`);
+                }
+            }
         }
     };
 
@@ -203,6 +226,40 @@ function DashboardAlbumDetailPage() {
     const openEditForm = (media, type) => {
         setEditingMedia(media);
         setMediaType(type);
+    };
+
+    const handleBulkUpdatePhotos = async (e) => {
+        e.preventDefault();
+        if (!newPhotoPrice || parseFloat(newPhotoPrice) < 0) {
+            alert("Por favor, insira um preço válido.");
+            return;
+        }
+        try {
+            const response = await axiosInstance.post(`/dashboard/albuns/${id}/bulk_update_photos/`, { preco: newPhotoPrice });
+            alert(response.data.status);
+            fetchAlbumDetails(); // Recarrega os detalhes do álbum
+            setNewPhotoPrice(''); // Limpa o campo do formulário
+        } catch (error) {
+            console.error("Erro ao atualizar preços das fotos:", error);
+            alert("Erro ao atualizar preços.");
+        }
+    };
+
+    const handleBulkUpdateVideos = async (e) => {
+        e.preventDefault();
+        if (!newVideoPrice || parseFloat(newVideoPrice) < 0) {
+            alert("Por favor, insira um preço válido.");
+            return;
+        }
+        try {
+            const response = await axiosInstance.post(`/dashboard/albuns/${id}/bulk_update_videos/`, { preco: newVideoPrice });
+            alert(response.data.status);
+            fetchAlbumDetails();
+            setNewVideoPrice('');
+        } catch (error) {
+            console.error("Erro ao atualizar preços dos vídeos:", error);
+            alert("Erro ao atualizar preços.");
+        }
     };
 
     if (loading) return <p>Carregando...</p>;
@@ -249,6 +306,40 @@ function DashboardAlbumDetailPage() {
                     <button onClick={handleVideoSubmit} className="upload-submit-button" disabled={isUploadingVideos || stagedVideos.length === 0}>{isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}</button>
                 </div>
             </div>
+            
+            <hr className="divider" />
+
+            <div className="bulk-edit-section">
+                <form onSubmit={handleBulkUpdatePhotos} className="bulk-edit-form">
+                    <h3>Editar Preço de Todas as Fotos</h3>
+                    <input 
+                        type="number" 
+                        step="0.01" 
+                        min="0"
+                        value={newPhotoPrice}
+                        onChange={(e) => setNewPhotoPrice(e.target.value)}
+                        placeholder="Novo preço para todas as fotos"
+                        required 
+                    />
+                    <button type="submit" className="button-outline">Atualizar Todas as Fotos</button>
+                </form>
+
+                <form onSubmit={handleBulkUpdateVideos} className="bulk-edit-form">
+                    <h3>Editar Preço de Todos os Vídeos</h3>
+                    <input 
+                        type="number" 
+                        step="0.01" 
+                        min="0"
+                        value={newVideoPrice}
+                        onChange={(e) => setNewVideoPrice(e.target.value)}
+                        placeholder="Novo preço para todos os vídeos"
+                        required 
+                    />
+                    <button type="submit" className="button-outline">Atualizar Todos os Vídeos</button>
+                </form>
+            </div>
+
+            
 
             {editingMedia && (
                 <MediaEditForm 
@@ -264,14 +355,18 @@ function DashboardAlbumDetailPage() {
             <h3>Fotos ({album.fotos?.length || 0})</h3>
             <div className="media-grid">
                 {album.fotos?.map(foto => (
-                    <div key={foto.id} className="dashboard-media-card">
+                    <div key={foto.id} className={`dashboard-media-card ${foto.is_arquivado ? 'archived' : ''}`}>
                         <div className="dashboard-media-image">
                            <img src={foto.imagem_url} alt={foto.legenda} style={{ transform: `rotate(${foto.rotacao}deg)` }} />
                         </div>
                         <div className="dashboard-media-info">
                             <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
+                            {foto.is_arquivado && <span className="status-archived-small">Arquivado</span>}
                             <div className="media-actions">
                                 <button onClick={() => openEditForm(foto, 'foto')} className="edit-button-pill">Editar</button>
+                                <button onClick={() => handleToggleArchivePhoto(foto)} className={foto.is_arquivado ? 'activate-button-pill' : 'archive-button-pill'}>
+                                    {foto.is_arquivado ? 'Restaurar' : 'Arquivar'}
+                                </button>
                                 <button onClick={() => handleDeleteMedia(foto.id, 'foto')} className="delete-button-pill">Excluir</button>
                             </div>
                         </div>

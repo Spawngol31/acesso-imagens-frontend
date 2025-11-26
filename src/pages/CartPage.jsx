@@ -126,8 +126,14 @@ function CartPage() {
                             <span>R$ {parseFloat(cart.total).toFixed(2)}</span>
                         </div>
                         <div className="checkout-button-wrapper">
-                            <Link to="/checkout" className="create-button">
-                                Finalizar compras
+                            <Link 
+                                to="/checkout" 
+                                // Passa o 'total' do carrinho para a página de checkout
+                                state={{ total: cart.total }} 
+                                className="create-button"
+                                style={{width: '100%', textAlign: 'center', textDecoration: 'none'}}
+                            >
+                                Finalizar Compra
                             </Link>
                         </div>
                     </div>
