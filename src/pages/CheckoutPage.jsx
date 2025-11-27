@@ -16,6 +16,7 @@ if (mpPublicKey) {
 
 function CheckoutPage() {
     const [preferenceId, setPreferenceId] = useState(null);
+    const [orderId, setOrderId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [paymentResult, setPaymentResult] = useState(null);
@@ -30,6 +31,8 @@ function CheckoutPage() {
                     setIsLoading(true);
                     const response = await axiosInstance.post('/checkout/mp/');
                     setPreferenceId(response.data.preference_id);
+                    console.log("Pedido criado com ID:", response.data.order_id);
+                    setOrderId(response.data.order_id);
                 } catch (error) {
                     console.error("Erro ao criar preferência:", error);
                     setError("Não foi possível carregar o pagamento.");
@@ -57,6 +60,10 @@ function CheckoutPage() {
 
     const onSubmit = async ({ selectedPaymentMethod, formData }) => {
         return new Promise((resolve, reject) => {
+            const dataToSend = {
+                ...formData,
+                external_reference: orderId // Adiciona o ID ao payload
+            };
             axiosInstance.post('/checkout/mp/process/', formData)
                 .then((response) => {
                     resolve();
