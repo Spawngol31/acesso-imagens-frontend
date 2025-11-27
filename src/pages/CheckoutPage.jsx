@@ -109,16 +109,16 @@ function CheckoutPage() {
 
         return (
             <div className="checkout-page-container">
-                <div className="checkout-card" style={{ textAlign: 'center', maxWidth: '600px' }}>
-                    <h2 className="checkout-title" style={{color: '#4bb543'}}>Pedido Recebido!</h2>
+                <div className="checkout-card" style={{ textAlign: 'center', maxWidth: '600px', width: '100%', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+                    <h2 className="checkout-title" style={{color: '#6c0464'}}>Pedido Recebido!</h2>
                     <div style={{margin: '20px 0', color: '#555'}}>
-                        <p>Obrigado pela sua compra.</p>
+                        <p>Obrigado por sua compra.</p>
                         <p style={{fontSize: '0.9rem', marginTop: '5px'}}>ID do Pedido: #{paymentResult.external_reference || paymentResult.id}</p>
                     </div>
 
                     {isPix && qrCodeBase64 && (
-                        <div className="pix-container" style={{marginTop: '20px', padding: '25px', background: '#f8f9fa', borderRadius: '12px', border: '1px solid #e9ecef'}}>
-                            <h3 style={{color: '#333', marginBottom: '15px'}}>Pagamento via Pix</h3>
+                        <div className="pix-container" style={{marginTop: '20px', padding: '25px', background: '#ffffffff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+                            <h3 style={{color: '#5a0354', marginBottom: '15px'}}>Pagamento via Pix</h3>
                             <p style={{marginBottom: '15px'}}>Abra o app do seu banco e escaneie o código:</p>
                             <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code Pix" style={{maxWidth: '220px', margin: '0 auto 20px', display: 'block', border: '1px solid #ddd', borderRadius: '8px'}} />
                             <p style={{fontSize: '0.9rem', marginBottom: '5px', fontWeight: 'bold'}}>Ou copie e cole este código:</p>
