@@ -73,7 +73,7 @@ function CheckoutPage() {
                     // Se o Webhook for rápido, o carrinho virá vazio.
                     setTimeout(() => {
                         fetchCart();
-                    }, 1000); // Damos 1 segundo para o backend processar
+                    }, 3000); // Damos 1 segundo para o backend processar
                     // ----------------------------------
                 })
                 .catch((error) => {
