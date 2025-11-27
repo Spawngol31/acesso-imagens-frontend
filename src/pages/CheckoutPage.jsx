@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { initMercadoPago, Payment } from '@mercadopago/sdk-react';
-import { useCart } from '../contexts/CartContext'; // 1. Importamos o useCart
+import { useCart } from '../contexts/CartContext';
 
-// Inicializa o Mercado Pago
+// 1. Inicializa o Mercado Pago
 const mpPublicKey = import.meta.env.VITE_MP_PUBLIC_KEY;
+
 if (mpPublicKey) {
     initMercadoPago(mpPublicKey, { locale: 'pt-BR' });
 }
@@ -20,10 +21,9 @@ function CheckoutPage() {
     const [paymentResult, setPaymentResult] = useState(null);
     
     const location = useLocation();
-    const navigate = useNavigate();
     const { total } = location.state || { total: 0.00 };
 
-    // 2. Obtemos a função fetchCart do contexto
+    // Importa a função para atualizar o carrinho
     const { fetchCart } = useCart();
 
     useEffect(() => {
@@ -48,6 +48,24 @@ function CheckoutPage() {
         createPreference();
     }, [total]);
 
+    // --- NOVO: POLLING PARA ATUALIZAR CARRINHO E STATUS ---
+    useEffect(() => {
+        let interval;
+        // Se tivermos um resultado de pagamento (estamos na tela de sucesso/pix)
+        if (paymentResult) {
+            // Cria um intervalo para verificar a cada 5 segundos
+            interval = setInterval(() => {
+                // 1. Atualiza o carrinho (se o webhook já correu, o carrinho vai esvaziar)
+                fetchCart();
+                
+                // Opcional: Aqui você também poderia consultar a API para ver se o status
+                // do pedido mudou de 'pending' para 'approved' e atualizar a tela.
+            }, 3000);
+        }
+        return () => clearInterval(interval); // Limpa o intervalo ao sair da página
+    }, [paymentResult, fetchCart]);
+    // -----------------------------------------------------
+
     const initialization = { amount: total, preferenceId: preferenceId };
     const customization = {
         paymentMethods: { bankTransfer: 'all', creditCard: 'all', debitCard: 'all', ticket: 'all' },
@@ -66,15 +84,8 @@ function CheckoutPage() {
                     resolve();
                     setPaymentResult(response.data);
                     window.scrollTo(0, 0);
-                    
-                    // --- 3. ATUALIZAÇÃO DO CARRINHO ---
-                    // Assim que o pagamento é submetido com sucesso, pedimos ao
-                    // CartContext para ir ao servidor ver como estão as coisas.
-                    // Se o Webhook for rápido, o carrinho virá vazio.
-                    setTimeout(() => {
-                        fetchCart();
-                    }, 3000); // Damos 1 segundo para o backend processar
-                    // ----------------------------------
+                    // Força uma atualização imediata do carrinho também
+                    fetchCart();
                 })
                 .catch((error) => {
                     console.error("MP: Erro", error);
@@ -98,21 +109,21 @@ function CheckoutPage() {
 
         return (
             <div className="checkout-page-container">
-                <div className="checkout-card" style={{ textAlign: 'center', maxWidth: '600px', width: '100%', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
-                    <h2 className="checkout-title" style={{color: '#6c0464'}}>Pedido Recebido!</h2>
+                <div className="checkout-card" style={{ textAlign: 'center', maxWidth: '600px' }}>
+                    <h2 className="checkout-title" style={{color: '#4bb543'}}>Pedido Recebido!</h2>
                     <div style={{margin: '20px 0', color: '#555'}}>
                         <p>Obrigado pela sua compra.</p>
                         <p style={{fontSize: '0.9rem', marginTop: '5px'}}>ID do Pedido: #{paymentResult.external_reference || paymentResult.id}</p>
                     </div>
 
                     {isPix && qrCodeBase64 && (
-                        <div className="pix-container" style={{marginTop: '20px', padding: '25px', background: '#ffffffff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 20px rgba(0,0,0,0.2)'}}>
-                            <h3 style={{color: '#5a0354', marginBottom: '15px'}}>Pagamento via Pix</h3>
+                        <div className="pix-container" style={{marginTop: '20px', padding: '25px', background: '#f8f9fa', borderRadius: '12px', border: '1px solid #e9ecef'}}>
+                            <h3 style={{color: '#333', marginBottom: '15px'}}>Pagamento via Pix</h3>
                             <p style={{marginBottom: '15px'}}>Abra o app do seu banco e escaneie o código:</p>
                             <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code Pix" style={{maxWidth: '220px', margin: '0 auto 20px', display: 'block', border: '1px solid #ddd', borderRadius: '8px'}} />
                             <p style={{fontSize: '0.9rem', marginBottom: '5px', fontWeight: 'bold'}}>Ou copie e cole este código:</p>
                             <div style={{position: 'relative'}}>
-                                <textarea readOnly value={qrCodeCopy} onClick={(e) => e.target.select()} style={{width: '100%', height: '100px', fontSize: '0.8rem', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', resize: 'none', backgroundColor: '#fff', color: '#555'}} />
+                                <textarea readOnly value={qrCodeCopy} onClick={(e) => e.target.select()} style={{width: '100%', height: '60px', fontSize: '0.8rem', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', resize: 'none', backgroundColor: '#fff', color: '#555'}} />
                             </div>
                         </div>
                     )}
