@@ -2204,3 +2204,40 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   width: 100%;
   height: 100%;
 }
+
+/* --- PROTEÇÃO DE IMAGEM --- */
+
+/* Impede que o utilizador selecione imagens ou arraste-as */
+img {
+  /* Impede arrastar a imagem (Chrome, Edge, Safari, Opera) */
+  -webkit-user-drag: none;
+  
+  /* Impede selecionar a imagem (padrão moderno) */
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE/Edge antigo */
+  
+  /* Garante que cliques funcionem (essencial para botões de carrinho) */
+  pointer-events: auto; 
+}
+
+/* Classe específica para proteger containers de fotos */
+.protected-image-container {
+  position: relative;
+  /* Impede o menu de contexto (botão direito) apenas nestes elementos */
+  -webkit-touch-callout: none;
+}
+
+/* Camada transparente invisível (O truque do "escudo") */
+/* Se o utilizador tentar clicar ou salvar, clica nesta div vazia */
+.protection-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 10; /* Fica por cima da imagem */
+  cursor: default;
+}

@@ -16,6 +16,26 @@ import App from './App.jsx';
 
 // Estilos globais
 import './index.css';
+import './App.css';
+
+// --- BLOQUEIO DE BOTÃO DIREITO (Proteção Simples) ---
+document.addEventListener('contextmenu', (event) => {
+  // Impede o menu de abrir
+  event.preventDefault();
+});
+
+// --- BLOQUEIO DE TECLAS DE ATALHO (Opcional) ---
+document.addEventListener('keydown', (event) => {
+  // Bloqueia F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U (Ver Fonte)
+  if (
+    event.key === 'F12' || 
+    (event.ctrlKey && event.shiftKey && event.key === 'I') || 
+    (event.ctrlKey && event.shiftKey && event.key === 'J') || 
+    (event.ctrlKey && event.key === 'u')
+  ) {
+    event.preventDefault();
+  }
+});
 
 // Esta é a linha que renderiza TUDO na tela
 ReactDOM.createRoot(document.getElementById('root')).render(
