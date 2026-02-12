@@ -141,6 +141,7 @@ function DashboardAlbumDetailPage() {
         const fileInput = photoForm.querySelector('#photo-upload');
         if (fileInput) fileInput.value = '';
         setFotoFiles([]);
+        fetchAlbumDetails();
         startPolling();
     };
 
@@ -181,6 +182,7 @@ function DashboardAlbumDetailPage() {
         setStagedVideos([]);
         const videoUploadInput = document.getElementById('video-upload');
         if(videoUploadInput) videoUploadInput.value = '';
+        fetchAlbumDetails();
         startPolling();
     };
 

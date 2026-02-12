@@ -23,7 +23,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             setAlbumData({
                 titulo: initialData.titulo || '',
                 descricao: initialData.descricao || '',
-                data_evento: initialData.data_evento ? new Date(initialData.data_evento).toISOString().split('T')[0] : '',
+                data_evento: initialData.data_evento ? initialData.data_evento.split('T')[0] : '',
                 categoria: initialData.categoria || 'OUTRO',
                 local: initialData.local || '',
                 is_publico: initialData.is_publico !== false,

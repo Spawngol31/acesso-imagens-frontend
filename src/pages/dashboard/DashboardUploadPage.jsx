@@ -31,6 +31,10 @@ function DashboardUploadPage() {
 
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
+        if (!selectedAlbum) {
+            alert("Por favor, selecione um álbum de destino primeiro (Passo 1).");
+            return;
+        }
         if (fotoFiles.length === 0) {
             alert("Por favor, selecione pelo menos um ficheiro de foto.");
             return;
@@ -76,6 +80,10 @@ function DashboardUploadPage() {
 
     const handleVideoSubmit = async (e) => {
         e.preventDefault();
+        if (!selectedAlbum) {
+            alert("Por favor, selecione um álbum de destino primeiro (Passo 1).");
+            return;
+        }
         if (stagedVideos.length === 0) {
             alert("Nenhum vídeo selecionado para envio.");
             return;
