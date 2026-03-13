@@ -33,26 +33,27 @@ function AlbumDetail() {
 
   // --- NOVA FUNÇÃO DE COMPARTILHAMENTO ---
   const handleShareClick = () => {
-    const rawApiUrl = import.meta.env.VITE_API_URL;
-    const baseUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
+    // 1. Pega a URL exata da sua API
+    let apiUrl = import.meta.env.VITE_API_URL;
     
-    // --- O TRUQUE DO CACHE (adicionamos um carimbo de tempo) ---
-    // Isso faz o WhatsApp achar que é uma página totalmente nova toda vez!
-    const cacheBuster = `?v=${new Date().getTime()}`;
-    
-    let shareLink = "";
-    if (baseUrl.endsWith('/api')) {
-        shareLink = `${baseUrl.replace('/api', '')}/api/share/album/${album.id}/${cacheBuster}`;
-    } else {
-        shareLink = `${baseUrl}/share/album/${album.id}/${cacheBuster}`;
+    // 2. Remove a barra do final, se existir, para não duplicar
+    if (apiUrl.endsWith('/')) {
+        apiUrl = apiUrl.slice(0, -1);
     }
 
+    // 3. Monta o link apontando para a view do Django.
+    // Como sua API já tem o /api no final do env, só adicionamos o resto do caminho:
+    const cacheBuster = `?v=${new Date().getTime()}`;
+    const shareLink = `${apiUrl}/share/album/${album.id}/${cacheBuster}`;
+
+    // 4. Copia para a área de transferência
     navigator.clipboard.writeText(shareLink)
       .then(() => {
-        alert("Link copiado! Cole no WhatsApp e espere uns 2 segundos antes de enviar para a capa carregar.");
+        alert("Link copiado! Cole no WhatsApp e ESPERE 3 SEGUNDOS antes de apertar enviar para a imagem carregar.");
       })
       .catch(err => {
         console.error("Erro ao copiar o link: ", err);
+        alert("Erro ao copiar. Tente novamente.");
       });
   };
   // ----------------------------------------
