@@ -1724,6 +1724,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   object-fit: cover;   /* Garante que o vídeo não fique esticado/distorcido, ele será cortado para caber se necessário */
   display: block;
 }
+.desktop-media {
+  display: block;
+}
+.mobile-media {
+  display: none; /* Esconde a versão mobile por padrão */
+}
 /* Botões de navegação (anterior/próximo) */
 .banner-nav {
   position: absolute;
@@ -2067,6 +2073,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .form-actions { justify-content: center; }  
 
   .dashboard-page-content table .hide-mobile { display: none; }
+  /* Inverte a exibição: Esconde PC, Mostra Mobile */
+  .desktop-media {
+    display: none;
+  }
+  
+  .mobile-media {
+    display: block;
+  }
+
+  /* Ajusta a altura da caixa do banner para o formato mobile */
+  /* (Banners de celular costumam ser mais altos que os de PC) */
+  .banner-section {
+    height: auto;
+  }
+  
+  .banner-slide,
+  .banner-media {
+    height: 150px; /* Você pode aumentar esse valor se quiser o banner mais alto no celular */
+  }
 }
 .table-wrapper {
   overflow-x: auto;

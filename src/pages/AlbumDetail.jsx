@@ -33,32 +33,26 @@ function AlbumDetail() {
 
   // --- NOVA FUNÇÃO DE COMPARTILHAMENTO ---
   const handleShareClick = () => {
-    // 1. Pegamos a URL da API do arquivo .env (ex: https://api.acessoimagens.com.br/api)
-    // Se a URL terminar em '/api', nós removemos para não duplicar, ou mantemos dependendo de como está seu .env
     const rawApiUrl = import.meta.env.VITE_API_URL;
-    
-    // Como a rota que criamos no urls.py fica dentro do namespace 'api/', 
-    // o caminho final correto para o compartilhamento é /api/share/album/ID/
-    // Vamos garantir que a URL base esteja correta:
     const baseUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
     
-    // Se o seu VITE_API_URL já incluir '/api', não precisamos adicionar de novo.
-    // Se não incluir, precisamos adicionar. Vamos montar a URL de forma segura:
+    // --- O TRUQUE DO CACHE (adicionamos um carimbo de tempo) ---
+    // Isso faz o WhatsApp achar que é uma página totalmente nova toda vez!
+    const cacheBuster = `?v=${new Date().getTime()}`;
+    
     let shareLink = "";
     if (baseUrl.endsWith('/api')) {
-        shareLink = `${baseUrl.replace('/api', '')}/api/share/album/${album.id}/`;
+        shareLink = `${baseUrl.replace('/api', '')}/api/share/album/${album.id}/${cacheBuster}`;
     } else {
-        shareLink = `${baseUrl}/share/album/${album.id}/`;
+        shareLink = `${baseUrl}/share/album/${album.id}/${cacheBuster}`;
     }
 
-    // 2. Copia o link para a área de transferência
     navigator.clipboard.writeText(shareLink)
       .then(() => {
-        alert("Link copiado");
+        alert("Link copiado! Cole no WhatsApp e espere uns 2 segundos antes de enviar para a capa carregar.");
       })
       .catch(err => {
         console.error("Erro ao copiar o link: ", err);
-        alert("Não foi possível copiar o link. Tente copiar a URL do navegador.");
       });
   };
   // ----------------------------------------

@@ -10,13 +10,15 @@ const banners = [
     { 
         id: 1, 
         type: 'image', 
-        src: '/images/publi_1.png', 
+        srcDesktop: '/images/publi_1_pc.png',       // Imagem larga para PC
+        srcMobile: '/images/publi_1_mobile.png',    // Imagem mais quadrada/alta para celular
         link: 'http://wa.me/559281637614?text=Olá!%20Vim%20através%20do%20site%20da%20Acesso%20Imagens.%20gostaria%20de%20mais%20informações.' // Pode ser um link externo
     },
     { 
         id: 2, 
         type: 'video', 
-        src: '/videos/publi_video.mp4', // Caminho para o seu vídeo na pasta public/videos/
+        srcDesktop: '/videos/publi_video_pc.mp4',   // Vídeo largo para PC
+        srcMobile: '/videos/publi_video_mobile.mp4',// Vídeo vertical/quadrado para celular
         link: 'http://wa.me/559281637614?text=Olá!%20Vim%20através%20do%20site%20da%20Acesso%20Imagens.%20gostaria%20de%20mais%20informações.' 
     },
 ];
@@ -65,25 +67,26 @@ function HomePage() {
         setCurrentBannerIndex(prevIndex => (prevIndex + 1) % banners.length);
     };
 
-    // --- 2. NOVA FUNÇÃO PARA RENDERIZAR O CONTEÚDO CORRETO ---
+    // 2. Atualize a função que desenha os banners
     const renderBannerContent = (banner) => {
         if (banner.type === 'video') {
             return (
-                <video 
-                    src={banner.src} 
-                    className="banner-media" // Usaremos uma classe genérica
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline // playsInline é crucial para autoplay no iOS
-                >
-                    O seu navegador não suporta vídeos.
-                </video>
+                <>
+                    {/* Vídeo do PC (Aparece só em telas grandes) */}
+                    <video src={banner.srcDesktop} className="banner-media desktop-media" autoPlay loop muted playsInline></video>
+                    {/* Vídeo do Celular (Aparece só em telas pequenas) */}
+                    <video src={banner.srcMobile} className="banner-media mobile-media" autoPlay loop muted playsInline></video>
+                </>
             );
         }
         
         // Padrão (Imagem)
-        return <img src={banner.src} alt={`Publicidade ${banner.id}`} className="banner-media" />;
+        return (
+            <>
+                <img src={banner.srcDesktop} alt={`Publicidade ${banner.id}`} className="banner-media desktop-media" />
+                <img src={banner.srcMobile} alt={`Publicidade ${banner.id}`} className="banner-media mobile-media" />
+            </>
+        );
     };
 
     return (
