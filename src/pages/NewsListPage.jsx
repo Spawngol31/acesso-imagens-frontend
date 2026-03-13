@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios'; // Usamos o axios base, pois é um domínio diferente
 
-const WP_API_URL = `${import.meta.env.VITE_WP_API_URL}/posts?_embed`;
+const BASE_URL = import.meta.env.VITE_WP_API_URL || '';
+const WP_API_URL = `${BASE_URL.replace(/\/$/, '')}/posts?_embed`;
 
 function NewsListPage() {
   const [noticias, setNoticias] = useState([]);

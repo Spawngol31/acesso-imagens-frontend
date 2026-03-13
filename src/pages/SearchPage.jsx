@@ -97,7 +97,7 @@ function SearchPage() {
                             <div className="purchase-grid">
                                 {searchResults.map(foto => (
                                     <div key={foto.id} className="purchase-card">
-                                        <div className="purchase-card-image" onClick={() => setSelectedImage(foto.imagem_url)}>
+                                        <div className="purchase-card-image" onClick={() => setSelectedImage({ url: foto.imagem_url, rotacao: foto.rotacao })}>
                                             <img 
                                                 src={foto.imagem_url} 
                                                 alt={foto.legenda || `Foto ${foto.id}`}
@@ -121,7 +121,7 @@ function SearchPage() {
             </div>
 
             {selectedImage && (
-                <Lightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
+                <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} />
             )}
         </div>
     );
