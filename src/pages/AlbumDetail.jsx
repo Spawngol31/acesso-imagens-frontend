@@ -31,6 +31,38 @@ function AlbumDetail() {
     getAlbumDetail();
   }, [getAlbumDetail]);
 
+  // --- NOVA FUNÇÃO DE COMPARTILHAMENTO ---
+  const handleShareClick = () => {
+    // 1. Pegamos a URL da API do arquivo .env (ex: https://api.acessoimagens.com.br/api)
+    // Se a URL terminar em '/api', nós removemos para não duplicar, ou mantemos dependendo de como está seu .env
+    const rawApiUrl = import.meta.env.VITE_API_URL;
+    
+    // Como a rota que criamos no urls.py fica dentro do namespace 'api/', 
+    // o caminho final correto para o compartilhamento é /api/share/album/ID/
+    // Vamos garantir que a URL base esteja correta:
+    const baseUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
+    
+    // Se o seu VITE_API_URL já incluir '/api', não precisamos adicionar de novo.
+    // Se não incluir, precisamos adicionar. Vamos montar a URL de forma segura:
+    let shareLink = "";
+    if (baseUrl.endsWith('/api')) {
+        shareLink = `${baseUrl.replace('/api', '')}/api/share/album/${album.id}/`;
+    } else {
+        shareLink = `${baseUrl}/share/album/${album.id}/`;
+    }
+
+    // 2. Copia o link para a área de transferência
+    navigator.clipboard.writeText(shareLink)
+      .then(() => {
+        alert("Link copiado");
+      })
+      .catch(err => {
+        console.error("Erro ao copiar o link: ", err);
+        alert("Não foi possível copiar o link. Tente copiar a URL do navegador.");
+      });
+  };
+  // ----------------------------------------
+
   if (loading) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar álbum...</p>; }
   if (!album) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>Álbum não encontrado.</p>; }
 
@@ -45,6 +77,13 @@ function AlbumDetail() {
         <h1>{album.titulo}</h1>
         <p>{album.descricao}</p>
         <p><strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}</p>
+        
+        {/* --- NOVO BOTÃO DE COMPARTILHAR --- */}
+        <button onClick={handleShareClick} className="button-outline" style={{ marginTop: '1rem' }}>
+          {/* Se você tiver um ícone do whatsapp na pasta images, ele vai aparecer aqui */}
+          Compartilhar
+        </button>
+        {/* ---------------------------------- */}
       </header>
       <main>
         <div className="section-header">
@@ -86,7 +125,7 @@ function AlbumDetail() {
                   <div className="photo-overlay">
                     <p>R$ {video.preco}</p>
                     {user && user.papel === 'CLIENTE' && (
-                  <button onClick={(e) => handleAddToCartClick(e, foto.id)}>Adicionar ao carrinho</button>
+                  <button onClick={(e) => handleAddToCartClick(e, video.id)}>Adicionar ao carrinho</button>
                 )}
                   </div>
                 </div>

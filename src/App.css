@@ -1718,9 +1718,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   width: 100%;
   height: 150px;
 }
-.banner-slide img {
+.banner-media {
   width: 100%;
-  height: 150px;
+  height: 150px;       /* Mantém a altura fixa do banner */
+  object-fit: cover;   /* Garante que o vídeo não fique esticado/distorcido, ele será cortado para caber se necessário */
   display: block;
 }
 /* Botões de navegação (anterior/próximo) */
