@@ -49,7 +49,7 @@ function AlbumDetail() {
     // 4. Copia para a área de transferência
     navigator.clipboard.writeText(shareLink)
       .then(() => {
-        alert("Link copiado! Cole no WhatsApp e ESPERE 3 SEGUNDOS antes de apertar enviar para a imagem carregar.");
+        alert("Link copiado!");
       })
       .catch(err => {
         console.error("Erro ao copiar o link: ", err);

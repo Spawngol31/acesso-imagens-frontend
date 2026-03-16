@@ -11,15 +11,15 @@ const banners = [
         id: 1, 
         type: 'image', 
         srcDesktop: '/images/publi_1_pc.png',       // Imagem larga para PC
-        srcMobile: '/images/publi_1_mobile.png',    // Imagem mais quadrada/alta para celular
-        link: 'http://wa.me/559281637614?text=Olá!%20Vim%20através%20do%20site%20da%20Acesso%20Imagens.%20gostaria%20de%20mais%20informações.' // Pode ser um link externo
+        srcMobile: '/images/publi_1_mobile.jpeg',    // Imagem mais quadrada/alta para celular
+        link: 'http://wa.me/559281637614?text=Olá!%20Vim%20através%20do%20site%20da%20Acesso%20Imagens.%20Gostaria%20de%20mais%20informações.' // Pode ser um link externo
     },
     { 
         id: 2, 
         type: 'video', 
         srcDesktop: '/videos/publi_video_pc.mp4',   // Vídeo largo para PC
         srcMobile: '/videos/publi_video_mobile.mp4',// Vídeo vertical/quadrado para celular
-        link: 'http://wa.me/559281637614?text=Olá!%20Vim%20através%20do%20site%20da%20Acesso%20Imagens.%20gostaria%20de%20mais%20informações.' 
+        link: 'http://wa.me/559281637614?text=Olá!%20Vim%20através%20do%20site%20da%20Acesso%20Imagens.%20Gostaria%20de%20mais%20informações.' 
     },
 ];
 
