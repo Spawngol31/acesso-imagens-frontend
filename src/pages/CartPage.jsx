@@ -7,8 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 function CartPage() {
     const { cart, removeFromCart, applyCoupon } = useCart();
-    const { user } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useAuth(); // Continuamos a usar para saber se está logado
 
     const [codigoCupom, setCodigoCupom] = useState('');
     const [cupomError, setCupomError] = useState('');
@@ -25,9 +24,8 @@ function CartPage() {
 
     const handleRemoveCoupon = async () => {
         try {
-            // Chamamos a mesma função, mas com 'null' para indicar remoção
             await applyCoupon(null);
-            setCodigoCupom(''); // Limpa o campo de texto
+            setCodigoCupom('');
             setCupomError('');
         } catch (error) {
             console.error("Erro ao remover cupom:", error);
@@ -35,13 +33,9 @@ function CartPage() {
         }
     };
 
-    if (!user) {
-        // Redireciona para o login se o utilizador tentar aceder sem estar logado
-        navigate('/login');
-        return null;
-    }
+    // REMOVEMOS O BLOQUEIO if (!user) navigate('/login'); DAQUI!
+    // Agora qualquer um pode ver a página.
 
-    // Mostra 'a carregar' enquanto o carrinho não foi buscado pela primeira vez
     if (cart === null) {
         return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar carrinho...</p>;
     }
@@ -52,11 +46,7 @@ function CartPage() {
                 <h1>Meu carrinho</h1>
                 <div className="empty-state-container">
                     <p>O seu carrinho está vazio.</p>
-                    <Link 
-                        to="/eventos" 
-                        className="create-button" 
-                        style={{ textDecoration: 'none' }}
-                    >
+                    <Link to="/eventos" className="create-button" style={{ textDecoration: 'none' }}>
                         Ver álbuns
                     </Link>
                 </div>
@@ -72,14 +62,15 @@ function CartPage() {
                     {cart.itens.map(item => (
                         <div key={item.id} className="purchase-card">
                             <div className="purchase-card-image">
+                                {/* O fallback "|| ''" previne erros se a foto não tiver sido carregada corretamente */}
                                 <img 
-                                    src={item.foto.imagem_url} 
-                                    alt={item.foto.legenda} 
-                                    style={{ transform: `rotate(${item.foto.rotacao}deg)` }}
+                                    src={item.foto?.imagem_url || ''} 
+                                    alt={item.foto?.legenda || 'Foto'} 
+                                    style={{ transform: `rotate(${item.foto?.rotacao || 0}deg)` }}
                                 />
                             </div>
                             <div className="purchase-card-info">
-                                <p>R$ {parseFloat(item.preco_item).toFixed(2)}</p>
+                                <p>R$ {parseFloat(item.preco_item || 0).toFixed(2)}</p>
                                 <button onClick={() => removeFromCart(item.id)} className="delete-button-pill">
                                     Remover
                                 </button>
@@ -91,16 +82,20 @@ function CartPage() {
                 <div className="cart-summary-wrapper">
                     <div className="cart-summary">
                         <h2>Resumo do pedido</h2>
+                        
+                        {/* Se não tem login, avisamos que ele precisa logar para usar cupom */}
                         <form onSubmit={handleApplyCoupon} className="coupon-form">
                             <input 
                                 type="text" 
                                 placeholder="Código do cupom"
                                 value={codigoCupom}
                                 onChange={(e) => setCodigoCupom(e.target.value)}
+                                disabled={!user} // Desativa o campo se não tiver logado
                             />
-                            <button type="submit">Aplicar</button>
+                            <button type="submit" disabled={!user}>Aplicar</button>
                         </form>
-                        {cupomError && <p className="error-message">{cupomError}</p>}
+                        {!user && <p style={{fontSize: '0.8rem', color: '#777', marginTop: '-10px'}}>Faça login para adicionar cupons.</p>}
+                        {cupomError && <p className="error-message" style={{color: 'red'}}>{cupomError}</p>}
                         
                         <hr />
 
@@ -126,15 +121,27 @@ function CartPage() {
                             <span>R$ {parseFloat(cart.total).toFixed(2)}</span>
                         </div>
                         <div className="checkout-button-wrapper">
-                            <Link 
-                                to="/checkout" 
-                                // Passa o 'total' do carrinho para a página de checkout
-                                state={{ total: cart.total }} 
-                                className="create-button"
-                                style={{width: '100%', textAlign: 'center', textDecoration: 'none'}}
-                            >
-                                Finalizar Compra
-                            </Link>
+                            
+                            {/* O GRANDE SEGREDO: Se tem login, vai pro Checkout. Se não tem, vai pro Login! */}
+                            {user ? (
+                                <Link 
+                                    to="/checkout" 
+                                    state={{ total: cart.total }} 
+                                    className="create-button"
+                                    style={{width: '100%', textAlign: 'center', textDecoration: 'none'}}
+                                >
+                                    Finalizar Compra
+                                </Link>
+                            ) : (
+                                <Link 
+                                    to="/login" 
+                                    className="create-button"
+                                    style={{width: '100%', textAlign: 'center', textDecoration: 'none'}}
+                                >
+                                    Fazer Login para Comprar
+                                </Link>
+                            )}
+
                         </div>
                     </div>
                 </div>

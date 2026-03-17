@@ -61,9 +61,11 @@ function AlbumDetail() {
   if (loading) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar álbum...</p>; }
   if (!album) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>Álbum não encontrado.</p>; }
 
-  const handleAddToCartClick = (e, fotoId) => {
-    e.stopPropagation();
-    addToCart(fotoId);
+  const handleAddToCartClick = (e, foto) => {
+    e.preventDefault(); // Evita que a tela pisque ou suba
+    e.stopPropagation(); // Impede que o clique "vaze" e abra a foto em tela cheia
+    addToCart(foto);
+    alert("Sucesso! Foto adicionada ao carrinho."); // Dá um aviso claro para o cliente!
   };
 
   return (
@@ -91,7 +93,8 @@ function AlbumDetail() {
             <div 
               key={foto.id} 
               className="photo-card" 
-              onClick={() => setSelectedImage({ url: foto.imagem_url, rotacao: foto.rotacao })}
+              // Agora mandamos o objeto 'foto' inteiro para o Lightbox!
+              onClick={() => setSelectedImage(foto)}
             >
               <img 
                 src={foto.imagem_url} 
@@ -100,8 +103,8 @@ function AlbumDetail() {
               />
               <div className="photo-overlay">
                 <p>R$ {foto.preco}</p>
-                {user && user.papel === 'CLIENTE' && (
-                  <button onClick={(e) => handleAddToCartClick(e, foto.id)}>Adicionar ao carrinho</button>
+                {(!user || user.papel === 'CLIENTE') && (
+                  <button onClick={(e) => handleAddToCartClick(e, foto)}>Adicionar ao carrinho</button>
                 )}
               </div>
             </div>
@@ -119,8 +122,8 @@ function AlbumDetail() {
                   <img src={video.miniatura_url} alt={video.titulo} />
                   <div className="photo-overlay">
                     <p>R$ {video.preco}</p>
-                    {user && user.papel === 'CLIENTE' && (
-                  <button onClick={(e) => handleAddToCartClick(e, video.id)}>Adicionar ao carrinho</button>
+                    {(!user || user.papel === 'CLIENTE') && (
+                  <button onClick={(e) => handleAddToCartClick(e, video)}>Adicionar ao carrinho</button>
                 )}
                   </div>
                 </div>

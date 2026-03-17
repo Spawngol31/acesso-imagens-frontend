@@ -22,19 +22,22 @@ function Layout() {
                         <Link to="/eventos">Álbuns</Link>
                         <Link to="/noticias">Notícias</Link>
                         
+                        {/* --- O ÍCONE DO CARRINHO AGORA FICA AQUI FORA DO BLOCO 'USER' --- 
+                            Assim ele aparece para visitantes (deslogados) e clientes.
+                        */}
+                        {(!user || user.papel === 'CLIENTE') && (
+                            <Link to="/carrinho" className="cart-link" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+                                <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
+                                {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
+                            </Link>
+                        )}
+
                         {user ? (
                             <div className="nav-user-menu">
                                 {user.papel === 'ADMIN' && <Link to="/admin">Painel admin</Link>}
                                 {user.papel === 'FOTOGRAFO' && <Link to="/dashboard/albuns">Meu painel</Link>}
                                 {user.papel === 'CLIENTE' && <Link to="/minhas-compras">Minhas compras</Link>}
                                 
-                                {user.papel === 'CLIENTE' && (
-                                    <Link to="/carrinho" className="cart-link">
-                                        <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
-                                        {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
-                                    </Link>
-                                )}
-
                                 <button onClick={logout}>Sair</button>
                             </div>
                         ) : (
@@ -52,7 +55,6 @@ function Layout() {
 
             <footer className="main-footer">
                 <div className="container">
-                    {/* --- ESTRUTURA DO RODAPÉ MODIFICADA --- */}
                     <div className="footer-social">
                         <div className="social-item">
                             <img src="/images/instagram.png" alt="Instagram" />
@@ -61,13 +63,11 @@ function Layout() {
                             </a>
                         </div>
                     </div>
-                    {/* -------------------------------------- */}
                     
                     <Link to="/quem-somos" className="footer-main-link">Quem somos</Link>
 
                     <div className="footer-links">
                         <Link to="/contato">Contato</Link>
-                        {/* Se tiver outros links como "Legal", eles aparecerão aqui */}
                     </div>
                 </div>
             </footer>
@@ -78,7 +78,6 @@ function Layout() {
                 rel="noopener noreferrer"
                 aria-label="Contactar por WhatsApp"
             >
-                {/* Ícone do WhatsApp em SVG */}
                 <img src="/images/icon_whatsapp.png" alt="Ícone do WhatsApp" />
             </a>
         </div>
