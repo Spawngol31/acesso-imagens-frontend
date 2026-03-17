@@ -2007,10 +2007,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 @media (max-width: 768px) {
   /* Troca a imagem de capa em ecrãs pequenos */
   .hero-section {
+    min-height: 210px; /* Você pode aumentar esse número (ex: 400px) se quiser ainda mais alta */
     background-image: url('/images/capa_site_mobile.png');
 
     /* Opcional: pode querer que a imagem de telemóvel não dê zoom */
-    background-size: contain;
+    /*background-size: contain;*/
     background-repeat: no-repeat;
   }
   
