@@ -68,6 +68,31 @@ function AlbumDetail() {
     alert("Sucesso! Foto adicionada ao carrinho."); // Dá um aviso claro para o cliente!
   };
 
+// Função para ir para a PRÓXIMA foto
+  const handleNextImage = () => {
+    // Procura em que posição (índice) a foto atual está na lista do álbum
+    const currentIndex = album.fotos.findIndex(f => f.id === selectedImage.id);
+    
+    // Se não for a última foto, vai para a próxima. Se for a última, volta para a primeira (loop).
+    if (currentIndex === album.fotos.length - 1) {
+      setSelectedImage(album.fotos[0]); 
+    } else {
+      setSelectedImage(album.fotos[currentIndex + 1]);
+    }
+  };
+
+  // Função para ir para a foto ANTERIOR
+  const handlePrevImage = () => {
+    const currentIndex = album.fotos.findIndex(f => f.id === selectedImage.id);
+    
+    // Se for a primeira foto, vai lá para a última (loop). Senão, volta uma.
+    if (currentIndex === 0) {
+      setSelectedImage(album.fotos[album.fotos.length - 1]); 
+    } else {
+      setSelectedImage(album.fotos[currentIndex - 1]);
+    }
+  };
+
   return (
     <div className="page-container">
       <header className="page-header-detail">
@@ -134,7 +159,7 @@ function AlbumDetail() {
       </main>
 
       {selectedImage && (
-        <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} />
+        <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} onNext={handleNextImage} onPrev={handlePrevImage} />
       )}
     </div>
   );

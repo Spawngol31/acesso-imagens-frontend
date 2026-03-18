@@ -4,69 +4,80 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
-function Lightbox({ image, onClose }) {
+// Adicionamos as propriedades onNext e onPrev
+function Lightbox({ image, onClose, onNext, onPrev }) {
   const { user } = useAuth();
   const { addToCart } = useCart();
 
   if (!image) return null;
 
-  const handleBackdropClick = () => {
-    onClose();
-  };
-
-  const handleImageClick = (e) => {
-    e.stopPropagation();
+  const handleBackdropClick = (e) => {
+    // Só fecha se a pessoa clicar exatamente no fundo preto
+    if (e.target.className === 'lightbox-backdrop') {
+      onClose();
+    }
   };
 
   const handleAddCart = (e) => {
     e.stopPropagation();
     addToCart(image);
-    // Adicionamos o alerta aqui também para o cliente saber que funcionou!
-    alert("Sucesso! Foto adicionada ao carrinho."); 
+    alert("🛒 Sucesso! Foto adicionada ao carrinho."); 
   };
 
   return (
     <div className="lightbox-backdrop" onClick={handleBackdropClick}>
       <button className="lightbox-close" onClick={onClose}>&times;</button>
       
-      <div className="lightbox-content" onClick={handleImageClick} style={{flexDirection: 'column', alignItems: 'center'}}>
-        
+      {/* --- BOTÃO VOLTAR --- */}
+      <button 
+        onClick={(e) => { e.stopPropagation(); onPrev(); }} 
+        style={{
+          position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
+          color: 'white', border: 'none', 
+          fontSize: '1.5rem', padding: '10px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 10001
+        }}
+      >
+        &#10094;
+      </button>
+
+      <div className="lightbox-content" style={{flexDirection: 'column', alignItems: 'center'}}>
         <img 
           src={image.url || image.imagem_url} 
           alt="Visualização ampliada" 
           style={{ 
             transform: `rotate(${image.rotacao || 0}deg)`, 
-            maxHeight: '80vh',
-            maxWidth: '100%' // Garante que não estoure a largura
+            maxHeight: '80vh', maxWidth: '100%' 
           }}
         />
 
-        {/* --- O BOTÃO AGORA FICA PRESO NO FUNDO DA TELA --- */}
         {(!user || user.papel === 'CLIENTE') && (
             <button 
               onClick={handleAddCart} 
               className="create-button" 
               style={{
-                position: 'fixed', // Prende o botão na tela
-                bottom: '40px',    // Distância do fundo da tela
-                left: '50%',       // Centraliza no meio
-                transform: 'translateX(-50%)', // Ajuste fino da centralização
-                zIndex: 10000,     // Garante que fique por cima de QUALQUER foto
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                color: '#6c0464',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.5)', // Uma sombra para destacar
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '50px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
+                position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
+                zIndex: 10000, backgroundColor: 'rgba(255, 255, 255, 0.95)', color: '#6c0464',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)', border: 'none', padding: '10px 20px',
+                borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer'
               }}
             >
               Adicionar ao carrinho (R$ {parseFloat(image.preco || 0).toFixed(2)})
             </button>
         )}
-
       </div>
+
+      {/* --- BOTÃO AVANÇAR --- */}
+      <button 
+        onClick={(e) => { e.stopPropagation(); onNext(); }} 
+        style={{
+          position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
+          color: 'white', border: 'none', 
+          fontSize: '1.5rem', padding: '10px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 10001
+        }}
+      >
+        &#10095;
+      </button>
+
     </div>
   );
 }
