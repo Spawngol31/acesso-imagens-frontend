@@ -126,32 +126,29 @@ function HomePage() {
                 )}
             </section>
 
-            {/* --- SEÇÃO 2: ÚLTIMAS NOTÍCIAS (WORDPRESS) --- */}
+            {/* --- SECÇÃO 2: ÚLTIMAS NOTÍCIAS --- */}
             {!loading && latestNews.length > 0 && (
                 <section className="category-section" style={{ marginTop: '0.2rem', paddingTop: '0.5rem' }}>
-                    <h2>Últimas notícias</h2>
+                    <h2>Últimas Notícias</h2>
                     <div className="album-grid"> 
                         {latestNews.map(noticia => {
-                            // O WordPress guarda a imagem embutida num caminho longo, fazemos essa checagem segura:
                             const imagemUrl = noticia._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/images/capa-padrao.jpg';
                             
                             return (
-                                <a 
-                                    href={noticia.link} 
+                                /* Trocamos a tag <a> pelo <Link> e usamos a rota interna do React */
+                                <Link 
+                                    to={`/noticias/${noticia.slug}`} 
                                     key={noticia.id} 
                                     className="album-card"
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
                                 >
                                     <div className="album-card-image" style={{ backgroundImage: `url(${imagemUrl})` }}></div>
                                     <div className="album-card-info">
-                                        {/* O WordPress envia o título em formato HTML, isso garante que acentos e aspas não quebrem */}
                                         <h3 dangerouslySetInnerHTML={{ __html: noticia.title.rendered }}></h3>
                                         <p style={{fontSize: '0.85rem', color: '#777', marginTop: '0.5rem', marginBottom: '0'}}>
                                             Ler notícia &rarr;
                                         </p>
                                     </div>
-                                </a>
+                                </Link> /* Lembrar de fechar com </Link> em vez de </a> */
                             );
                         })}
                     </div>
