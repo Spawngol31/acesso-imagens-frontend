@@ -51,18 +51,12 @@ function CheckoutPage() {
     // --- NOVO: POLLING PARA ATUALIZAR CARRINHO E STATUS ---
     useEffect(() => {
         let interval;
-        // Se tivermos um resultado de pagamento (estamos na tela de sucesso/pix)
         if (paymentResult) {
-            // Cria um intervalo para verificar a cada 5 segundos
             interval = setInterval(() => {
-                // 1. Atualiza o carrinho (se o webhook já correu, o carrinho vai esvaziar)
                 fetchCart();
-                
-                // Opcional: Aqui você também poderia consultar a API para ver se o status
-                // do pedido mudou de 'pending' para 'approved' e atualizar a tela.
             }, 3000);
         }
-        return () => clearInterval(interval); // Limpa o intervalo ao sair da página
+        return () => clearInterval(interval); 
     }, [paymentResult, fetchCart]);
     // -----------------------------------------------------
 
@@ -84,7 +78,6 @@ function CheckoutPage() {
                     resolve();
                     setPaymentResult(response.data);
                     window.scrollTo(0, 0);
-                    // Força uma atualização imediata do carrinho também
                     fetchCart();
                 })
                 .catch((error) => {
@@ -97,6 +90,20 @@ function CheckoutPage() {
 
     const onError = async (error) => { console.error("Erro Brick:", error); };
     const onReady = async () => { setIsLoading(false); };
+
+    // --- FUNÇÃO PARA COPIAR O PIX ---
+    const handleCopiarPix = (codigoPix) => {
+        if (!codigoPix) return;
+        
+        navigator.clipboard.writeText(codigoPix)
+            .then(() => {
+                alert("✅ Código Pix copiado com sucesso! Abra o app do seu banco para pagar.");
+            })
+            .catch((err) => {
+                console.error("Erro ao copiar o Pix: ", err);
+                alert("Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.");
+            });
+    };
 
     // --- TELA DE SUCESSO ---
     if (paymentResult) {
@@ -121,9 +128,23 @@ function CheckoutPage() {
                             <h3 style={{color: '#5a0354', marginBottom: '15px'}}>Pagamento via Pix</h3>
                             <p style={{marginBottom: '15px'}}>Abra o app do seu banco e escaneie o código:</p>
                             <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code Pix" style={{maxWidth: '220px', margin: '0 auto 20px', display: 'block', border: '1px solid #ddd', borderRadius: '8px'}} />
+                            
                             <p style={{fontSize: '0.9rem', marginBottom: '5px', fontWeight: 'bold'}}>Ou copie e cole este código:</p>
                             <div style={{position: 'relative'}}>
-                                <textarea readOnly value={qrCodeCopy} onClick={(e) => e.target.select()} style={{width: '100%', height: '60px', fontSize: '0.8rem', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', resize: 'none', backgroundColor: '#fff', color: '#555'}} />
+                                {/* Mantive o campo readOnly para a pessoa conseguir ver o código, mas tirei o evento onClick pra evitar confusão */}
+                                <textarea 
+                                    readOnly 
+                                    value={qrCodeCopy} 
+                                    style={{width: '100%', height: '60px', fontSize: '0.8rem', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', resize: 'none', backgroundColor: '#f8f9fa', color: '#555', cursor: 'not-allowed'}} 
+                                />
+                                
+                                {/* O NOVO BOTÃO DE COPIAR PIX */}
+                                <button 
+                                    onClick={() => handleCopiarPix(qrCodeCopy)}
+                                    className="create-button">
+                                    
+                                    Copiar código Pix
+                                </button>
                             </div>
                         </div>
                     )}
