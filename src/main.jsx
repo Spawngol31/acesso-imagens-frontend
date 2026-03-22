@@ -39,17 +39,11 @@ document.addEventListener('keydown', (event) => {
 
 // Esta é a linha que renderiza TUDO na tela
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    {/* O AuthProvider deve vir por fora, pois o CartProvider pode precisar dele */}
-    <AuthProvider>
-      {/* O CartProvider vem por dentro, para poder usar o AuthContext */}
-      <CartProvider>
-        {/* O Roteador gerencia as URLs */}
-        <BrowserRouter>
-          {/* O App contém nossas rotas e páginas */}
-          <App />
-        </BrowserRouter>
-      </CartProvider>
-    </AuthProvider>
-  </React.StrictMode>,
+  <AuthProvider>
+    <CartProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </CartProvider>
+  </AuthProvider>
 );
