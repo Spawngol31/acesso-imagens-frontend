@@ -1,3 +1,5 @@
+// src/pages/dashboard/DashboardAlbumDetailPage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
@@ -191,21 +193,19 @@ function DashboardAlbumDetailPage() {
         if (window.confirm(`Tem certeza que deseja ${acao} esta foto?`)) {
             try {
                 await axiosInstance.post(`/dashboard/fotos/${foto.id}/${acao}/`);
-                fetchAlbumDetails(); // Recarrega os detalhes do álbum
+                fetchAlbumDetails();
             } catch (error) {
                 console.error(`Erro ao ${acao} foto:`, error);
             }
         }
     };
     
-    // --- SUBSTITUA A FUNÇÃO 'handleDeleteMedia' ---
     const handleDeleteMedia = async (mediaId, type) => {
         if (window.confirm(`Tem a certeza que deseja APAGAR ${type === 'foto' ? 'esta foto' : 'este vídeo'}? Esta ação é PERMANENTE e não pode ser desfeita.`)) {
             try {
                 await axiosInstance.delete(`/dashboard/${type}s/${mediaId}/`);
                 fetchAlbumDetails();
             } catch (error) {
-                // O erro 500 (ProtectedError) será apanhado aqui
                 console.error(`Erro ao apagar ${type}:`, error);
                 if (error.response?.status === 500) {
                     alert("Erro: Esta foto não pode ser apagada pois já faz parte de um pedido de cliente. Por favor, use a opção 'Arquivar' em vez disso.");
@@ -239,8 +239,8 @@ function DashboardAlbumDetailPage() {
         try {
             const response = await axiosInstance.post(`/dashboard/albuns/${id}/bulk_update_photos/`, { preco: newPhotoPrice });
             alert(response.data.status);
-            fetchAlbumDetails(); // Recarrega os detalhes do álbum
-            setNewPhotoPrice(''); // Limpa o campo do formulário
+            fetchAlbumDetails();
+            setNewPhotoPrice('');
         } catch (error) {
             console.error("Erro ao atualizar preços das fotos:", error);
             alert("Erro ao atualizar preços.");
@@ -341,8 +341,6 @@ function DashboardAlbumDetailPage() {
                 </form>
             </div>
 
-            
-
             {editingMedia && (
                 <MediaEditForm 
                     media={editingMedia}
@@ -354,6 +352,7 @@ function DashboardAlbumDetailPage() {
 
             <hr style={{margin: '3rem 0', borderTop: '1px solid #eee', borderBottom: 'none'}} />
             <h2>Conteúdo do álbum</h2>
+            
             <h3>Fotos ({album.fotos?.length || 0})</h3>
             <div className="media-grid">
                 {album.fotos?.map(foto => (
@@ -364,7 +363,9 @@ function DashboardAlbumDetailPage() {
                         <div className="dashboard-media-info">
                             <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
                             {foto.is_arquivado && <span className="status-archived-small">Arquivado</span>}
-                            <div className="media-actions">
+                            
+                            {/* --- CORREÇÃO AQUI: flexWrap faz os botões quebrarem linha se não couberem --- */}
+                            <div className="media-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
                                 <button onClick={() => openEditForm(foto, 'foto')} className="edit-button-pill">Editar</button>
                                 <button onClick={() => handleToggleArchivePhoto(foto)} className={foto.is_arquivado ? 'activate-button-pill' : 'archive-button-pill'}>
                                     {foto.is_arquivado ? 'Restaurar' : 'Arquivar'}
@@ -386,7 +387,9 @@ function DashboardAlbumDetailPage() {
                         <div className="dashboard-media-info">
                             <p className="media-title">{video.titulo}</p>
                             <p>R$ {parseFloat(video.preco).toFixed(2)}</p>
-                            <div className="media-actions">
+                            
+                            {/* --- CORREÇÃO AQUI TAMBÉM --- */}
+                            <div className="media-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
                                 <button onClick={() => openEditForm(video, 'video')} className="edit-button-pill">Editar</button>
                                 <button onClick={() => handleDeleteMedia(video.id, 'video')} className="delete-button-pill">Excluir</button>
                             </div>
