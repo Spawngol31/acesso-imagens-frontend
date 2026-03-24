@@ -1,5 +1,7 @@
 // src/main.jsx
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 // Importações principais do React
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -38,12 +40,15 @@ document.addEventListener('keydown', (event) => {
 });
 
 // Esta é a linha que renderiza TUDO na tela
+// E lá embaixo, envolva o AuthProvider assim:
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <AuthProvider>
-    <CartProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </CartProvider>
-  </AuthProvider>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
+  </GoogleOAuthProvider>
 );

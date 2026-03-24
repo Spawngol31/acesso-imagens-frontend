@@ -1,6 +1,5 @@
 // src/api/axiosInstance.js
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
 
 // A URL da nossa API agora vem das variáveis de ambiente
 const API_URL = import.meta.env.VITE_API_URL;

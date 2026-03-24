@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@greatsumini/react-facebook-login": "^3.4.0",
     "@mercadopago/sdk-react": "^1.0.6",
+    "@react-oauth/google": "^0.13.4",
     "axios": "^1.12.2",
     "chart.js": "^4.5.0",
     "jwt-decode": "^4.0.0",

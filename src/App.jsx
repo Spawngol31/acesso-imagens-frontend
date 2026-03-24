@@ -36,6 +36,7 @@ import WatermarkToolPage from './pages/dashboard/WatermarkToolPage';
 import AboutPage from './pages/AboutPage';
 import NewsListPage from './pages/NewsListPage';
 import NewsDetailPage from './pages/NewsDetailPage';
+import PoliticaPrivacidade from './pages/PoliticaPrivacidade';
 
 import './App.css'; // O nosso novo CSS irá aqui
 
@@ -53,6 +54,7 @@ function App() {
         <Route path="quem-somos" element={<AboutPage />} />
         <Route path="noticias" element={<NewsListPage />} />
         <Route path="noticias/:slug" element={<NewsDetailPage />} />
+        <Route path="/privacidade" element={<PoliticaPrivacidade />} />
       </Route>
 
       <Route path="/login" element={<LoginPage />} />

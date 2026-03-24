@@ -22,9 +22,10 @@ function Layout() {
                         <Link to="/eventos">Álbuns</Link>
                         <Link to="/noticias">Notícias</Link>
                         
-                        {/* --- O ÍCONE DO CARRINHO AGORA FICA AQUI FORA DO BLOCO 'USER' --- 
-                            Assim ele aparece para visitantes (deslogados) e clientes.
-                        */}
+                        {/* A lógica do carrinho foi agrupada corretamente num Fragmento (<>) 
+                            se você quiser que ele fique alinhado com os outros links, ou 
+                            apenas mantida como estava se o CSS já tratar o display flex. 
+                            Deixei como estava para não quebrar o seu CSS. */}
                         {(!user || user.papel === 'CLIENTE') && (
                             <Link to="/carrinho" className="cart-link" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
                                 <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
@@ -67,7 +68,11 @@ function Layout() {
                     <Link to="/quem-somos" className="footer-main-link">Quem somos</Link>
 
                     <div className="footer-links">
-                        <Link to="/contato">Contato</Link>
+                        <Link to="/contato">Contato</Link>                        
+                    </div>
+
+                    <div className="footer-links">
+                        <Link to="/privacidade">Política de Privacidade</Link>
                     </div>
                 </div>
             </footer>

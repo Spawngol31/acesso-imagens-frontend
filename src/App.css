@@ -2268,3 +2268,31 @@ img {
   z-index: 10; /* Fica por cima da imagem */
   cursor: default;
 }
+
+/* --- NOVO ESTILO: Mimetizando o botão padrão 'Outline' do Google --- */
+.btn-facebook-mimic-google {
+    background-color: white;
+    color: #3c4043; /* Cor do texto padrão do Google */
+    font-size: 14px;
+    font-weight: 500;
+    font-family: Roboto, Arial, sans-serif;
+    padding: 0 12px; /* Padding padrão do Google */
+    height: 40px; /* Altura padrão do Google (large) */
+    width: 100%;
+    max-width: 260px; /* Mesma largura máxima que demos ao Google */
+    border: 1px solid #dadce0; /* Borda cinza clara idêntica ao Google */
+    border-radius: 20px; /* Borda levemente arredondada (não 'pill') idêntica ao Google padrão */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color 0.2s, border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.btn-facebook-mimic-google:hover {
+    background-color: #f8f9fa; /* Efeito de hover sutil do Google */
+    border-color: #d2d2d2; /* Borda ligeiramente mais escura no hover */
+    color: #333;
+}
