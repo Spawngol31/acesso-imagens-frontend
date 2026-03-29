@@ -62,12 +62,14 @@ function PromotionalArtCreatorPage() {
             
             const dataEvento = response.data.data_evento ? new Date(response.data.data_evento).toLocaleDateString() : '';
             
-            const fotografo = response.data.fotografo_nome || response.data.fotografo?.nome || '';
-            const local = response.data.local || '';
+            // --- AGORA ESTÁ PERFEITO! O React lê exatamente o que o Django mandou ---
+            const fotografo = response.data.fotografo_nome || ''; 
+            const local = response.data.local || ''; 
+            // -------------------------------------------------------------------------
 
             setCustomSettings(prev => ({
                 ...prev,
-                title: response.data.titulo,
+                title: response.data.titulo || '',
                 dateText: dataEvento,
                 locationText: local,
                 photographerName: fotografo,
@@ -299,10 +301,6 @@ function PromotionalArtCreatorPage() {
                                 </div>
                             )}
                             
-                            <div style={{ position: 'absolute', top: '15px', right: '15px', backgroundColor: 'rgba(0,0,0,0.65)', padding: '4px 8px', borderRadius: '6px', color: '#fff', textAlign: 'center', zIndex: 10 }}>
-                                <div style={{fontSize: '8px', textTransform: 'uppercase', letterSpacing: '1px'}}>Busca Facial</div>
-                            </div>
-
                             {/* --- ESPAÇO RESERVADO PARA A FIGURINHA DE LINK (TEXTO E COR FIXOS) --- */}
                             <div style={{ position: 'absolute', bottom: '50px', width: '100%', textAlign: 'center', padding: '0 25px', boxSizing: 'border-box', zIndex: 10 }}>
                                 <div style={{
