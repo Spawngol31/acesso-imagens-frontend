@@ -1,7 +1,7 @@
 // src/components/Layout.jsx
 
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -18,9 +18,9 @@ function Layout() {
                         <img src="/images/icon_homepage.png" alt="Acesso Imagens Logo" />
                     </Link>
                     <nav className="main-nav">
-                        <Link to="/busca">Procurar fotos</Link>
-                        <Link to="/eventos">Álbuns</Link>
-                        <Link to="/noticias">Notícias</Link>
+                        <NavLink to="/busca">Procurar fotos</NavLink>
+                        <NavLink to="/eventos">Álbuns</NavLink>
+                        <NavLink to="/noticias">Notícias</NavLink>
                         
                         {/* A lógica do carrinho foi agrupada corretamente num Fragmento (<>) 
                             se você quiser que ele fique alinhado com os outros links, ou 

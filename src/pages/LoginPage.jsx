@@ -87,7 +87,7 @@ function LoginPage() {
                     ‹ Voltar à página inicial
                 </Link>
                 {message && <p className="success-message">{message}</p>}
-                <h2>Entrar</h2>
+                <h2>🔐 Entrar</h2>
                 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <input 

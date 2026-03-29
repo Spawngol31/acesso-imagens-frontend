@@ -107,7 +107,7 @@ function HomePage() {
 
             {/* SEÇÃO 1: ÚLTIMOS ÁLBUNS */}
             <section className="category-section">
-                <h2>Últimos álbuns</h2>
+                <h2>🎞️ Últimos álbuns</h2>
                 {loading ? <p style={{textAlign: 'center'}}>A carregar...</p> : (
                     <div className="album-grid">
                         {latestAlbuns.length > 0 ? (
@@ -129,7 +129,7 @@ function HomePage() {
             {/* --- SECÇÃO 2: ÚLTIMAS NOTÍCIAS --- */}
             {!loading && latestNews.length > 0 && (
                 <section className="category-section" style={{ marginTop: '0.2rem', paddingTop: '0.5rem' }}>
-                    <h2>Últimas Notícias</h2>
+                    <h2>📰 Últimas Notícias</h2>
                     <div className="album-grid"> 
                         {latestNews.map(noticia => {
                             const imagemUrl = noticia._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/images/capa-padrao.jpg';

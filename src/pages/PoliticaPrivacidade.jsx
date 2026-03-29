@@ -10,7 +10,7 @@ const PoliticaPrivacidade = () => {
 
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginTop: '20px' }}>
                 
-                <h1 style={{ color: '#6c0464', marginBottom: '10px' }}>Política de Privacidade</h1>
+                <h1 style={{ color: '#6c0464', marginBottom: '10px' }}>🕵️ Política de Privacidade</h1>
                 <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '30px' }}>
                     Última atualização: 23 de março de 2026
                 </p>

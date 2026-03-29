@@ -10,6 +10,8 @@ function DashboardCuponsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCupom, setEditingCupom] = useState(null);
 
+    const corPrincipal = '#6c0464';
+
     const fetchCupons = async () => {
         try {
             setLoading(true);
@@ -53,12 +55,21 @@ function DashboardCuponsPage() {
         }
     };
 
+    const btnAcaoStyle = {
+        padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', 
+        cursor: 'pointer', border: 'none', transition: 'all 0.2s', textDecoration: 'none',
+        display: 'inline-block', textAlign: 'center'
+    };
+
     if (loading) return <p>A carregar os seus cupons...</p>;
 
     return (
         <div className="dashboard-page-content">
-            <div className="page-header">
-                <h2>Meus Cupons</h2>
+            <div className="page-header" style={{ 
+                marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
+            }}>
+                <h2 style={{ margin: 0, fontSize: '24px' }} >🏷️ Meus Cupons</h2>
                 <button className="create-button" onClick={() => { setEditingCupom({}); setIsModalOpen(true); }}>
                     Criar Novo Cupom +
                 </button>
@@ -83,8 +94,18 @@ function DashboardCuponsPage() {
                                 <td>{cupom.data_validade ? new Date(cupom.data_validade).toLocaleDateString() : 'Sem validade'}</td>
                                 <td>{cupom.ativo ? 'Ativo' : 'Inativo'}</td>
                                 <td className="action-cell">
-                                    <button onClick={() => { setEditingCupom(cupom); setIsModalOpen(true); }} className="edit-button-pill">Editar</button>
-                                    <button onClick={() => handleDelete(cupom.id)} className="delete-button-pill">Apagar</button>
+                                    <button 
+                                        onClick={() => { setEditingCupom(cupom); setIsModalOpen(true); }} 
+                                        style={{ ...btnAcaoStyle, backgroundColor: '#fbf0fa', color: corPrincipal, border: `1px solid ${corPrincipal}` }}
+                                    >
+                                        Editar
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDelete(cupom.id)} 
+                                        style={{ ...btnAcaoStyle, backgroundColor: '#dc3545', color: 'white' }}
+                                    >
+                                        Apagar
+                                    </button>
                                 </td>
                             </tr>
                         )) : (
@@ -97,11 +118,15 @@ function DashboardCuponsPage() {
             </div>
 
             {isModalOpen && (
-                <CupomForm 
-                    onSubmit={handleFormSubmit}
-                    initialData={editingCupom}
-                    onCancel={() => { setIsModalOpen(false); setEditingCupom(null); }}
-                />
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(156, 15, 156, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
+                    <div style={{ backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', overflowY: 'auto' }}>
+                        <CupomForm 
+                            onSubmit={handleFormSubmit}
+                            initialData={editingCupom}
+                            onCancel={() => { setIsModalOpen(false); setEditingCupom(null); }}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );

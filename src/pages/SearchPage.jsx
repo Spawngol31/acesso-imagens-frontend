@@ -57,7 +57,7 @@ function SearchPage() {
 
     return (
         <div className="page-container">
-            <h1>Busca facial</h1>
+            <h1>🤳 Busca facial</h1>
             <p style={{textAlign: 'center', maxWidth: '600px', margin: '0 auto 2rem auto'}}>
                 Envie uma selfie nítida para que o nosso sistema possa encontrar e reunir todas as suas fotos com mais precisão.
             </p>

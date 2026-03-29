@@ -38,8 +38,11 @@ function AlbumCreatePage() {
 
     return (
         <div className="dashboard-page-content">
-            <div className="page-header">
-                <h2>Criar novo álbum</h2>
+            <div className="page-header" style={{ 
+                marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
+            }}>
+                <h2 style={{ margin: 0, fontSize: '28px' }}>🖼️ Criação de álbuns</h2>
                 {/* O botão de cancelar agora fica dentro do próprio formulário */}
             </div>
 

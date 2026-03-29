@@ -270,15 +270,22 @@ function DashboardAlbumDetailPage() {
     return (
         <div className="dashboard-page-content">
             <div className="page-header">
-                <h1>{album.titulo}</h1>
+                <h1 style={{  fontSize: '30px' }}>🖼️ {album.titulo}</h1>
                 <Link to="/dashboard/albuns" className="button-outline">Voltar para Meus álbuns</Link>
+                <Link 
+                    to={`/dashboard/albuns/${id}/arte-promocional`} 
+                    className="create-button" 
+                    
+                >
+                    Click & share
+                </Link>
             </div>
             <p>{album.descricao}</p>
             {isPolling && <div className="polling-message">A processar mídias...</div>}
             
             <div className="upload-section">
                 <form onSubmit={handlePhotoSubmit} className="upload-form">
-                    <h3>Adicionar novas fotos</h3>
+                    <h3>✙ Adicionar novas fotos</h3>
                     <label htmlFor="photo-upload" className="custom-file-upload">Escolher ficheiros</label>
                     <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple />
                     {fotoFiles.length > 0 && <span className='file-name'>{fotoFiles.length} foto(s) selecionada(s)</span>}
@@ -288,7 +295,7 @@ function DashboardAlbumDetailPage() {
                     <button type="submit" className="upload-submit-button" disabled={isUploadingFotos || fotoFiles.length === 0}>{isUploadingFotos ? 'A enviar...' : `Enviar ${fotoFiles.length || 0} Foto(s)`}</button>
                 </form>
                 <div className="upload-form">
-                    <h3>Adicionar novos vídeos</h3>
+                    <h3>✙ Adicionar novos vídeos</h3>
                     <label htmlFor="video-upload" className="custom-file-upload">Escolher ficheiros</label>
                     <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple />
                     {stagedVideos.length > 0 && (
@@ -311,9 +318,9 @@ function DashboardAlbumDetailPage() {
             
             <hr className="divider" />
 
-            <div className="bulk-edit-section">
-                <form onSubmit={handleBulkUpdatePhotos} className="bulk-edit-form">
-                    <h3>Editar Preço de Todas as Fotos</h3>
+            <div className="bulk-edit-section" >
+                <form onSubmit={handleBulkUpdatePhotos} className="bulk-edit-form" style={{boxShadow: '0 6px 12px rgba(0,0,0,0.05)'}}>
+                    <h3>✍🏻 Editar Preço de Todas as Fotos</h3>
                     <input 
                         type="number" 
                         step="0.01" 
@@ -326,8 +333,8 @@ function DashboardAlbumDetailPage() {
                     <button type="submit" className="button-outline">Atualizar Todas as Fotos</button>
                 </form>
 
-                <form onSubmit={handleBulkUpdateVideos} className="bulk-edit-form">
-                    <h3>Editar Preço de Todos os Vídeos</h3>
+                <form onSubmit={handleBulkUpdateVideos} className="bulk-edit-form" style={{boxShadow: '0 6px 12px rgba(0,0,0,0.05)'}}>
+                    <h3>✍🏻 Editar Preço de Todos os Vídeos</h3>
                     <input 
                         type="number" 
                         step="0.01" 
@@ -351,9 +358,9 @@ function DashboardAlbumDetailPage() {
             )}
 
             <hr style={{margin: '3rem 0', borderTop: '1px solid #eee', borderBottom: 'none'}} />
-            <h2>Conteúdo do álbum</h2>
+            <h2>📂 Conteúdo do álbum</h2>
             
-            <h3>Fotos ({album.fotos?.length || 0})</h3>
+            <h3>📷 Fotos ({album.fotos?.length || 0})</h3>
             <div className="media-grid">
                 {album.fotos?.map(foto => (
                     <div key={foto.id} className={`dashboard-media-card ${foto.is_arquivado ? 'archived' : ''}`}>
@@ -377,10 +384,10 @@ function DashboardAlbumDetailPage() {
                 ))}
             </div>
             
-            <h3 style={{ marginTop: '2rem' }}>Vídeos ({album.videos?.length || 0})</h3>
-            <div className="media-grid">
+            <h3 style={{ marginTop: '2rem' }}>🎬 Vídeos ({album.videos?.length || 0})</h3>
+            <div className="media-grid" style={{paddingBottom: '2rem'}}>
                 {album.videos?.map(video => (
-                    <div key={video.id} className="dashboard-media-card">
+                    <div key={video.id} className="dashboard-media-card" >
                         <div className="dashboard-media-image">
                            <img src={video.miniatura_url} alt={video.titulo} />
                         </div>

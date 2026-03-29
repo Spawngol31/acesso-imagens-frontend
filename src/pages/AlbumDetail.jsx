@@ -96,7 +96,7 @@ function AlbumDetail() {
   return (
     <div className="page-container">
       <header className="page-header-detail">
-        <h1>{album.titulo}</h1>
+        <h1>📸 {album.titulo}</h1>
         <p>{album.descricao}</p>
         <p><strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}</p>
         
@@ -109,7 +109,7 @@ function AlbumDetail() {
       </header>
       <main>
         <div className="section-header">
-          <h2>Fotos</h2>
+          <h2>📷 Fotos</h2>
           <Link to="/eventos" className="button-outline">Voltar para a lista de álbuns</Link>
         </div>
 
@@ -139,7 +139,7 @@ function AlbumDetail() {
         {album.videos && album.videos.length > 0 && (
           <>
             <div className="section-header" style={{marginTop: '3rem'}}>
-              <h2>Vídeos</h2>
+              <h2>🎥 Vídeos</h2>
             </div>
             <div className="photo-grid">
               {album.videos.map(video => (

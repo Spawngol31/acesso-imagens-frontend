@@ -46,7 +46,7 @@ function ResetPasswordPage() {
     return (
         <div className="auth-page-container">
             <div className="auth-card">
-                <h2>Redefinir senha</h2>
+                <h2>🔑 Redefinir senha</h2>
                 {message ? (
                     <div style={{textAlign: 'center'}}>
                         <p className="success-message">{message}</p>

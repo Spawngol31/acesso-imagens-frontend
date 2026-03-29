@@ -36,7 +36,7 @@ function ContactPage() {
 
     return (
         <div className="page-container">
-            <h1>Contato</h1>
+            <h1>📲 Contato</h1>
             <div className="auth-card" style={{ maxWidth: '700px' }}>
                 <form onSubmit={handleSubmit} className="auth-form">
                     {/* ... (inputs do formulário) ... */}

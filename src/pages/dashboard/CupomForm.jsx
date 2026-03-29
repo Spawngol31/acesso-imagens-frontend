@@ -42,7 +42,7 @@ function CupomForm({ onSubmit, initialData = {}, onCancel }) {
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <h2>{initialData.id ? 'Editar cupom' : 'Criar novo cupom'}</h2>
+                <h2>{initialData.id ? '🏷️ Editar cupom' : '🏷️ Criar novo cupom'}</h2>
                 <form onSubmit={handleSubmit}>
                     <input name="codigo" value={cupomData.codigo || ''} onChange={handleChange} placeholder="Código do cupom (ex: ACESSO10)" required />
                     <input name="desconto_percentual" type="number" step="0.01" value={cupomData.desconto_percentual || ''} onChange={handleChange} placeholder="Desconto % (ex: 15.00)" required />

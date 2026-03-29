@@ -29,7 +29,7 @@ function NewsListPage() {
 
   return (
     <div className="page-container">
-      <h1>Notícias</h1>
+      <h1>📰 Notícias</h1>
       <div className='album-grid'>
         {noticias.map(noticia => (
           <Link to={`/noticias/${noticia.slug}`} key={noticia.id} className="album-card">

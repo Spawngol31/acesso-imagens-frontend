@@ -87,6 +87,16 @@ a {
   border-bottom-color: var(--primary-purple);
   color: var(--hover-purple-light);
 }
+/* Estilo para quando o menu estiver selecionado (ativo) */
+.main-nav a.active {
+    color: #6c0464; /* A cor roxa da sua marca */
+    font-weight: bold;
+    border-bottom: 2px solid #6c0464; /* Uma linhazinha elegante embaixo */
+}
+/* Se precisar tirar o estilo ativo de botões e do carrinho, caso fiquem estranhos */
+.main-nav a.cart-link.active {
+    border-bottom: none;
+}
 .nav-user-menu {
   display: flex;
   align-items: center;

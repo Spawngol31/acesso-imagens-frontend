@@ -24,6 +24,7 @@ import MinhasComprasPage from './pages/MinhasComprasPage';
 import AdminUserPage from './pages/admin/AdminUserPage';
 import AdminStatsPage from './pages/admin/AdminStatsPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
+import AdminFinanceiroPage from './pages/admin/AdminFinanceiroPage';
 import DashboardAlbunsPage from './pages/dashboard/DashboardAlbunsPage';
 import DashboardAlbumDetailPage from './pages/dashboard/DashboardAlbumDetailPage';
 import DashboardVendasPage from './pages/dashboard/DashboardVendasPage';
@@ -37,6 +38,7 @@ import AboutPage from './pages/AboutPage';
 import NewsListPage from './pages/NewsListPage';
 import NewsDetailPage from './pages/NewsDetailPage';
 import PoliticaPrivacidade from './pages/PoliticaPrivacidade';
+import PromotionalArtCreatorPage from './pages/dashboard/PromotionalArtCreatorPage';
 
 import './App.css'; // O nosso novo CSS irá aqui
 
@@ -71,6 +73,7 @@ function App() {
           <Route path="albuns" element={<DashboardAlbunsPage />} />
           <Route path="albuns/novo" element={<AlbumCreatePage />} />
           <Route path="albuns/:id" element={<DashboardAlbumDetailPage />} />
+          <Route path="albuns/:id/arte-promocional" element={<PromotionalArtCreatorPage />} />
           <Route path="upload" element={<DashboardUploadPage />} />
           <Route path="vendas" element={<DashboardVendasPage />} />
           <Route path="cupons" element={<DashboardCuponsPage />} />
@@ -83,6 +86,7 @@ function App() {
           <Route index element={<AdminStatsPage />} />
           <Route path="users" element={<AdminUserPage />} />
           <Route path="users/:id" element={<AdminUserDetailPage />} />
+          <Route path="vendas" element={<AdminFinanceiroPage />} />
         </Route>
       </Route>
     </Routes>

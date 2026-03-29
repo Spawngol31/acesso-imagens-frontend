@@ -32,7 +32,7 @@ function AlbumList() {
 
   return (
     <div className="page-container">
-      <h1>Álbuns</h1>
+      <h1>🎞️ Álbuns</h1>
       
       {loading ? (
         <p style={{textAlign: 'center'}}>A carregar álbuns...</p>

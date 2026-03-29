@@ -43,7 +43,7 @@ function CartPage() {
     if (cart.itens.length === 0) {
         return (
             <div className='page-container' style={{ textAlign: 'center' }}>
-                <h1>Meu carrinho</h1>
+                <h1>🛒 Meu carrinho</h1>
                 <div className="empty-state-container">
                     <p>O seu carrinho está vazio.</p>
                     <Link to="/eventos" className="create-button" style={{ textDecoration: 'none' }}>
@@ -56,7 +56,7 @@ function CartPage() {
 
     return (
         <div className='page-container'>
-            <h1>Meu carrinho</h1>
+            <h1>🛒 Meu carrinho</h1>
             <div className="cart-layout">
                 <div className="cart-grid">
                     {cart.itens.map(item => (

@@ -119,8 +119,11 @@ function DashboardUploadPage() {
 
     return (
         <div className="dashboard-page-content">
-            <div className="page-header">
-                <h2>Upload de mídias</h2>
+            <div className="page-header" style={{ 
+                marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
+            }}>
+                <h2 style={{ margin: 0, fontSize: '24px' }}>📤 Upload de mídias</h2>
             </div>
             <div className="album-selector-wrapper">
                 <label htmlFor="album-select">1. Selecione o álbum de destino:</label>

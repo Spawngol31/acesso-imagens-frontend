@@ -175,8 +175,8 @@ function CheckoutPage() {
     return (
         <div className="checkout-page-container">
             <div className="checkout-card">
-                <h2 className="checkout-title">Finalizar Compra</h2>
-                <p className="checkout-total">Valor Total: <strong>R$ {total.toFixed(2)}</strong></p>
+                <h2 className="checkout-title">💳 Finalizar Compra</h2>
+                <p className="checkout-total">💰 Valor Total: <strong>R$ {total.toFixed(2)}</strong></p>
                 {isLoading && !preferenceId && <p style={{textAlign: 'center'}}>A preparar o pagamento...</p>}
                 {error && <p className="error-message">{error}</p>}
                 {preferenceId && !error && (

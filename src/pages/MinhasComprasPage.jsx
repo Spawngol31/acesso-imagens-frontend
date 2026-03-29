@@ -59,7 +59,7 @@ function MinhasComprasPage() {
 
     return (
         <div className="page-container">
-            <h1>Minhas compras</h1>
+            <h1>💰 Minhas compras</h1>
             <p>Aqui estão todas as fotos que você comprou. O link para download é válido por 60 dias após a data da compra.</p>
 
             {itensComprados.length === 0 ? (

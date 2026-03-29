@@ -32,7 +32,7 @@ function SuccessPage() {
     return (
         <div className="page-container">
             <div className="success-page">
-                <h2>Pagamento Aprovado!</h2>
+                <h2>🎉 Pagamento Aprovado!</h2>
 
                 {isFinalizing ? (
                     <p>Estamos finalizando o seu pedido, por favor aguarde...</p>
