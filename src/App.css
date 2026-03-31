@@ -781,7 +781,7 @@ tbody a:hover { color: var(--hover-purple-light); }
   display: flex;
   gap: 0.5rem;
 }
-.edit-button-pill, .delete-button-pill {
+.edit-button-pill, .delete-button-pill, .cover-button-pill {
   border: 1px solid var(--primary-purple);
   padding: 0.4rem 1rem;
   border-radius: 50px;

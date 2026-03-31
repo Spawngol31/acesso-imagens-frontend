@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import CupomForm from './CupomForm'; // O formulário que já tínhamos
+import { toast } from 'react-toastify';
 
 function DashboardCuponsPage() {
     const [cupons, setCupons] = useState([]);
@@ -40,7 +41,7 @@ function DashboardCuponsPage() {
             fetchCupons();
         } catch (error) {
             console.error("Erro ao salvar cupom:", error.response.data);
-            alert("Erro ao salvar. Verifique os dados (o código do cupom já pode existir).");
+            toast.error("Erro ao salvar. Verifique os dados (o código do cupom já pode existir).");
         }
     };
 

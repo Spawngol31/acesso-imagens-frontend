@@ -3,6 +3,7 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from "react";
 import { useAuth } from './AuthContext';
 import axiosInstance from "../api/axiosInstance";
+import { toast } from 'react-toastify';
 
 const CartContext = createContext();
 
@@ -107,7 +108,7 @@ export function CartProvider({ children }) {
                 localStorage.setItem('guestCart', JSON.stringify(localItems));
                 setCart(getGuestCart()); // Atualiza a tela
             } else {
-                alert("Esta foto já está no seu carrinho!");
+                toast.warning("Esta foto já está no seu carrinho!");
             }
         }
     };

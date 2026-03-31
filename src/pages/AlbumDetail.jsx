@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import axiosInstance from '../api/axiosInstance';
 import Lightbox from '../components/Lightbox';
+import { toast } from 'react-toastify';
 
 function AlbumDetail() {
   const [album, setAlbum] = useState(null);
@@ -49,11 +50,11 @@ function AlbumDetail() {
     // 4. Copia para a área de transferência
     navigator.clipboard.writeText(shareLink)
       .then(() => {
-        alert("Link copiado!");
+        toast.success("Link copiado!");
       })
       .catch(err => {
         console.error("Erro ao copiar o link: ", err);
-        alert("Erro ao copiar. Tente novamente.");
+        toast.error("Erro ao copiar. Tente novamente.");
       });
   };
   // ----------------------------------------
@@ -65,7 +66,7 @@ function AlbumDetail() {
     e.preventDefault(); // Evita que a tela pisque ou suba
     e.stopPropagation(); // Impede que o clique "vaze" e abra a foto em tela cheia
     addToCart(foto);
-    alert("Sucesso! Foto adicionada ao carrinho."); // Dá um aviso claro para o cliente!
+    toast.success("Sucesso! Foto adicionada ao carrinho."); // Dá um aviso claro para o cliente!
   };
 
 // Função para ir para a PRÓXIMA foto

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import { toast } from 'react-toastify';
 
 // src/pages/admin/AdminUserPage.jsx
 
@@ -38,11 +39,11 @@ function UserEditForm({ user, onSubmit, onCancel }) {
             await axiosInstance.post(`/admin/users/${user.id}/upload_foto_perfil/`, fileFormData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert("✅ Foto de perfil atualizada com sucesso!");
+            toast.success("✅ Foto de perfil atualizada com sucesso!");
             setProfilePicFile(null); // Limpa o arquivo selecionado
         } catch (error) {
             console.error("Erro ao fazer upload da foto:", error);
-            alert("❌ Erro ao enviar a foto. Verifique o arquivo.");
+            toast.error("❌ Erro ao enviar a foto. Verifique o arquivo.");
         }
     };
 
@@ -311,7 +312,7 @@ function AdminUserPage() {
             setEditingUser(null);
             fetchUsers();
         } catch (error) {
-            alert("Erro ao salvar. Verifique os dados.");
+            toast.error("Erro ao salvar. Verifique os dados.");
         }
     };
 

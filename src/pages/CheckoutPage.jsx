@@ -5,6 +5,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { initMercadoPago, Payment } from '@mercadopago/sdk-react';
 import { useCart } from '../contexts/CartContext';
+import { toast } from 'react-toastify';
 
 // 1. Inicializa o Mercado Pago
 const mpPublicKey = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -97,11 +98,11 @@ function CheckoutPage() {
         
         navigator.clipboard.writeText(codigoPix)
             .then(() => {
-                alert("✅ Código Pix copiado com sucesso! Abra o app do seu banco para pagar.");
+                toast.success("✅ Código Pix copiado com sucesso! Abra o app do seu banco para pagar.");
             })
             .catch((err) => {
                 console.error("Erro ao copiar o Pix: ", err);
-                alert("Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.");
+                toast.error("Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.");
             });
     };
 

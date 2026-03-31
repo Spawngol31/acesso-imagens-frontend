@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { toast } from 'react-toastify';
 
 // Adicionamos as propriedades onNext e onPrev
 function Lightbox({ image, onClose, onNext, onPrev }) {
@@ -21,7 +22,7 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
   const handleAddCart = (e) => {
     e.stopPropagation();
     addToCart(image);
-    alert("🛒 Sucesso! Foto adicionada ao carrinho."); 
+    toast.success("🛒 Sucesso! Foto adicionada ao carrinho."); 
   };
 
   return (

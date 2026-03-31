@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import { toast } from 'react-toastify'; // <-- Importamos o toast aqui também!
 
 // --- Componente de Formulário para Edição ---
 function MediaEditForm({ media, mediaType, onSubmit, onCancel }) {
@@ -73,14 +74,20 @@ function DashboardAlbumDetailPage() {
     const [album, setAlbum] = useState(null);
     const [loading, setLoading] = useState(true);
     const { id } = useParams();
+    
+    // Estados para Upload de Fotos
     const [fotoFiles, setFotoFiles] = useState([]);
     const [fotoPreco, setFotoPreco] = useState('15.00');
     const [fotoLegenda, setFotoLegenda] = useState('');
     const [isUploadingFotos, setIsUploadingFotos] = useState(false);
-    const [uploadProgressFotos, setUploadProgressFotos] = useState(0);
+    const [uploadStatusMsg, setUploadStatusMsg] = useState(''); // <-- Novo estado para a mensagem amarela
+
+    // Estados para Upload de Vídeos
     const [stagedVideos, setStagedVideos] = useState([]);
     const [isUploadingVideos, setIsUploadingVideos] = useState(false);
     const [uploadProgressVideos, setUploadProgressVideos] = useState(0);
+    
+    // Outros estados
     const [isPolling, setIsPolling] = useState(false);
     const [editingMedia, setEditingMedia] = useState(null);
     const [mediaType, setMediaType] = useState('');
@@ -93,6 +100,7 @@ function DashboardAlbumDetailPage() {
             setAlbum(response.data);
         } catch (error) {
             console.error("Erro ao buscar detalhes do álbum:", error);
+            toast.error("Erro ao carregar os detalhes do álbum.");
         } finally {
             setLoading(false);
         }
@@ -120,29 +128,58 @@ function DashboardAlbumDetailPage() {
         return () => clearInterval(intervalId);
     }, [isPolling, fetchAlbumDetails]);
 
+    // --- FUNÇÃO DE UPLOAD DE FOTOS BLINDADA ---
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
-        if (fotoFiles.length === 0) { alert("Por favor, selecione pelo menos um ficheiro de foto."); return; }
+        
+        if (fotoFiles.length === 0) { 
+            toast.info("Por favor, selecione pelo menos um ficheiro de foto."); 
+            return; 
+        }
+        
         setIsUploadingFotos(true);
-        setUploadProgressFotos(0);
+        let fotosEnviadasComSucesso = 0;
+        let fotosComErro = 0;
+
         for (let i = 0; i < fotoFiles.length; i++) {
             const file = fotoFiles[i];
-            setUploadProgressFotos(i + 1);
+            
+            // Atualiza a mensagem amarela
+            setUploadStatusMsg(`A enviar a foto ${i + 1} de ${fotoFiles.length}... Por favor, não feche a página!`);
+            
             const formData = new FormData();
             formData.append('album', id);
             formData.append('imagem', file);
             formData.append('preco', fotoPreco);
             formData.append('legenda', fotoLegenda);
+            
             try {
-                await axiosInstance.post('/fotos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-            } catch (error) { console.error(`Erro ao enviar a foto ${file.name}:`, error); }
+                // AWAIT: A trava que garante que o Django processou antes de ir para a próxima
+                await axiosInstance.post('/fotos/upload/', formData, { 
+                    headers: { 'Content-Type': 'multipart/form-data' } 
+                });
+                fotosEnviadasComSucesso++;
+            } catch (error) { 
+                console.error(`Erro ao enviar a foto ${file.name}:`, error); 
+                fotosComErro++;
+            }
         }
+        
         setIsUploadingFotos(false);
-        alert(`${fotoFiles.length} foto(s) enviada(s) para processamento!`);
+        setUploadStatusMsg('');
+        
+        if (fotosComErro > 0) {
+            toast.error(`${fotosEnviadasComSucesso} fotos enviadas. ${fotosComErro} fotos falharam. Verifique a sua conexão.`);
+        } else {
+            toast.success(`Sucesso! ${fotosEnviadasComSucesso} foto(s) foram guardadas no servidor e enviadas para a fila de processamento.`);
+        }
+        
         const photoForm = e.target;
         const fileInput = photoForm.querySelector('#photo-upload');
         if (fileInput) fileInput.value = '';
         setFotoFiles([]);
+        
+        // Atualiza a galeria e inicia o recarregamento automático (polling)
         fetchAlbumDetails();
         startPolling();
     };
@@ -156,17 +193,21 @@ function DashboardAlbumDetailPage() {
     const handleStagedVideoChange = (id, field, value) => { setStagedVideos(prev => prev.map(video => (video.id === id ? { ...video, [field]: value } : video))); };
     const removeStagedVideo = (id) => { setStagedVideos(prev => prev.filter(video => video.id !== id)); };
 
+    // --- FUNÇÃO DE UPLOAD DE VÍDEOS BLINDADA E COM TOAST ---
     const handleVideoSubmit = async (e) => {
         e.preventDefault();
-        if (stagedVideos.length === 0) { alert("Nenhum vídeo selecionado para envio."); return; }
+        if (stagedVideos.length === 0) { toast.info("Nenhum vídeo selecionado para envio."); return; }
+        
         for (const video of stagedVideos) {
             if (!video.titulo) {
-                alert(`Por favor, adicione um título para o vídeo: ${video.videoFile.name}`);
+                toast.error(`Por favor, adicione um título para o vídeo: ${video.videoFile.name}`);
                 return;
             }
         }
+        
         setIsUploadingVideos(true);
         setUploadProgressVideos(0);
+        
         for (let i = 0; i < stagedVideos.length; i++) {
             const video = stagedVideos[i];
             setUploadProgressVideos(i + 1);
@@ -175,15 +216,25 @@ function DashboardAlbumDetailPage() {
             formData.append('titulo', video.titulo);
             formData.append('preco', video.preco);
             formData.append('arquivo_video', video.videoFile);
+            
             try {
-                await axiosInstance.post('/dashboard/videos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-            } catch (error) { console.error(`Erro ao enviar o vídeo ${video.videoFile.name}:`, error); }
+                // AWAIT: A trava do vídeo
+                await axiosInstance.post('/dashboard/videos/upload/', formData, { 
+                    headers: { 'Content-Type': 'multipart/form-data' } 
+                });
+            } catch (error) { 
+                console.error(`Erro ao enviar o vídeo ${video.videoFile.name}:`, error); 
+                toast.error(`Erro ao enviar o vídeo ${video.videoFile.name}`);
+            }
         }
+        
         setIsUploadingVideos(false);
-        alert(`${stagedVideos.length} vídeo(s) enviados com sucesso!`);
+        toast.success(`${stagedVideos.length} vídeo(s) enviados com sucesso!`);
+        
         setStagedVideos([]);
         const videoUploadInput = document.getElementById('video-upload');
         if(videoUploadInput) videoUploadInput.value = '';
+        
         fetchAlbumDetails();
         startPolling();
     };
@@ -194,9 +245,29 @@ function DashboardAlbumDetailPage() {
             try {
                 await axiosInstance.post(`/dashboard/fotos/${foto.id}/${acao}/`);
                 fetchAlbumDetails();
+                toast.success(`Foto ${foto.is_arquivado ? 'restaurada' : 'arquivada'} com sucesso.`);
             } catch (error) {
                 console.error(`Erro ao ${acao} foto:`, error);
+                toast.error(`Erro ao ${acao} a foto.`);
             }
+        }
+    };
+
+    const handleSetCover = async (fotoId) => {
+        // Um pequeno toast de carregamento para o fotógrafo saber que está a processar
+        const toastId = toast.loading("A definir nova capa...");
+        
+        try {
+            await axiosInstance.post(`/dashboard/albuns/${id}/definir_capa/`, { foto_id: fotoId });
+            
+            // Atualiza o toast para sucesso
+            toast.update(toastId, { render: "⭐ Capa do álbum atualizada com sucesso!", type: "success", isLoading: false, autoClose: 3000 });
+            
+            // Recarrega os detalhes do álbum para atualizar a foto de topo
+            fetchAlbumDetails();
+        } catch (error) {
+            console.error("Erro ao definir capa:", error);
+            toast.update(toastId, { render: "Erro ao definir a foto como capa.", type: "error", isLoading: false, autoClose: 4000 });
         }
     };
     
@@ -205,12 +276,13 @@ function DashboardAlbumDetailPage() {
             try {
                 await axiosInstance.delete(`/dashboard/${type}s/${mediaId}/`);
                 fetchAlbumDetails();
+                toast.success(`${type === 'foto' ? 'Foto apagada' : 'Vídeo apagado'} com sucesso.`);
             } catch (error) {
                 console.error(`Erro ao apagar ${type}:`, error);
                 if (error.response?.status === 500) {
-                    alert("Erro: Esta foto não pode ser apagada pois já faz parte de um pedido de cliente. Por favor, use a opção 'Arquivar' em vez disso.");
+                    toast.error("Erro: Esta foto não pode ser apagada pois já faz parte de um pedido de cliente. Por favor, use a opção 'Arquivar' em vez disso.");
                 } else {
-                    alert(`Erro ao apagar ${type}.`);
+                    toast.error(`Erro ao apagar ${type}.`);
                 }
             }
         }
@@ -222,7 +294,11 @@ function DashboardAlbumDetailPage() {
             await axiosInstance.patch(`/dashboard/${mediaType}s/${mediaId}/`, dataToSubmit);
             setEditingMedia(null);
             fetchAlbumDetails();
-        } catch (error) { console.error(`Erro ao editar ${mediaType}:`, error); }
+            toast.success("Mídia atualizada com sucesso!");
+        } catch (error) { 
+            console.error(`Erro ao editar ${mediaType}:`, error); 
+            toast.error("Erro ao salvar alterações.");
+        }
     };
 
     const openEditForm = (media, type) => {
@@ -233,34 +309,34 @@ function DashboardAlbumDetailPage() {
     const handleBulkUpdatePhotos = async (e) => {
         e.preventDefault();
         if (!newPhotoPrice || parseFloat(newPhotoPrice) < 0) {
-            alert("Por favor, insira um preço válido.");
+            toast.info("Por favor, insira um preço válido.");
             return;
         }
         try {
             const response = await axiosInstance.post(`/dashboard/albuns/${id}/bulk_update_photos/`, { preco: newPhotoPrice });
-            alert(response.data.status);
+            toast.success(response.data.status);
             fetchAlbumDetails();
             setNewPhotoPrice('');
         } catch (error) {
             console.error("Erro ao atualizar preços das fotos:", error);
-            alert("Erro ao atualizar preços.");
+            toast.error("Erro ao atualizar preços.");
         }
     };
 
     const handleBulkUpdateVideos = async (e) => {
         e.preventDefault();
         if (!newVideoPrice || parseFloat(newVideoPrice) < 0) {
-            alert("Por favor, insira um preço válido.");
+            toast.info("Por favor, insira um preço válido.");
             return;
         }
         try {
             const response = await axiosInstance.post(`/dashboard/albuns/${id}/bulk_update_videos/`, { preco: newVideoPrice });
-            alert(response.data.status);
+            toast.success(response.data.status);
             fetchAlbumDetails();
             setNewVideoPrice('');
         } catch (error) {
             console.error("Erro ao atualizar preços dos vídeos:", error);
-            alert("Erro ao atualizar preços.");
+            toast.error("Erro ao atualizar preços.");
         }
     };
 
@@ -275,56 +351,71 @@ function DashboardAlbumDetailPage() {
                 <Link 
                     to={`/dashboard/albuns/${id}/arte-promocional`} 
                     className="create-button" 
-                    
                 >
                     Click & share
                 </Link>
             </div>
-            <p>{album.descricao}</p>
-            {isPolling && <div className="polling-message">A processar mídias...</div>}
+            <p>{album.descricao}</p>            
             
             <div className="upload-section">
+                
+                {/* --- FORMULÁRIO DE FOTOS --- */}
                 <form onSubmit={handlePhotoSubmit} className="upload-form">
                     <h3>✙ Adicionar novas fotos</h3>
                     <label htmlFor="photo-upload" className="custom-file-upload">Escolher ficheiros</label>
-                    <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple />
+                    <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos} />
                     {fotoFiles.length > 0 && <span className='file-name'>{fotoFiles.length} foto(s) selecionada(s)</span>}
-                    <input type="text" placeholder="Legenda (para todas)" onChange={(e) => setFotoLegenda(e.target.value)} />
-                    <input type="number" step="0.01" placeholder="Preço (para todas)" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required />
-                    {isUploadingFotos && <p>Enviando foto {uploadProgressFotos} de {fotoFiles.length}...</p>}
-                    <button type="submit" className="upload-submit-button" disabled={isUploadingFotos || fotoFiles.length === 0}>{isUploadingFotos ? 'A enviar...' : `Enviar ${fotoFiles.length || 0} Foto(s)`}</button>
+                    
+                    <input type="text" placeholder="Legenda (para todas)" onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos} />
+                    <input type="number" step="0.01" placeholder="Preço (para todas)" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required disabled={isUploadingFotos} />
+                    
+                    {/* Mensagem de Progresso e Aviso para não fechar */}
+                    {isUploadingFotos && (
+                        <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', border: '1px solid #ffeeba', fontWeight: 'bold' }}>
+                            ⏳ {uploadStatusMsg}
+                        </div>
+                    )}
+                    
+                    <button type="submit" className="upload-submit-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ opacity: isUploadingFotos ? 0.6 : 1 }}>
+                        {isUploadingFotos ? '🔒 A enviar e salvar... Aguarde.' : `Enviar ${fotoFiles.length || 0} Foto(s)`}
+                    </button>
                 </form>
+
+                {/* --- FORMULÁRIO DE VÍDEOS --- */}
                 <div className="upload-form">
                     <h3>✙ Adicionar novos vídeos</h3>
                     <label htmlFor="video-upload" className="custom-file-upload">Escolher ficheiros</label>
-                    <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple />
+                    <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple disabled={isUploadingVideos} />
                     {stagedVideos.length > 0 && (
                         <div className="staging-area">
                             <h4>Vídeos para enviar:</h4>
                             {stagedVideos.map((video) => (
                                 <div key={video.id} className="staged-item">
                                     <p className='staged-item-name'>{video.videoFile.name}</p>
-                                    <input type="text" placeholder="Título do vídeo" onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} required />
-                                    <input type="number" step="0.01" value={video.preco} onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} required />
-                                    <button type="button" onClick={() => removeStagedVideo(video.id)} className="remove-button-small">Remover</button>
+                                    <input type="text" placeholder="Título do vídeo" onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} required disabled={isUploadingVideos} />
+                                    <input type="number" step="0.01" value={video.preco} onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} required disabled={isUploadingVideos} />
+                                    <button type="button" onClick={() => removeStagedVideo(video.id)} className="remove-button-small" disabled={isUploadingVideos}>Remover</button>
                                 </div>
                             ))}
                         </div>
                     )}
-                    {isUploadingVideos && <p>Enviando vídeo {uploadProgressVideos} de {stagedVideos.length}...</p>}
-                    <button onClick={handleVideoSubmit} className="upload-submit-button" disabled={isUploadingVideos || stagedVideos.length === 0}>{isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}</button>
+                    
+                    {isUploadingVideos && <p style={{ fontWeight: 'bold', color: '#6c0464' }}>⏳ Enviando e processando vídeo {uploadProgressVideos} de {stagedVideos.length}... Por favor, não feche a página.</p>}
+                    
+                    <button onClick={handleVideoSubmit} className="upload-submit-button" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ opacity: isUploadingVideos ? 0.6 : 1 }}>
+                        {isUploadingVideos ? '🔒 A enviar... Aguarde.' : `Enviar ${stagedVideos.length} Vídeo(s)`}
+                    </button>
                 </div>
             </div>
             
             <hr className="divider" />
 
+            {/* --- EDIÇÃO EM MASSA (PREÇOS) --- */}
             <div className="bulk-edit-section" >
                 <form onSubmit={handleBulkUpdatePhotos} className="bulk-edit-form" style={{boxShadow: '0 6px 12px rgba(0,0,0,0.05)'}}>
                     <h3>✍🏻 Editar Preço de Todas as Fotos</h3>
                     <input 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
+                        type="number" step="0.01" min="0"
                         value={newPhotoPrice}
                         onChange={(e) => setNewPhotoPrice(e.target.value)}
                         placeholder="Novo preço para todas as fotos"
@@ -336,9 +427,7 @@ function DashboardAlbumDetailPage() {
                 <form onSubmit={handleBulkUpdateVideos} className="bulk-edit-form" style={{boxShadow: '0 6px 12px rgba(0,0,0,0.05)'}}>
                     <h3>✍🏻 Editar Preço de Todos os Vídeos</h3>
                     <input 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
+                        type="number" step="0.01" min="0"
                         value={newVideoPrice}
                         onChange={(e) => setNewVideoPrice(e.target.value)}
                         placeholder="Novo preço para todos os vídeos"
@@ -360,6 +449,7 @@ function DashboardAlbumDetailPage() {
             <hr style={{margin: '3rem 0', borderTop: '1px solid #eee', borderBottom: 'none'}} />
             <h2>📂 Conteúdo do álbum</h2>
             
+            {/* GALERIA DE FOTOS */}
             <h3>📷 Fotos ({album.fotos?.length || 0})</h3>
             <div className="media-grid">
                 {album.fotos?.map(foto => (
@@ -371,8 +461,14 @@ function DashboardAlbumDetailPage() {
                             <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
                             {foto.is_arquivado && <span className="status-archived-small">Arquivado</span>}
                             
-                            {/* --- CORREÇÃO AQUI: flexWrap faz os botões quebrarem linha se não couberem --- */}
                             <div className="media-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
+                                <button 
+                                    onClick={() => handleSetCover(foto.id)} 
+                                    className="cover-button-pill"
+                                    
+                                >
+                                    Definir Capa
+                                </button>
                                 <button onClick={() => openEditForm(foto, 'foto')} className="edit-button-pill">Editar</button>
                                 <button onClick={() => handleToggleArchivePhoto(foto)} className={foto.is_arquivado ? 'activate-button-pill' : 'archive-button-pill'}>
                                     {foto.is_arquivado ? 'Restaurar' : 'Arquivar'}
@@ -384,6 +480,7 @@ function DashboardAlbumDetailPage() {
                 ))}
             </div>
             
+            {/* GALERIA DE VÍDEOS */}
             <h3 style={{ marginTop: '2rem' }}>🎬 Vídeos ({album.videos?.length || 0})</h3>
             <div className="media-grid" style={{paddingBottom: '2rem'}}>
                 {album.videos?.map(video => (
@@ -395,7 +492,6 @@ function DashboardAlbumDetailPage() {
                             <p className="media-title">{video.titulo}</p>
                             <p>R$ {parseFloat(video.preco).toFixed(2)}</p>
                             
-                            {/* --- CORREÇÃO AQUI TAMBÉM --- */}
                             <div className="media-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
                                 <button onClick={() => openEditForm(video, 'video')} className="edit-button-pill">Editar</button>
                                 <button onClick={() => handleDeleteMedia(video.id, 'video')} className="delete-button-pill">Excluir</button>

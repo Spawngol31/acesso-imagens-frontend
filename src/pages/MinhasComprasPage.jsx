@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
 function MinhasComprasPage() {
     const [pedidos, setPedidos] = useState([]);
@@ -47,7 +48,7 @@ function MinhasComprasPage() {
             document.body.removeChild(link);
         } catch (error) {
             console.error("Erro ao baixar a foto:", error);
-            alert("Não foi possível iniciar o download. Tente novamente.");
+            toast.error("Não foi possível iniciar o download. Tente novamente.");
         } finally {
             setDownloading(null);
         }

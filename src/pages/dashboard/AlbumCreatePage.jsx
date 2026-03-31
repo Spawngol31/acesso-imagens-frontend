@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import AlbumForm from './AlbumForm';
+import { toast } from 'react-toastify';
 
 function AlbumCreatePage() {
     const navigate = useNavigate();
@@ -27,12 +28,12 @@ function AlbumCreatePage() {
             });
 
             const newAlbumId = response.data.id;
-            alert('Álbum criado com sucesso! A redirecionar para a página de upload.');
+            toast.success('Álbum criado com sucesso! A redirecionar para a página de upload.');
             navigate(`/dashboard/albuns/${newAlbumId}`);
 
         } catch (error) {
             console.error("Erro ao criar álbum:", error);
-            alert("Erro ao criar o álbum. Verifique os dados e tente novamente.");
+            toast.error("Erro ao criar o álbum. Verifique os dados e tente novamente.");
         }
     };
 

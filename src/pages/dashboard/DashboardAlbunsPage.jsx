@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import AlbumForm from './AlbumForm';
+import { toast } from 'react-toastify';
 
 function DashboardAlbunsPage() {
     const [albuns, setAlbuns] = useState([]);
@@ -53,7 +54,7 @@ function DashboardAlbunsPage() {
             fetchAlbuns();
         } catch (error) { 
             console.error("Erro ao editar álbum:", error); 
-            alert("Erro ao salvar."); 
+            toast.error("Erro ao salvar."); 
         }
     };
     

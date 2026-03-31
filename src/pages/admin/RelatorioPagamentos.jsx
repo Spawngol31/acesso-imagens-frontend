@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function RelatorioPagamentos() {
   // Guardam as datas que você escolher no calendário
@@ -58,7 +59,7 @@ export default function RelatorioPagamentos() {
 
     } catch (erro) {
       console.error(erro);
-      alert(erro.message);
+      toast.error(erro.message);
     } finally {
       setCarregando(false);
     }

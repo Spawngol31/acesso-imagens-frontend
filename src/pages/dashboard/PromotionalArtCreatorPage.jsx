@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
-import { toJpeg } from 'html-to-image'; 
+import { toJpeg } from 'html-to-image';
+import { toast } from 'react-toastify'; 
 
 // --- DEFINIÇÃO DOS TEMPLATES DISPONÍVEIS ---
 // Certifique-se de colocar estas imagens PNG na sua pasta 'public'
@@ -125,7 +126,7 @@ function PromotionalArtCreatorPage() {
             
         } catch (err) {
             console.error('Erro ao gerar imagem:', err);
-            alert('Ocorreu um erro técnico ao gerar a imagem. Verifique o console.');
+            toast.error('Ocorreu um erro técnico ao gerar a imagem. Verifique o console.');
         } finally {
             setIsGenerating(false);
         }
