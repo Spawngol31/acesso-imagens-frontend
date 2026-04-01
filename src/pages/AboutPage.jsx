@@ -13,15 +13,23 @@ function AboutPage() {
             try {
                 setLoading(true);
                 const response = await axiosInstance.get('/fotografos/');
+                
                 // Garante que o que recebemos é um array
                 if (Array.isArray(response.data)) {
-                    setColaboradores(response.data);
+                    
+                    // --- A MÁGICA ACONTECE AQUI ---
+                    // Ordena os colaboradores. 
+                    // a.id - b.id -> Coloca os mais ANTIGOS primeiro (ordem de chegada na empresa)
+                    // Se quiser os mais NOVOS primeiro, é só trocar para: b.id - a.id
+                    const colaboradoresOrdenados = response.data.sort((a, b) => a.id - b.id);
+                    
+                    setColaboradores(colaboradoresOrdenados);
                 } else {
-                    setColaboradores([]); // Define como array vazio em caso de resposta inesperada
+                    setColaboradores([]); 
                 }
             } catch (error) {
                 console.error("Erro ao buscar colaboradores:", error);
-                setColaboradores([]); // Define como array vazio em caso de erro
+                setColaboradores([]); 
             } finally {
                 setLoading(false);
             }
