@@ -35,6 +35,7 @@ function MinhasComprasPage() {
         );
     }, [pedidos]);
 
+    // Movemos a função para antes do return, mas agora ela só é chamada se o botão estiver habilitado
     const handleDownload = async (fotoId, fileName) => {
         setDownloading(fotoId);
         try {
@@ -72,28 +73,44 @@ function MinhasComprasPage() {
                 </div>
             ) : (
                 <div className="purchase-grid">
-                    {itensComprados.map(item => (
-                        <div key={item.foto.id} className="purchase-card">
-                            <div className="purchase-card-image">
-                                {/* --- CORREÇÃO APLICADA AQUI --- */}
-                                <img 
-                                    src={item.foto.imagem_url} 
-                                    alt={item.foto.legenda}
-                                    style={{ transform: `rotate(${item.foto.rotacao}deg)` }}
-                                />
+                    {itensComprados.map(item => {
+                        // --- NOVA LÓGICA DE 60 DIAS AQUI ---
+                        const sessentaDiasEmMs = 60 * 24 * 60 * 60 * 1000;
+                        const dataCompra = new Date(item.data_compra).getTime();
+                        const agora = new Date().getTime();
+                        const expirado = (agora - dataCompra) > sessentaDiasEmMs;
+                        // ------------------------------------
+
+                        return (
+                            <div key={item.foto.id} className="purchase-card">
+                                <div className="purchase-card-image">
+                                    <img 
+                                        src={item.foto.imagem_url} 
+                                        alt={item.foto.legenda}
+                                        style={{ transform: `rotate(${item.foto.rotacao}deg)` }}
+                                    />
+                                </div>
+                                <div className="purchase-card-info">
+                                    <p><strong>Comprado em:</strong> {new Date(item.data_compra).toLocaleDateString()}</p>
+                                    
+                                    {/* --- BOTÃO CONDICIONAL --- */}
+                                    {expirado ? (
+                                        <p style={{ color: 'red', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '10px' }}>
+                                            ⚠️ Prazo de download expirado (60 dias)
+                                        </p>
+                                    ) : (
+                                        <button 
+                                            onClick={() => handleDownload(item.foto.id, item.foto.legenda)}
+                                            disabled={downloading === item.foto.id}
+                                            className="download-button"
+                                        >
+                                            {downloading === item.foto.id ? 'A baixar...' : 'Baixar Original'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                            <div className="purchase-card-info">
-                                <p><strong>Comprado em:</strong> {new Date(item.data_compra).toLocaleDateString()}</p>
-                                <button 
-                                    onClick={() => handleDownload(item.foto.id, item.foto.legenda)}
-                                    disabled={downloading === item.foto.id}
-                                    className="download-button"
-                                >
-                                    {downloading === item.foto.id ? 'A baixar...' : 'Baixar Original'}
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
