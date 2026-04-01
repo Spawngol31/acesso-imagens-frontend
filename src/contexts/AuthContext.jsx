@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('refreshToken');
         delete axiosInstance.defaults.headers['Authorization'];
+        window.location.href = '/';
     }, []);
 
     // Este useEffect configura os INTERCETORES (o "robô")
