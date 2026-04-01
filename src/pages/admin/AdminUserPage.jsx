@@ -354,6 +354,11 @@ function AdminUserPage() {
                         <option value="CLIENTE">Cliente</option>
                         <option value="FOTOGRAFO">Fotógrafo(a)</option>
                         <option value="ADMIN">Administrador</option>
+                        <option value="JORNALISTA">Jornalista</option>
+                        <option value="ASSESSOR_IMPRENSA">Assessor de Imprensa</option>
+                        <option value="ASSESSOR_COMUNICACAO">Assessor de Comunicação</option>
+                        <option value="VIDEOMAKER">Videomaker</option>
+                        <option value="CRIADOR_CONTEUDO">Criador de Conteúdo</option>
                     </select>
                 </div>
 
