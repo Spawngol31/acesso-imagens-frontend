@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
-import { toast } from 'react-toastify'; // <-- IMPORTAMOS O TOAST AQUI
+import { toast } from 'react-toastify'; 
 
 function DashboardUploadPage() {
     const [albuns, setAlbuns] = useState([]);
@@ -19,6 +19,9 @@ function DashboardUploadPage() {
     const [isUploadingVideos, setIsUploadingVideos] = useState(false);
     const [uploadProgressVideos, setUploadProgressVideos] = useState(0);
 
+    // --- 1. ESTADO DO RADAR ---
+    const [tamanhoFila, setTamanhoFila] = useState(0);
+
     useEffect(() => {
         const fetchAlbuns = async () => {
             try {
@@ -31,6 +34,24 @@ function DashboardUploadPage() {
         };
         fetchAlbuns();
     }, []);
+
+    // --- 2. LÓGICA DO RADAR (RODA A CADA 10 SEGUNDOS) ---
+    useEffect(() => {
+        const verificarFila = async () => {
+            try {
+                const response = await axiosInstance.get('/dashboard/status-fila/');
+                setTamanhoFila(response.data.fotos_na_fila);
+            } catch (error) {
+                console.error("Erro ao ler o status da fila.");
+            }
+        };
+
+        verificarFila(); 
+        const intervalo = setInterval(verificarFila, 10000); 
+
+        return () => clearInterval(intervalo); 
+    }, []);
+    // ----------------------------------------------------
 
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
@@ -48,38 +69,45 @@ function DashboardUploadPage() {
         let fotosEnviadasComSucesso = 0;
         let fotosComErro = 0;
 
-        for (let i = 0; i < fotoFiles.length; i++) {
-            const file = fotoFiles[i];
+        const LOTE_SIZE = 5; 
+        
+        for (let i = 0; i < fotoFiles.length; i += LOTE_SIZE) {
+            const loteAtual = Array.from(fotoFiles).slice(i, i + LOTE_SIZE);
             
-            setUploadStatusMsg(`A enviar a foto ${i + 1} de ${fotoFiles.length}... Por favor, não feche a página!`);
+            setUploadStatusMsg(`A enviar pacote ${i + 1} a ${Math.min(i + LOTE_SIZE, fotoFiles.length)} de ${fotoFiles.length}... Por favor, não feche a página!`);
+
+            const promessasDeUpload = loteAtual.map(async (file) => {
+                const formData = new FormData();
+                formData.append('album', selectedAlbum);
+                formData.append('imagem', file);
+                formData.append('preco', fotoPreco);
+                formData.append('legenda', fotoLegenda);
+
+                try {
+                    await axiosInstance.post('/fotos/upload/', formData, { 
+                        headers: { 'Content-Type': 'multipart/form-data' } 
+                    });
+                    return 'sucesso';
+                } catch (error) {
+                    console.error(`Erro ao enviar a foto ${file.name}:`, error);
+                    return 'erro';
+                }
+            });
+
+            const resultadosDoLote = await Promise.all(promessasDeUpload);
             
-            const formData = new FormData();
-            formData.append('album', selectedAlbum);
-            formData.append('imagem', file);
-            formData.append('preco', fotoPreco);
-            formData.append('legenda', fotoLegenda);
-            
-            try {
-                await axiosInstance.post('/fotos/upload/', formData, { 
-                    headers: { 'Content-Type': 'multipart/form-data' } 
-                });
-                
-                fotosEnviadasComSucesso++;
-                
-            } catch (error) {
-                console.error(`Erro ao enviar a foto ${file.name}:`, error);
-                fotosComErro++;
-            }
+            resultadosDoLote.forEach(resultado => {
+                if (resultado === 'sucesso') fotosEnviadasComSucesso++;
+                else fotosComErro++;
+            });
         }
 
         setIsUploadingFotos(false);
         setUploadStatusMsg('');
         
         if (fotosComErro > 0) {
-            // Toast de Erro se alguma falhar
-            toast.error(`${fotosEnviadasComSucesso} fotos enviadas. ${fotosComErro} fotos falharam. Verifique a sua conexão.`);
+            toast.error(`${fotosEnviadasComSucesso} fotos enviadas. ${fotosComErro} falharam. Verifique a sua conexão.`);
         } else {
-            // Toast de Sucesso (Fica verdinho na tela e some sozinho!)
             toast.success(`${fotosEnviadasComSucesso} foto(s) enviadas com sucesso para a fila de processamento!`);
         }
 
@@ -151,6 +179,30 @@ function DashboardUploadPage() {
             }}>
                 <h2 style={{ margin: 0, fontSize: '24px' }}>📤 Upload de mídias</h2>
             </div>
+
+            {/* --- 3. VISUAL DO RADAR --- */}
+            {tamanhoFila > 0 && (
+                <div style={{ 
+                    backgroundColor: '#e6f7ff', 
+                    border: '1px solid #91d5ff', 
+                    padding: '10px 15px', 
+                    borderRadius: '8px', 
+                    marginBottom: '20px',
+                    color: '#0050b3',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontWeight: 'bold'
+                }}>
+                    <span style={{ fontSize: '1.2rem' }}>⚙️</span>
+                    <span>
+                        Radar do Servidor: A fábrica está a processar 
+                        <span style={{ color: '#cf1322', fontSize: '1.1em', margin: '0 5px' }}>{tamanhoFila}</span> 
+                        fotos neste momento.
+                    </span>
+                </div>
+            )}
+            {/* -------------------------- */}
             
             <div className="album-selector-wrapper">
                 <label htmlFor="album-select">1. Selecione o álbum de destino:</label>
@@ -173,7 +225,6 @@ function DashboardUploadPage() {
                         <input type="text" placeholder="Legenda (será aplicada a todas)" onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos}/>
                         <input type="number" step="0.01" placeholder="Preço (para todas as fotos)" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required disabled={isUploadingFotos} />
                         
-                        {/* Mensagem de Progresso e Aviso para não fechar */}
                         {isUploadingFotos && (
                             <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', border: '1px solid #ffeeba', fontWeight: 'bold' }}>
                                 ⏳ {uploadStatusMsg}

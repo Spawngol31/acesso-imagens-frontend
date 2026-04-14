@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
-import { toast } from 'react-toastify'; // <-- Importamos o toast aqui também!
+import { toast } from 'react-toastify';
 
 // --- Componente de Formulário para Edição ---
 function MediaEditForm({ media, mediaType, onSubmit, onCancel }) {
@@ -80,7 +80,7 @@ function DashboardAlbumDetailPage() {
     const [fotoPreco, setFotoPreco] = useState('15.00');
     const [fotoLegenda, setFotoLegenda] = useState('');
     const [isUploadingFotos, setIsUploadingFotos] = useState(false);
-    const [uploadStatusMsg, setUploadStatusMsg] = useState(''); // <-- Novo estado para a mensagem amarela
+    const [uploadStatusMsg, setUploadStatusMsg] = useState('');
 
     // Estados para Upload de Vídeos
     const [stagedVideos, setStagedVideos] = useState([]);
@@ -93,6 +93,13 @@ function DashboardAlbumDetailPage() {
     const [mediaType, setMediaType] = useState('');
     const [newPhotoPrice, setNewPhotoPrice] = useState('');
     const [newVideoPrice, setNewVideoPrice] = useState('');
+
+    // --- ESTADOS DOS MODAIS DE CONFIRMAÇÃO ---
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [fotoParaMudar, setFotoParaMudar] = useState(null);
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [mediaToDelete, setMediaToDelete] = useState(null);
 
     const fetchAlbumDetails = useCallback(async () => {
         try {
@@ -128,7 +135,6 @@ function DashboardAlbumDetailPage() {
         return () => clearInterval(intervalId);
     }, [isPolling, fetchAlbumDetails]);
 
-    // --- FUNÇÃO DE UPLOAD DE FOTOS BLINDADA ---
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
         
@@ -144,7 +150,6 @@ function DashboardAlbumDetailPage() {
         for (let i = 0; i < fotoFiles.length; i++) {
             const file = fotoFiles[i];
             
-            // Atualiza a mensagem amarela
             setUploadStatusMsg(`A enviar a foto ${i + 1} de ${fotoFiles.length}... Por favor, não feche a página!`);
             
             const formData = new FormData();
@@ -154,7 +159,6 @@ function DashboardAlbumDetailPage() {
             formData.append('legenda', fotoLegenda);
             
             try {
-                // AWAIT: A trava que garante que o Django processou antes de ir para a próxima
                 await axiosInstance.post('/fotos/upload/', formData, { 
                     headers: { 'Content-Type': 'multipart/form-data' } 
                 });
@@ -179,7 +183,6 @@ function DashboardAlbumDetailPage() {
         if (fileInput) fileInput.value = '';
         setFotoFiles([]);
         
-        // Atualiza a galeria e inicia o recarregamento automático (polling)
         fetchAlbumDetails();
         startPolling();
     };
@@ -193,7 +196,6 @@ function DashboardAlbumDetailPage() {
     const handleStagedVideoChange = (id, field, value) => { setStagedVideos(prev => prev.map(video => (video.id === id ? { ...video, [field]: value } : video))); };
     const removeStagedVideo = (id) => { setStagedVideos(prev => prev.filter(video => video.id !== id)); };
 
-    // --- FUNÇÃO DE UPLOAD DE VÍDEOS BLINDADA E COM TOAST ---
     const handleVideoSubmit = async (e) => {
         e.preventDefault();
         if (stagedVideos.length === 0) { toast.info("Nenhum vídeo selecionado para envio."); return; }
@@ -218,7 +220,6 @@ function DashboardAlbumDetailPage() {
             formData.append('arquivo_video', video.videoFile);
             
             try {
-                // AWAIT: A trava do vídeo
                 await axiosInstance.post('/dashboard/videos/upload/', formData, { 
                     headers: { 'Content-Type': 'multipart/form-data' } 
                 });
@@ -239,31 +240,35 @@ function DashboardAlbumDetailPage() {
         startPolling();
     };
 
-    const handleToggleArchivePhoto = async (foto) => {
-        const acao = foto.is_arquivado ? 'desarquivar' : 'arquivar';
-        if (window.confirm(`Tem certeza que deseja ${acao} esta foto?`)) {
-            try {
-                await axiosInstance.post(`/dashboard/fotos/${foto.id}/${acao}/`);
-                fetchAlbumDetails();
-                toast.success(`Foto ${foto.is_arquivado ? 'restaurada' : 'arquivada'} com sucesso.`);
-            } catch (error) {
-                console.error(`Erro ao ${acao} foto:`, error);
-                toast.error(`Erro ao ${acao} a foto.`);
-            }
+    // --- LÓGICA DO MODAL DE ARQUIVAMENTO DA FOTO ---
+    const handleToggleArchivePhotoClick = (foto) => {
+        setFotoParaMudar(foto);
+        setIsConfirmModalOpen(true);
+    };
+
+    const confirmarArquivamentoFoto = async () => {
+        if (!fotoParaMudar) return;
+        const acao = fotoParaMudar.is_arquivado ? 'desarquivar' : 'arquivar';
+        
+        try {
+            await axiosInstance.post(`/dashboard/fotos/${fotoParaMudar.id}/${acao}/`);
+            fetchAlbumDetails();
+            toast.success(`Foto ${fotoParaMudar.is_arquivado ? 'restaurada' : 'arquivada'} com sucesso.`);
+        } catch (error) {
+            console.error(`Erro ao ${acao} foto:`, error);
+            toast.error(`Erro ao tentar ${acao} a foto.`);
+        } finally {
+            setIsConfirmModalOpen(false);
+            setFotoParaMudar(null);
         }
     };
 
     const handleSetCover = async (fotoId) => {
-        // Um pequeno toast de carregamento para o fotógrafo saber que está a processar
-        const toastId = toast.loading("A definir nova capa...");
+        const toastId = toast.loading("A definindo nova capa...");
         
         try {
             await axiosInstance.post(`/dashboard/albuns/${id}/definir_capa/`, { foto_id: fotoId });
-            
-            // Atualiza o toast para sucesso
             toast.update(toastId, { render: "⭐ Capa do álbum atualizada com sucesso!", type: "success", isLoading: false, autoClose: 3000 });
-            
-            // Recarrega os detalhes do álbum para atualizar a foto de topo
             fetchAlbumDetails();
         } catch (error) {
             console.error("Erro ao definir capa:", error);
@@ -271,20 +276,30 @@ function DashboardAlbumDetailPage() {
         }
     };
     
-    const handleDeleteMedia = async (mediaId, type) => {
-        if (window.confirm(`Tem a certeza que deseja APAGAR ${type === 'foto' ? 'esta foto' : 'este vídeo'}? Esta ação é PERMANENTE e não pode ser desfeita.`)) {
-            try {
-                await axiosInstance.delete(`/dashboard/${type}s/${mediaId}/`);
-                fetchAlbumDetails();
-                toast.success(`${type === 'foto' ? 'Foto apagada' : 'Vídeo apagado'} com sucesso.`);
-            } catch (error) {
-                console.error(`Erro ao apagar ${type}:`, error);
-                if (error.response?.status === 500) {
-                    toast.error("Erro: Esta foto não pode ser apagada pois já faz parte de um pedido de cliente. Por favor, use a opção 'Arquivar' em vez disso.");
-                } else {
-                    toast.error(`Erro ao apagar ${type}.`);
-                }
+    // --- LÓGICA DO MODAL DE EXCLUSÃO (FOTO/VÍDEO) ---
+    const handleDeleteMediaClick = (mediaId, type) => {
+        setMediaToDelete({ id: mediaId, type });
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteMedia = async () => {
+        if (!mediaToDelete) return;
+        const { id: mediaId, type } = mediaToDelete;
+
+        try {
+            await axiosInstance.delete(`/dashboard/${type}s/${mediaId}/`);
+            fetchAlbumDetails();
+            toast.success(`${type === 'foto' ? 'Foto apagada' : 'Vídeo apagado'} com sucesso.`);
+        } catch (error) {
+            console.error(`Erro ao apagar ${type}:`, error);
+            if (error.response?.status === 500) {
+                toast.error(`Erro: ${type === 'foto' ? 'Esta foto' : 'Este vídeo'} não pode ser apagado pois já faz parte de um pedido de cliente. Por favor, use a opção 'Arquivar' em vez disso.`);
+            } else {
+                toast.error(`Erro ao apagar ${type}.`);
             }
+        } finally {
+            setIsDeleteModalOpen(false);
+            setMediaToDelete(null);
         }
     };
 
@@ -369,7 +384,6 @@ function DashboardAlbumDetailPage() {
                     <input type="text" placeholder="Legenda (para todas)" onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos} />
                     <input type="number" step="0.01" placeholder="Preço (para todas)" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required disabled={isUploadingFotos} />
                     
-                    {/* Mensagem de Progresso e Aviso para não fechar */}
                     {isUploadingFotos && (
                         <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', border: '1px solid #ffeeba', fontWeight: 'bold' }}>
                             ⏳ {uploadStatusMsg}
@@ -437,13 +451,18 @@ function DashboardAlbumDetailPage() {
                 </form>
             </div>
 
+            {/* MODAL DE EDIÇÃO DE MÍDIA */}
             {editingMedia && (
-                <MediaEditForm 
-                    media={editingMedia}
-                    mediaType={mediaType}
-                    onSubmit={handleEditSubmit}
-                    onCancel={() => setEditingMedia(null)}
-                />
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
+                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+                        <MediaEditForm 
+                            media={editingMedia}
+                            mediaType={mediaType}
+                            onSubmit={handleEditSubmit}
+                            onCancel={() => setEditingMedia(null)}
+                        />
+                    </div>
+                </div>
             )}
 
             <hr style={{margin: '3rem 0', borderTop: '1px solid #eee', borderBottom: 'none'}} />
@@ -465,15 +484,15 @@ function DashboardAlbumDetailPage() {
                                 <button 
                                     onClick={() => handleSetCover(foto.id)} 
                                     className="cover-button-pill"
-                                    
                                 >
                                     Definir Capa
                                 </button>
                                 <button onClick={() => openEditForm(foto, 'foto')} className="edit-button-pill">Editar</button>
-                                <button onClick={() => handleToggleArchivePhoto(foto)} className={foto.is_arquivado ? 'activate-button-pill' : 'archive-button-pill'}>
+                                <button onClick={() => handleToggleArchivePhotoClick(foto)} className={foto.is_arquivado ? 'activate-button-pill' : 'archive-button-pill'}>
                                     {foto.is_arquivado ? 'Restaurar' : 'Arquivar'}
                                 </button>
-                                <button onClick={() => handleDeleteMedia(foto.id, 'foto')} className="delete-button-pill">Excluir</button>
+                                {/* --- BOTÃO ATUALIZADO --- */}
+                                <button onClick={() => handleDeleteMediaClick(foto.id, 'foto')} className="delete-button-pill">Excluir</button>
                             </div>
                         </div>
                     </div>
@@ -494,12 +513,62 @@ function DashboardAlbumDetailPage() {
                             
                             <div className="media-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
                                 <button onClick={() => openEditForm(video, 'video')} className="edit-button-pill">Editar</button>
-                                <button onClick={() => handleDeleteMedia(video.id, 'video')} className="delete-button-pill">Excluir</button>
+                                {/* --- BOTÃO ATUALIZADO --- */}
+                                <button onClick={() => handleDeleteMediaClick(video.id, 'video')} className="delete-button-pill">Excluir</button>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* --- MODAL DE CONFIRMAÇÃO DE FOTO --- */}
+            {isConfirmModalOpen && fotoParaMudar && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                        <h3 style={{ color: '#6c0464', marginTop: 0 }}>
+                            {fotoParaMudar.is_arquivado ? 'Restaurar Foto?' : 'Arquivar Foto?'}
+                        </h3>
+                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                            {fotoParaMudar.is_arquivado 
+                                ? "Tem certeza que deseja restaurar esta foto? Ela voltará a ficar visível para os clientes comprarem."
+                                : "Tem certeza que deseja arquivar esta foto? Ela não poderá mais ser comprada."}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                            <button onClick={() => { setIsConfirmModalOpen(false); setFotoParaMudar(null); }} className="create_button" style={{ padding: '10px 20px'}}>
+                                Cancelar
+                            </button>
+                            <button onClick={confirmarArquivamentoFoto} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: fotoParaMudar.is_arquivado ? '#28a745' : '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
+                                {fotoParaMudar.is_arquivado ? 'Sim, Restaurar' : 'Sim, Arquivar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* ------------------------------------ */}
+
+            {/* --- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (FOTO/VÍDEO) --- */}
+            {isDeleteModalOpen && mediaToDelete && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                        <h3 style={{ color: '#dc3545', marginTop: 0 }}>
+                            Excluir {mediaToDelete.type === 'foto' ? 'Foto' : 'Vídeo'}?
+                        </h3>
+                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                            Tem certeza que deseja APAGAR {mediaToDelete.type === 'foto' ? 'esta foto' : 'este vídeo'}? Esta ação é PERMANENTE e não pode ser desfeita.
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                            <button onClick={() => { setIsDeleteModalOpen(false); setMediaToDelete(null); }} className="create_button" style={{ padding: '10px 20px'}}>
+                                Cancelar
+                            </button>
+                            <button onClick={confirmDeleteMedia} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
+                                Sim, Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* ------------------------------------ */}
+            
         </div>
     );
 }
