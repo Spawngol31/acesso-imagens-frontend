@@ -31,14 +31,17 @@ function Layout() {
                                 <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
                                 {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
                             </Link>
+                            
                         )}
 
                         {user ? (
                             <div className="nav-user-menu">
-                                {user.papel === 'ADMIN' && <Link to="/admin">Painel admin</Link>}
-                                {user.papel === 'FOTOGRAFO' && <Link to="/dashboard/albuns">Meu painel</Link>}
-                                {user.papel === 'CLIENTE' && <Link to="/minhas-compras">Minhas compras</Link>}
-                                
+                                {user.papel === 'ADMIN' && <NavLink to="/admin">Painel admin</NavLink>}
+                                {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Meu painel</NavLink>}
+                                {user.papel === 'FOTOGRAFO' && <NavLink to="/perfil" className="nav-link">Meu Perfil</NavLink>}
+                                {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Minhas compras</NavLink>}
+                                {user.papel === 'CLIENTE' && <NavLink to="/perfil" className="nav-link">Meu Perfil</NavLink>}
+
                                 <button onClick={logout}>Sair</button>
                             </div>
                         ) : (

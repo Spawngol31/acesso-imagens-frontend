@@ -35,6 +35,7 @@ import DashboardAlbumDetailPage from './pages/dashboard/DashboardAlbumDetailPage
 import DashboardVendasPage from './pages/dashboard/DashboardVendasPage';
 import DashboardCuponsPage from './pages/dashboard/DashboardCuponsPage';
 import DashboardUploadPage from './pages/dashboard/DashboardUploadPage';
+import DashboardPerfilPage from './pages/dashboard/DashboardPerfilPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ContactPage from './pages/ContactPage';
@@ -58,6 +59,7 @@ function App() {
           <Route path="busca" element={<SearchPage />} />
           <Route path="carrinho" element={<CartPage />} />
           <Route path="minhas-compras" element={<MinhasComprasPage />} />
+          <Route path="perfil" element={<DashboardPerfilPage />} />
           <Route path="contato" element={<ContactPage />} />
           <Route path="quem-somos" element={<AboutPage />} />
           <Route path="noticias" element={<NewsListPage />} />
