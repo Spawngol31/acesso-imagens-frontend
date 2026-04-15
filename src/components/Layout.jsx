@@ -17,36 +17,51 @@ function Layout() {
                     <Link to="/" className="logo">
                         <img src="/images/icon_homepage.png" alt="Acesso Imagens Logo" />
                     </Link>
+                    
                     <nav className="main-nav">
+                        {/* 1. LINKS PRINCIPAIS (Esquerda) */}
                         <NavLink to="/busca">Procurar fotos</NavLink>
                         <NavLink to="/eventos">Álbuns</NavLink>
                         <NavLink to="/noticias">Notícias</NavLink>
-                        
-                        {/* A lógica do carrinho foi agrupada corretamente num Fragmento (<>) 
-                            se você quiser que ele fique alinhado com os outros links, ou 
-                            apenas mantida como estava se o CSS já tratar o display flex. 
-                            Deixei como estava para não quebrar o seu CSS. */}
-                        {(!user || user.papel === 'CLIENTE') && (
-                            <Link to="/carrinho" className="cart-link" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
-                                <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
-                                {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
-                            </Link>
+
+                        {/* 2. ÁREA DE UTILIZADOR E CARRINHO (Direita) */}
+                        <div className="nav-user-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             
-                        )}
+                            {user ? (
+                                <>
+                                    {/* Links específicos por papel */}
+                                    {user.papel === 'ADMIN' && <NavLink to="/admin">Painel admin</NavLink>}
+                                    {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Meu painel</NavLink>}
+                                    {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Minhas compras</NavLink>}
+                                    
+                                    {/* O Perfil é igual para Fotógrafo e Cliente */}
+                                    {(user.papel === 'FOTOGRAFO' || user.papel === 'CLIENTE') && (
+                                        <NavLink to="/perfil" className="nav-link">Meu Perfil</NavLink>
+                                    )}
 
-                        {user ? (
-                            <div className="nav-user-menu">
-                                {user.papel === 'ADMIN' && <NavLink to="/admin">Painel admin</NavLink>}
-                                {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Meu painel</NavLink>}
-                                {user.papel === 'FOTOGRAFO' && <NavLink to="/perfil" className="nav-link">Meu Perfil</NavLink>}
-                                {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Minhas compras</NavLink>}
-                                {user.papel === 'CLIENTE' && <NavLink to="/perfil" className="nav-link">Meu Perfil</NavLink>}
+                                    {/* Carrinho (Só aparece para clientes ou quem não é Admin/Fotógrafo) */}
+                                    {user.papel === 'CLIENTE' && (
+                                        <Link to="/carrinho" className="cart-link" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+                                            <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
+                                            {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
+                                        </Link>
+                                    )}
 
-                                <button onClick={logout}>Sair</button>
-                            </div>
-                        ) : (
-                            <Link to="/login">Entrar</Link>
-                        )}
+                                    {/* Botão Sair - Fica no extremo direito */}
+                                    <button onClick={logout}>Sair</button>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Se não estiver logado, vê o carrinho e o botão Entrar */}
+                                    <Link to="/carrinho" className="cart-link" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+                                        <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
+                                        {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
+                                    </Link>
+                                    <Link to="/login">Entrar</Link>
+                                </>
+                            )}
+
+                        </div>
                     </nav>
                 </div>
             </header>
