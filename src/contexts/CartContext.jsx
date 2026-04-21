@@ -31,7 +31,7 @@ export function CartProvider({ children }) {
                 // Manda os itens do navegador para o Django
                 for (const item of localItems) {
                     try {
-                        await axiosInstance.post('/carrinho/', { foto_id: item.foto.id });
+                        await axiosInstance.post('carrinho/', { foto_id: item.foto.id });
                     } catch (err) {
                         console.error("Erro ao sincronizar item (pode já estar no carrinho):", err);
                     }
@@ -56,7 +56,7 @@ export function CartProvider({ children }) {
             // Se acabou de fazer login, primeiro sincroniza o que tinha guardado localmente
             await syncGuestCartToServer();
             // Depois busca o carrinho real, oficial, do servidor
-            const response = await axiosInstance.get('/carrinho/');
+            const response = await axiosInstance.get('carrinho/');
             setCart(response.data);
         } catch (error) {
             console.error("Erro ao buscar o carrinho:", error);
@@ -68,7 +68,7 @@ export function CartProvider({ children }) {
             throw new Error("Você precisa fazer login para usar cupons de desconto.");
         }
         try {
-            const response = await axiosInstance.post('/carrinho/aplicar-cupom/', { codigo });
+            const response = await axiosInstance.post('carrinho/aplicar-cupom/', { codigo });
             setCart(response.data);
         } catch (error) {
             throw new Error(error.response?.data?.error || "Erro ao aplicar cupom.");
@@ -87,7 +87,7 @@ export function CartProvider({ children }) {
 
         if (authToken && user?.papel === 'CLIENTE') {
             try {
-                await axiosInstance.post('/carrinho/', { foto_id: fotoId });
+                await axiosInstance.post('carrinho/', { foto_id: fotoId });
                 fetchCart();
             } catch (error) {
                 console.error("Erro ao adicionar ao carrinho:", error);
@@ -116,7 +116,7 @@ export function CartProvider({ children }) {
     const removeFromCart = async (itemId) => {
         if (authToken && user?.papel === 'CLIENTE') {
             try {
-                await axiosInstance.delete('/carrinho/', { data: { item_id: itemId } });
+                await axiosInstance.delete('carrinho/', { data: { item_id: itemId } });
                 fetchCart();
             } catch (error) {
                 console.error("Erro ao remover do carrinho:", error);

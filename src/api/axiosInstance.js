@@ -1,12 +1,13 @@
 // src/api/axiosInstance.js
 import axios from 'axios';
 
-// A URL da nossa API agora vem das variáveis de ambiente
+// O React vai buscar a URL dinamicamente (do .env ou do Render)
 const API_URL = import.meta.env.VITE_API_URL;
 
 const axiosInstance = axios.create({
-    baseURL: API_URL,
-    withCredentials: true,
+    // --- CORREÇÃO AQUI ---
+    baseURL: API_URL, // Agora ele usa a variável em vez do IP fixo!
+    //withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
     }

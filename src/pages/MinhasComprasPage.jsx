@@ -35,21 +35,55 @@ function MinhasComprasPage() {
         );
     }, [pedidos]);
 
-    // Movemos a função para antes do return, mas agora ela só é chamada se o botão estiver habilitado
+    // --- NOVA FUNÇÃO DE DOWNLOAD SILENCIOSO ANTI-INSTAGRAM ---
     const handleDownload = async (fotoId, fileName) => {
         setDownloading(fotoId);
+        let urlOriginal = '';
+        
         try {
+            // 1. Pede a URL segura da Amazon ao Django
             const response = await axiosInstance.get(`/download-foto/${fotoId}/`);
-            const url = response.data.download_url;
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', fileName || `foto_${fotoId}.jpg`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            urlOriginal = response.data.download_url;
+
+            // 2. Faz o "Download Silencioso" nos bastidores
+            const imageResponse = await fetch(urlOriginal);
+            if (!imageResponse.ok) throw new Error("Falha na resposta da rede ao buscar a imagem");
+
+            // 3. Transforma a imagem num pacote de dados puro (Blob)
+            const blob = await imageResponse.blob();
+            
+            // 4. Cria uma URL temporária na memória interna do telemóvel
+            const urlTemporaria = window.URL.createObjectURL(blob);
+            
+            // 5. Cria o botão invisível e clica nele
+            const linkInvisivel = document.createElement('a');
+            linkInvisivel.style.display = 'none';
+            linkInvisivel.href = urlTemporaria;
+            linkInvisivel.download = fileName || `foto_${fotoId}.jpg`;
+            
+            document.body.appendChild(linkInvisivel);
+            linkInvisivel.click();
+            
+            // 6. Limpa a memória
+            window.URL.revokeObjectURL(urlTemporaria);
+            document.body.removeChild(linkInvisivel);
+
         } catch (error) {
-            console.error("Erro ao baixar a foto:", error);
-            toast.error("Não foi possível iniciar o download. Tente novamente.");
+            console.error("Erro no download silencioso, a tentar o Plano B:", error);
+            
+            // PLANO B DE EMERGÊNCIA
+            // Se o silencioso falhar (ex: bloqueio de rede), tenta forçar a abertura noutra aba
+            if (urlOriginal) {
+                const linkFallback = document.createElement('a');
+                linkFallback.href = urlOriginal;
+                linkFallback.download = fileName || `foto_${fotoId}.jpg`;
+                linkFallback.target = '_blank';
+                document.body.appendChild(linkFallback);
+                linkFallback.click();
+                document.body.removeChild(linkFallback);
+            } else {
+                toast.error("Não foi possível gerar o link de download. Tente novamente.");
+            }
         } finally {
             setDownloading(null);
         }
@@ -74,12 +108,11 @@ function MinhasComprasPage() {
             ) : (
                 <div className="purchase-grid">
                     {itensComprados.map(item => {
-                        // --- NOVA LÓGICA DE 60 DIAS AQUI ---
+                        // --- LÓGICA DE 60 DIAS ---
                         const sessentaDiasEmMs = 60 * 24 * 60 * 60 * 1000;
                         const dataCompra = new Date(item.data_compra).getTime();
                         const agora = new Date().getTime();
                         const expirado = (agora - dataCompra) > sessentaDiasEmMs;
-                        // ------------------------------------
 
                         return (
                             <div key={item.foto.id} className="purchase-card">

@@ -169,6 +169,8 @@ function DashboardVendasPage() {
                                         <thead>
                                             <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
                                                 <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>FOTO ID</th>
+                                                {/* --- NOVA COLUNA AQUI --- */}
+                                                <th style={{ padding: '12px 10px' }}>CLIENTE</th> 
                                                 <th style={{ padding: '12px 10px' }}>DATA DA VENDA</th>
                                                 <th style={{ padding: '12px 10px' }}>STATUS DO REPASSE</th>
                                                 <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>MINHA COMISSÃO</th>
@@ -178,6 +180,8 @@ function DashboardVendasPage() {
                                             {dados.map((venda, index) => (
                                                 <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                                                     <td style={{ padding: '14px 10px', fontWeight: '500' }}>#{venda.foto_id}</td>
+                                                    {/* --- NOVO DADO AQUI --- */}
+                                                    <td style={{ padding: '14px 10px', color: '#555' }}>{venda.cliente}</td>
                                                     <td style={{ padding: '14px 10px' }}>{venda.data}</td>
                                                     <td style={{ padding: '14px 10px' }}>
                                                         {venda.pago_ao_fotografo 
@@ -187,7 +191,8 @@ function DashboardVendasPage() {
                                                     <td style={{ padding: '14px 10px', fontWeight: 'bold' }}>R$ {venda.comissao.toFixed(2)}</td>
                                                 </tr>
                                             ))}
-                                            {dados.length === 0 && <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Nenhuma venda encontrada com estes filtros.</td></tr>}
+                                            {/* Repare que mudei o colSpan de 4 para 5 para acompanhar a nova coluna */}
+                                            {dados.length === 0 && <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Nenhuma venda encontrada com estes filtros.</td></tr>}
                                         </tbody>
                                     </table>
                                 </div>

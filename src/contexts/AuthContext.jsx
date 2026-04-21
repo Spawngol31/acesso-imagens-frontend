@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const login = async (email, password) => {
-        const response = await axios.post(`${API_URL}/token/`, {
+        const response = await axios.post(`${API_URL}token/`, {
             email,
             password
         });
@@ -58,14 +58,14 @@ export const AuthProvider = ({ children }) => {
                 const originalRequest = error.config;
                 
                 // Verifica se o erro é 401 e se NÃO é um pedido de refresh que falhou
-                if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/token/refresh/') {
+                if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== 'token/refresh/') {
                     originalRequest._retry = true;
                     
                     const currentRefreshToken = localStorage.getItem('refreshToken');
                     
                     if (currentRefreshToken) {
                         try {
-                            const response = await axios.post(`${API_URL}/token/refresh/`, {
+                            const response = await axios.post(`${API_URL}token/refresh/`, {
                                 refresh: currentRefreshToken
                             });
                             
