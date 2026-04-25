@@ -215,7 +215,7 @@ function DashboardUploadPage() {
                 }}>
                     <span style={{ fontSize: '1.2rem' }}>⚙️</span>
                     <span>
-                        Radar do Servidor: A fábrica está a processar 
+                        Radar do Servidor: Estamos processando 
                         <span style={{ color: '#cf1322', fontSize: '1.1em', margin: '0 5px' }}>{tamanhoFila}</span> 
                         fotos neste momento.
                     </span>
