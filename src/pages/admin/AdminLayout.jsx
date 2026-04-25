@@ -19,6 +19,7 @@ const AdminLayout = () => {
                         <NavLink to="/admin" end>Estatísticas</NavLink>
                         <NavLink to="/admin/vendas">Financeiro (Vendas)</NavLink>
                         <NavLink to="/admin/users">Gerir utilizadores</NavLink>
+                        <NavLink to="/admin/jornais">Jornais & FTP</NavLink>
                     </nav>
                     <div className="dashboard-user-actions">
                         <span style={{marginRight: '1rem'}}>Admin: {user?.nome_completo}</span>

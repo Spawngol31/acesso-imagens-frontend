@@ -117,23 +117,41 @@ function DashboardAlbumDetailPage() {
         fetchAlbumDetails();
     }, [fetchAlbumDetails]);
 
+    const pollingIntervalRef = useRef(null);
+
     const startPolling = useCallback(() => {
-        if (isPolling) return;
+        // Se já existe um temporizador a correr, limpe-o antes de começar um novo!
+        if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+        }
+
         setIsPolling(true);
         let pollCount = 0;
-        const maxPolls = 24;
-        const intervalId = setInterval(() => {
+        const maxPolls = 24; // 2 minutos no máximo (5s * 24)
+        
+        // Guardamos a ID do temporizador no useRef
+        pollingIntervalRef.current = setInterval(() => {
             console.log("Verificando atualizações de mídia...");
             fetchAlbumDetails();
             pollCount++;
+            
             if (pollCount >= maxPolls) {
-                clearInterval(intervalId);
+                clearInterval(pollingIntervalRef.current);
+                pollingIntervalRef.current = null;
                 setIsPolling(false);
-                console.log("Polling finalizado.");
+                console.log("Polling finalizado por timeout.");
             }
         }, 5000);
-        return () => clearInterval(intervalId);
-    }, [isPolling, fetchAlbumDetails]);
+    }, [fetchAlbumDetails]);
+
+    // 3. (OPCIONAL MAS BOA PRÁTICA) Limpe o temporizador se o utilizador sair da página
+    useEffect(() => {
+        return () => {
+            if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+            }
+        };
+    }, []);
 
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();

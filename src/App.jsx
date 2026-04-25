@@ -27,6 +27,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
 import MinhasComprasPage from './pages/MinhasComprasPage';
 import AdminUserPage from './pages/admin/AdminUserPage';
+import AdminJornaisPage from './pages/admin/AdminJornaisPage';
 import AdminStatsPage from './pages/admin/AdminStatsPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminFinanceiroPage from './pages/admin/AdminFinanceiroPage';
@@ -92,6 +93,7 @@ function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminStatsPage />} />
             <Route path="users" element={<AdminUserPage />} />
+            <Route path="jornais" element={<AdminJornaisPage />} />
             <Route path="users/:id" element={<AdminUserDetailPage />} />
             <Route path="vendas" element={<AdminFinanceiroPage />} />
           </Route>

@@ -30,23 +30,24 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
       <button className="lightbox-close" onClick={onClose}>&times;</button>
       
       {/* --- BOTÃO VOLTAR --- */}
-      <button 
-        onClick={(e) => { e.stopPropagation(); onPrev(); }} 
-        style={{
-          position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
-          color: 'white', border: 'none', 
-          fontSize: '1.5rem', padding: '10px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 10001
-        }}
-      >
-        &#10094;
-      </button>
-
+      {onPrev && (
+        <button 
+          onClick={(e) => { e.stopPropagation(); onPrev(); }} 
+          style={{
+            position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
+            color: 'white', border: 'none', 
+            fontSize: '1.5rem', padding: '10px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 10001
+          }}
+        >
+          &#10094;
+        </button>
+      )}
       <div className="lightbox-content" style={{flexDirection: 'column', alignItems: 'center'}}>
         <img 
           src={image.url || image.imagem_url} 
           alt="Visualização ampliada" 
           style={{ 
-            transform: `rotate(${image.rotacao || 0}deg)`, 
+            // transform: `rotate(${image.rotacao || 0}deg)`, 
             maxHeight: '80vh', maxWidth: '100%' 
           }}
         />
@@ -57,7 +58,7 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
               className="create-button" 
               style={{
                 position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
-                zIndex: 10000, backgroundColor: 'rgba(255, 255, 255, 0.95)', color: '#6c0464',
+                zIndex: 10000, backgroundColor: '#6c046370', color: '#fff',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.5)', border: 'none', padding: '10px 20px',
                 borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer'
               }}
@@ -68,17 +69,18 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
       </div>
 
       {/* --- BOTÃO AVANÇAR --- */}
-      <button 
-        onClick={(e) => { e.stopPropagation(); onNext(); }} 
-        style={{
-          position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
-          color: 'white', border: 'none', 
-          fontSize: '1.5rem', padding: '10px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 10001
-        }}
-      >
-        &#10095;
-      </button>
-
+      {onNext && (
+        <button 
+          onClick={(e) => { e.stopPropagation(); onNext(); }} 
+          style={{
+            position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
+            color: 'white', border: 'none', 
+            fontSize: '1.5rem', padding: '10px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 10001
+          }}
+        >
+          &#10095;
+        </button>
+      )}
     </div>
   );
 }

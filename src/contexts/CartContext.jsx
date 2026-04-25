@@ -60,6 +60,7 @@ export function CartProvider({ children }) {
             setCart(response.data);
         } catch (error) {
             console.error("Erro ao buscar o carrinho:", error);
+            setCart({ itens: [], subtotal: 0, desconto: 0, total: 0, cupom: null });
         }
     }, [authToken, user]);
 

@@ -132,13 +132,13 @@ function PromotionalArtCreatorPage() {
         }
     };
 
-    const publicAlbumLink = `${frontendUrl}/album/${id}`;
+    const publicAlbumLink = `${frontendUrl}album/${id}`;
 
     if (loading) return <p style={{ padding: '20px' }}>Carregando ferramenta...</p>;
     if (!album) return <p style={{ padding: '20px', color: 'red' }}>Álbum não encontrado.</p>;
 
     const proxyPhotoUrl = customSettings.photoUrl 
-        ? `${axiosInstance.defaults.baseURL}/proxy-image/?url=${encodeURIComponent(customSettings.photoUrl)}`
+        ? `${axiosInstance.defaults.baseURL}proxy-image/?url=${encodeURIComponent(customSettings.photoUrl)}`
         : '';
 
     const STORY_WIDTH = 320;

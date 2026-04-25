@@ -1,3 +1,5 @@
+// src/pages/admin/AdminUserPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
@@ -27,25 +29,25 @@ function UserEditForm({ user, onSubmit, onCancel }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(user.id, formData);
+        onSubmit(user.id, formData, profilePicFile); // <-- Adicionamos o profilePicFile aqui
     };
 
     // Função para fazer o upload da foto do fotógrafo
-    const handleProfilePicUpload = async () => {
-        if (!profilePicFile) return;
-        const fileFormData = new FormData();
-        fileFormData.append('foto_perfil', profilePicFile);
-        try {
-            await axiosInstance.post(`/admin/users/${user.id}/upload_foto_perfil/`, fileFormData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            toast.success("✅ Foto de perfil atualizada com sucesso!");
-            setProfilePicFile(null); // Limpa o arquivo selecionado
-        } catch (error) {
-            console.error("Erro ao fazer upload da foto:", error);
-            toast.error("❌ Erro ao enviar a foto. Verifique o arquivo.");
-        }
-    };
+    //const handleProfilePicUpload = async () => {
+        //if (!profilePicFile) return;
+        //const fileFormData = new FormData();
+        //fileFormData.append('foto_perfil', profilePicFile);
+        //try {
+            //await axiosInstance.post(`/admin/users/${user.id}/upload_foto_perfil/`, fileFormData, {
+                //headers: { 'Content-Type': 'multipart/form-data' }
+            //});
+            //toast.success("✅ Foto de perfil atualizada com sucesso!");
+            //setProfilePicFile(null); // Limpa o arquivo selecionado
+        //} catch (error) {
+            //console.error("Erro ao fazer upload da foto:", error);
+            //toast.error("❌ Erro ao enviar a foto. Verifique o arquivo.");
+        //}
+    //};
 
     // Estilo blindado contra Modo Escuro
     const inputStyle = { 
@@ -145,29 +147,13 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                                     </label>
 
                                     {/* 3. O botão roxo de "Enviar" */}
-                                    <button 
-                                        type="button" 
-                                        onClick={handleProfilePicUpload} 
-                                        disabled={!profilePicFile}                                         
-                                        style={{ 
-                                            padding: '8px 15px', 
-                                            backgroundColor: profilePicFile ? '#6c0464' : '#ccc', 
-                                            color: 'white', 
-                                            borderRadius: '25px', 
-                                            border: '1px solid #ccc', 
-                                            cursor: profilePicFile ? 'pointer' : 'not-allowed', 
-                                            fontSize: '13px', 
-                                            fontWeight: 'bold' 
-                                        }}
-                                    >
-                                        Enviar Arquivo
-                                    </button>
+                                    
                                 </div>
 
                                 {/* Mensagem dinâmica que avisa se a foto foi carregada ou não */}
                                 {profilePicFile ? (
                                     <p style={{fontSize: '13px', color: '#28a745', marginTop: '10px', fontWeight: '600'}}>
-                                        ✅ Arquivo pronto: {profilePicFile.name}
+                                        ✅ Arquivo selecionado: {profilePicFile.name} (Será enviado ao salvar)
                                     </p>
                                 ) : (
                                     <p style={{fontSize: '12px', color: '#888', marginTop: '10px'}}>
@@ -301,18 +287,33 @@ function AdminUserPage() {
         }
     };
 
-    const handleEditSubmit = async (userId, userData) => {
+    // No componente AdminUserPage (Pai)
+    const handleEditSubmit = async (userId, userData, profileFile) => {
         const dataToSubmit = { ...userData };
         if (dataToSubmit.papel === 'CLIENTE') delete dataToSubmit.perfil_fotografo;
         else if (dataToSubmit.papel === 'FOTOGRAFO') delete dataToSubmit.perfil_cliente;
 
         try {
+            // 1. Primeiro, envia os dados em texto (Nome, CPF, etc.)
             await axiosInstance.patch(`/admin/users/${userId}/`, dataToSubmit);
+
+            // 2. Se o Admin escolheu uma foto nova, envia a foto a seguir!
+            if (profileFile) {
+                const fileFormData = new FormData();
+                fileFormData.append('foto_perfil', profileFile);
+                await axiosInstance.post(`/admin/users/${userId}/upload_foto_perfil/`, fileFormData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            }
+
+            // 3. Mostra um único aviso de sucesso e fecha o modal
+            toast.success("Utilizador atualizado com sucesso!");
             setIsModalOpen(false);
             setEditingUser(null);
             fetchUsers();
         } catch (error) {
             toast.error("Erro ao salvar. Verifique os dados.");
+            console.error(error);
         }
     };
 

@@ -11,6 +11,8 @@ function DashboardUploadPage() {
     const [fotoFiles, setFotoFiles] = useState([]);
     const [fotoPreco, setFotoPreco] = useState('15.00');
     const [fotoLegenda, setFotoLegenda] = useState('');
+    const [meusJornais, setMeusJornais] = useState([]); // Guarda os jornais vindos do backend
+    const [selectedJornais, setSelectedJornais] = useState([]); // Guarda os que o fotógrafo marcou
     
     const [isUploadingFotos, setIsUploadingFotos] = useState(false);
     const [uploadStatusMsg, setUploadStatusMsg] = useState('');
@@ -23,16 +25,21 @@ function DashboardUploadPage() {
     const [tamanhoFila, setTamanhoFila] = useState(0);
 
     useEffect(() => {
-        const fetchAlbuns = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axiosInstance.get('/dashboard/albuns/');
-                setAlbuns(response.data);
+                // Busca os álbuns
+                const resAlbuns = await axiosInstance.get('/dashboard/albuns/');
+                setAlbuns(resAlbuns.data);
+                
+                // Busca os jornais vinculados a este fotógrafo
+                const resJornais = await axiosInstance.get('/admin/jornais-parceiros/meus_jornais/');
+                setMeusJornais(resJornais.data);
             } catch (error) {
-                console.error("Erro ao buscar álbuns:", error);
-                toast.error("Erro ao carregar a lista de álbuns.");
+                console.error("Erro ao buscar dados iniciais:", error);
+                toast.error("Erro ao carregar os dados da página.");
             }
         };
-        fetchAlbuns();
+        fetchData();
     }, []);
 
     // --- 2. LÓGICA DO RADAR (RODA A CADA 10 SEGUNDOS) ---
@@ -52,6 +59,14 @@ function DashboardUploadPage() {
         return () => clearInterval(intervalo); 
     }, []);
     // ----------------------------------------------------
+
+    const toggleJornal = (jornalId) => {
+        setSelectedJornais(prev => 
+            prev.includes(jornalId) 
+            ? prev.filter(id => id !== jornalId) // Desmarca se já estava marcado
+            : [...prev, jornalId] // Marca se estava desmarcado
+        );
+    };
 
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
@@ -82,6 +97,10 @@ function DashboardUploadPage() {
                 formData.append('imagem', file);
                 formData.append('preco', fotoPreco);
                 formData.append('legenda', fotoLegenda);
+
+                if (selectedJornais.length > 0) {
+                    formData.append('jornais', selectedJornais.join(','));
+                }
 
                 try {
                     await axiosInstance.post('/fotos/upload/', formData, { 
@@ -231,6 +250,29 @@ function DashboardUploadPage() {
                             </div>
                         )}
                         
+                        {meusJornais.length > 0 && (
+                            <div style={{ marginTop: '15px', marginBottom: '15px', padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #e1bce0' }}>
+                                <h4 style={{ margin: '0 0 10px 0', color: '#6c0464' }}>🚀 Distribuir via FTP para:</h4>
+                                <p style={{ fontSize: '12px', color: '#555', marginTop: 0, marginBottom: '10px' }}>
+                                    (Opcional) Escolha para quais parceiros deseja enviar estas fotos automaticamente.
+                                </p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {meusJornais.map(jornal => (
+                                        <label key={jornal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#333' }}>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedJornais.includes(jornal.id)}
+                                                onChange={() => toggleJornal(jornal.id)}
+                                                disabled={isUploadingFotos}
+                                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                            />
+                                            📰 {jornal.nome_jornal}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <button type="submit" className="upload-submit-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ opacity: isUploadingFotos ? 0.6 : 1 }}>
                             {isUploadingFotos ? '🔒 A enviar e salvar... Aguarde.' : `Enviar ${fotoFiles.length || 0} Foto(s)`}
                         </button>

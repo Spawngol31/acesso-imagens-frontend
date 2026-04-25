@@ -1,3 +1,5 @@
+// src/pages/admin/AdminFinanceiroPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
@@ -60,9 +62,37 @@ function AdminFinanceiroPage() {
     const handleChange = (e) => setFiltros({ ...filtros, [e.target.name]: e.target.value });
 
     const baixarPlanilha = async () => {
-        const params = new URLSearchParams(filtros).toString();
-        const urlBase = axiosInstance.defaults.baseURL;
-        window.open(`${urlBase}/admin/exportar-pagamentos/?${params}`, '_blank');
+        try {
+            toast.info("A gerar planilha, aguarde...");
+            const params = new URLSearchParams(filtros).toString();
+            
+            // O axios faz o pedido com o Token, e avisamos que a resposta é um Blob (Ficheiro)
+            const response = await axiosInstance.get(`/admin/exportar-pagamentos/?${params}`, {
+                responseType: 'blob' 
+            });
+
+            // Cria um link temporário e invisível para forçar o download no navegador
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Define um nome para o ficheiro baseado na data
+            const nomeArquivo = filtros.data_inicio && filtros.data_fim 
+                ? `pagamentos_${filtros.data_inicio}_ate_${filtros.data_fim}.csv` 
+                : `pagamentos_geral.csv`;
+                
+            link.setAttribute('download', nomeArquivo);
+            document.body.appendChild(link);
+            link.click();
+            
+            // Limpa a memória do navegador
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+        } catch (error) {
+            console.error("Erro ao baixar planilha:", error);
+            toast.error("Erro ao transferir a planilha. Verifique a sua conexão.");
+        }
     };
 
     const handlePagarFotografoClick = () => {

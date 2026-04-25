@@ -4,16 +4,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = ({ allowedRoles }) => {
-    const { user, authToken } = useAuth();
+    const { user, authToken, loading } = useAuth(); // Assumindo que seu AuthContext tenha um estado 'loading'
 
-    // Se não há token, redireciona para o login
     if (!authToken) {
         return <Navigate to="/login" replace />;
     }
 
-    // Se o usuário está carregando, podemos mostrar um loading
+    if (loading) {
+        return <div className="loading-screen">Carregando permissões...</div>;
+    }
+
+    // Se terminou de carregar e o user ainda é nulo, o token provavelmente é inválido
     if (!user) {
-        return <div>Carregando...</div>;
+        return <Navigate to="/login" replace />;
     }
 
     // Se o papel do usuário está na lista de permitidos, mostra a página.
