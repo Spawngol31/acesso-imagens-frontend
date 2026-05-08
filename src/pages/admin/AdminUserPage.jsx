@@ -27,6 +27,9 @@ function UserEditForm({ user, onSubmit, onCancel }) {
         }));
     };
 
+    const papeisColaborador = ['FOTOGRAFO', 'JORNALISTA', 'ASSESSOR_IMPRENSA', 'ASSESSOR_COMUNICACAO', 'VIDEOMAKER', 'CRIADOR_CONTEUDO'];
+    const isColaborador = papeisColaborador.includes(formData.papel);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(user.id, formData, profilePicFile); // <-- Adicionamos o profilePicFile aqui
@@ -87,8 +90,14 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                             <label style={labelStyle}>Papel no Sistema</label>
                             <select name="papel" value={formData.papel} onChange={handleChange} style={inputStyle}>
                                 <option value="CLIENTE">Cliente</option>
-                                <option value="FOTOGRAFO">Fotógrafo(a)</option>
                                 <option value="ADMIN">Administrador</option>
+                                <option disabled>--- Equipe ---</option>
+                                <option value="FOTOGRAFO">Fotógrafo(a)</option>
+                                <option value="JORNALISTA">Jornalista</option>
+                                <option value="ASSESSOR_IMPRENSA">Assessor(a) de Imprensa</option>
+                                <option value="ASSESSOR_COMUNICACAO">Assessor(a) de Comunicação</option>
+                                <option value="VIDEOMAKER">Videomaker</option>
+                                <option value="CRIADOR_CONTEUDO">Criador(a) de Conteúdo</option>
                             </select>
                         </div>
                     </div>
@@ -113,9 +122,11 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                         </div>
                     )}
 
-                    {formData.papel === 'FOTOGRAFO' && formData.perfil_fotografo && (
+                    {/* Agora verifica se é QUALQUER membro da equipa (isColaborador) */}
+                    {isColaborador && formData.perfil_fotografo && (
                         <div style={{marginTop: '10px', padding: '20px', backgroundColor: '#fdfbfe', borderRadius: '10px', border: '1px solid #e1bce0'}}>
-                            <h4 style={{margin: '0 0 15px 0', color: '#6c0464'}}>📸 Perfil de Fotógrafo</h4>
+                            {/* Mudei o título para ficar mais genérico para toda a equipa */}
+                            <h4 style={{margin: '0 0 15px 0', color: '#6c0464'}}>💼 Perfil de Colaborador</h4>
                             
                             {/* ======================================================================== */}
                             {/* !!! UPLOAD DE FOTO - BOTÃO PERSONALIZADO (CRIADO DO ZERO) !!! */}
@@ -288,12 +299,22 @@ function AdminUserPage() {
         }
     };
 
+    // No componente AdminUserPage (Pai)
     const handleEditSubmit = async (userId, userData, profileFile) => {
         const dataToSubmit = { ...userData };
-        if (dataToSubmit.papel === 'CLIENTE') delete dataToSubmit.perfil_fotografo;
-        else if (dataToSubmit.papel === 'FOTOGRAFO') delete dataToSubmit.perfil_cliente;
+        
+        // A mesma lista de papéis da equipa
+        const papeisColaborador = ['FOTOGRAFO', 'JORNALISTA', 'ASSESSOR_IMPRENSA', 'ASSESSOR_COMUNICACAO', 'VIDEOMAKER', 'CRIADOR_CONTEUDO'];
+
+        // Se for cliente, apaga o perfil da equipa. Se for da equipa, apaga o perfil de cliente.
+        if (dataToSubmit.papel === 'CLIENTE') {
+            delete dataToSubmit.perfil_fotografo; 
+        } else if (papeisColaborador.includes(dataToSubmit.papel)) {
+            delete dataToSubmit.perfil_cliente;
+        }
 
         try {
+            // 1. Primeiro, envia os dados em texto (Nome, CPF, etc.)
             await axiosInstance.patch(`/admin/users/${userId}/`, dataToSubmit);
             if (profileFile) {
                 const fileFormData = new FormData();

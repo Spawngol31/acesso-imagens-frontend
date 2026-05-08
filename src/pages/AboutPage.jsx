@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance';
 
 function AboutPage() {
-    // --- 1. GARANTIA: O estado DEVE começar como um array vazio ---
     const [colaboradores, setColaboradores] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -14,16 +13,10 @@ function AboutPage() {
                 setLoading(true);
                 const response = await axiosInstance.get('/fotografos/');
                 
-                // Garante que o que recebemos é um array
+                // 🚀 O CÓDIGO FICOU MAIS LIMPO!
+                // Como o Django já vai mandar na ordem certa, só precisamos de guardar no estado.
                 if (Array.isArray(response.data)) {
-                    
-                    // --- A MÁGICA ACONTECE AQUI ---
-                    // Ordena os colaboradores. 
-                    // a.id - b.id -> Coloca os mais ANTIGOS primeiro (ordem de chegada na empresa)
-                    // Se quiser os mais NOVOS primeiro, é só trocar para: b.id - a.id
-                    const colaboradoresOrdenados = response.data.sort((a, b) => a.id - b.id);
-                    
-                    setColaboradores(colaboradoresOrdenados);
+                    setColaboradores(response.data); 
                 } else {
                     setColaboradores([]); 
                 }
@@ -37,16 +30,11 @@ function AboutPage() {
         fetchColaboradores();
     }, []);
 
-    // --- NOVA FUNÇÃO AUXILIAR ---
-    // Esta função torna o nosso código mais inteligente
+    // Função inteligente mantida
     const getRoleText = (specialty) => {
-        // Se o campo estiver vazio OU for exatamente "Fotógrafo",
-        // retorna a nossa versão unissexo.
         if (!specialty || specialty.trim().toLowerCase() === 'fotógrafo') {
             return 'Fotógrafo(a)';
         }
-        // Caso contrário, retorna a especialidade que está na base de dados
-        // (ex: "Fotógrafo Esportivo", "Editora de Imagens", etc.)
         return specialty;
     };
 
@@ -77,7 +65,6 @@ function AboutPage() {
             
             {loading ? <p style={{textAlign: 'center'}}>A carregar...</p> : (
                 <div className="collaborator-grid">
-                    {/* --- 2. GARANTIA EXTRA: Verifica se é um array E se tem itens --- */}
                     {Array.isArray(colaboradores) && colaboradores.length > 0 ? (
                         colaboradores.map(colaborador => (
                             <div key={colaborador.id} className="collaborator-card">
@@ -89,14 +76,10 @@ function AboutPage() {
                                 <div className="collaborator-info">
                                     <h3>{colaborador.nome_completo}</h3>
                                     
-                                    {/* --- CORREÇÃO AQUI --- */}
-                                    {/* Agora usamos a nossa nova função inteligente */}
                                     <p className="collaborator-role">{getRoleText(colaborador.especialidade)}</p>
-                                    {/* --- CORREÇÃO AQUI --- */}
-                                    {/* Verifica se a rede social existe */}
+                                    
                                     {colaborador.rede_social ? (
                                         <a 
-                                            // Constrói o link do Instagram, removendo o '@' para o URL
                                             href={`https://www.instagram.com/${colaborador.rede_social.replace('@', '')}`}
                                             target="_blank" 
                                             rel="noopener noreferrer"
@@ -105,7 +88,6 @@ function AboutPage() {
                                             {colaborador.rede_social}
                                         </a>
                                     ) : (
-                                        // Deixa um espaço vazio se não houver rede social
                                         <p className="collaborator-social">&nbsp;</p> 
                                     )}
                                 </div>
