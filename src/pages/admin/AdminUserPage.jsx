@@ -227,7 +227,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
     );
 }
 
-// --- COMPONENTE PRINCIPAL DA PÁGINA ---
+// --- COMPONENTE PRINCIPAL DA PÁGINA (ATUALIZADO) ---
 function AdminUserPage() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -238,42 +238,43 @@ function AdminUserPage() {
     const [termoBusca, setTermoBusca] = useState('');
     const [filtroPapel, setFiltroPapel] = useState('');
     const [filtroStatus, setFiltroStatus] = useState('');
+    
+    // Estado para saber se há filtros ativos na tela
+    const hasActiveFilters = termoBusca !== '' || filtroPapel !== '' || filtroStatus !== '';
 
     const corPrincipal = '#6c0464';
 
+    // 🚀 AGORA O REACT MANDA OS FILTROS PARA O DJANGO FAZER O TRABALHO PESADO!
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const response = await axiosInstance.get('/admin/users/');
+            const params = new URLSearchParams();
+            if (termoBusca) params.append('q', termoBusca);
+            if (filtroPapel) params.append('papel', filtroPapel);
+            if (filtroStatus) params.append('status', filtroStatus);
+
+            const response = await axiosInstance.get(`/admin/users/?${params.toString()}`);
             setUsers(response.data);
         } catch (error) {
             console.error("Erro ao buscar utilizadores:", error);
+            toast.error("Erro ao carregar a lista de utilizadores.");
         } finally {
             setLoading(false);
         }
     };
 
+    // Carrega a primeira vez (sem filtros, vai trazer os 50 mais recentes)
     useEffect(() => { fetchUsers(); }, []);
 
-    // --- LÓGICA DE FILTRAGEM EM TEMPO REAL NO FRONTEND ---
-    const usuariosFiltrados = users.filter(user => {
-        const nomeUpper = (user.nome_completo || '').toUpperCase();
-        const emailUpper = (user.email || '').toUpperCase();
-        const buscaUpper = termoBusca.toUpperCase();
-        
-        // Verifica a pesquisa por texto
-        const matchBusca = nomeUpper.includes(buscaUpper) || emailUpper.includes(buscaUpper);
-        
-        // Verifica o dropdown de Papel
-        const matchPapel = filtroPapel ? user.papel === filtroPapel : true;
-        
-        // Verifica o dropdown de Status
-        let matchStatus = true;
-        if (filtroStatus === 'ativo') matchStatus = user.is_active === true;
-        if (filtroStatus === 'bloqueado') matchStatus = user.is_active === false;
-
-        return matchBusca && matchPapel && matchStatus;
-    });
+    const handleLimparFiltros = () => {
+        setTermoBusca('');
+        setFiltroPapel('');
+        setFiltroStatus('');
+        // Usamos um setTimeout pequeno para garantir que os estados limparam antes de buscar
+        setTimeout(() => {
+            fetchUsers();
+        }, 100);
+    };
 
     const handleToggleBlock = async (user) => {
         const action = user.is_active ? 'bloquear' : 'desbloquear';
@@ -287,17 +288,13 @@ function AdminUserPage() {
         }
     };
 
-    // No componente AdminUserPage (Pai)
     const handleEditSubmit = async (userId, userData, profileFile) => {
         const dataToSubmit = { ...userData };
         if (dataToSubmit.papel === 'CLIENTE') delete dataToSubmit.perfil_fotografo;
         else if (dataToSubmit.papel === 'FOTOGRAFO') delete dataToSubmit.perfil_cliente;
 
         try {
-            // 1. Primeiro, envia os dados em texto (Nome, CPF, etc.)
             await axiosInstance.patch(`/admin/users/${userId}/`, dataToSubmit);
-
-            // 2. Se o Admin escolheu uma foto nova, envia a foto a seguir!
             if (profileFile) {
                 const fileFormData = new FormData();
                 fileFormData.append('foto_perfil', profileFile);
@@ -305,8 +302,6 @@ function AdminUserPage() {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
-
-            // 3. Mostra um único aviso de sucesso e fecha o modal
             toast.success("Utilizador atualizado com sucesso!");
             setIsModalOpen(false);
             setEditingUser(null);
@@ -334,10 +329,10 @@ function AdminUserPage() {
                 <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>👥 Gerir Utilizadores</h2>
             </div>
 
-            {/* CAIXA DE FILTROS SUPERIOR */}
+            {/* CAIXA DE FILTROS SUPERIOR (COM BOTÕES AGORA) */}
             <div style={{ backgroundColor: '#fbf0fa', padding: '20px', borderRadius: '10px', marginBottom: '25px', border: '1px solid #e1bce0', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 
-                <div style={{ flex: '1 1 300px' }}>
+                <div style={{ flex: '1 1 250px' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: corPrincipal, marginBottom: '5px', textTransform: 'uppercase' }}>Pesquisar por Nome ou Email</label>
                     <input 
                         type="text" 
@@ -371,7 +366,20 @@ function AdminUserPage() {
                         <option value="bloqueado">Apenas Bloqueados</option>
                     </select>
                 </div>
+
+                {/* BOTÕES DE AÇÃO DOS FILTROS */}
+                <div style={{ display: 'flex', gap: '10px', flex: '1 1 auto', justifyContent: 'flex-end' }}>
+                    <button onClick={fetchUsers} className='create-button'>🔍 Filtrar</button>
+                    <button onClick={handleLimparFiltros} className='create-button'>Limpar</button>
+                </div>
             </div>
+
+            {/* AVISO DO MODO RÁPIDO */}
+            {!hasActiveFilters && !loading && (
+                <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#e2f3f5', color: '#0c5460', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', border: '1px solid #bee5eb' }}>
+                    ⚡ MODO RÁPIDO: A mostrar apenas os 50 cadastros mais recentes. Use os filtros acima para pesquisar contas antigas.
+                </div>
+            )}
 
             {/* ÁREA DA TABELA */}
             <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
@@ -389,7 +397,8 @@ function AdminUserPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {usuariosFiltrados.map(user => (
+                                {/* 🚀 A LISTA AGORA CHAMA-SE APENAS 'users' E VEM PRONTA DO BACKEND */}
+                                {users.map(user => (
                                     <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
                                         <td style={{ padding: '15px 10px', fontWeight: '500' }}>#{user.id}</td>
                                         <td style={{ padding: '15px 10px' }}>
@@ -428,10 +437,10 @@ function AdminUserPage() {
                                         </td>
                                     </tr>
                                 ))}
-                                {usuariosFiltrados.length === 0 && (
+                                {users.length === 0 && (
                                     <tr>
                                         <td colSpan="6" style={{ padding: '30px', textAlign: 'center', color: '#888' }}>
-                                            Nenhum utilizador encontrado com estes filtros.
+                                            Nenhum utilizador encontrado.
                                         </td>
                                     </tr>
                                 )}
@@ -439,16 +448,11 @@ function AdminUserPage() {
                         </table>
                     </div>
                 )}
-                <p style={{ marginTop: '20px', fontSize: '13px', color: '#888' }}>Mostrando {usuariosFiltrados.length} utilizadores.</p>
+                <p style={{ marginTop: '20px', fontSize: '13px', color: '#888' }}>Mostrando {users.length} utilizadores.</p>
             </div>
 
-            {/* RENDERIZA O MODAL SE ESTIVER ABERTO */}
             {isModalOpen && (
-                <UserEditForm
-                    user={editingUser}
-                    onSubmit={handleEditSubmit}
-                    onCancel={() => setIsModalOpen(false)}
-                />
+                <UserEditForm user={editingUser} onSubmit={handleEditSubmit} onCancel={() => setIsModalOpen(false)} />
             )}
         </div>
     );

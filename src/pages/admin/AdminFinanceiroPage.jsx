@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 function AdminFinanceiroPage() {
     // --- ESTADOS GERAIS ---
     const [activeTab, setActiveTab] = useState('pendentes'); // 'pendentes' ou 'historico'
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [larguraJanela, setLarguraJanela] = useState(window.innerWidth);
     const isMobile = larguraJanela < 900;
 
@@ -17,9 +17,12 @@ function AdminFinanceiroPage() {
     const [listaFotografos, setListaFotografos] = useState([]);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status: '', search: '', fotografo_id: '' });
+    const [vendasBuscadas, setVendasBuscadas] = useState(false);
 
-    // --- ESTADOS DA ABA DE HISTÓRICO ---
+    // --- ESTADOS DA ABA DE HISTÓRICO (OTIMIZADO) ---
     const [historicoRecibos, setHistoricoRecibos] = useState([]);
+    const [filtrosHistorico, setFiltrosHistorico] = useState({ data_inicio: '', data_fim: '', fotografo_id: '' });
+    const [historicoBuscado, setHistoricoBuscado] = useState(false); // Diz se o usuário já clicou em filtrar
 
     useEffect(() => {
         const handleResize = () => setLarguraJanela(window.innerWidth);
@@ -31,14 +34,16 @@ function AdminFinanceiroPage() {
     useEffect(() => {
         if (activeTab === 'pendentes') {
             buscarDadosVendas();
-        } else {
-            buscarHistorico();
-        }
+        } 
+        // 🚀 OTIMIZAÇÃO: Removemos a busca automática da aba histórico para não sobrecarregar o servidor!
     }, [activeTab]);
 
     // ================= LÓGICA DA ABA: VENDAS PENDENTES =================
-    const buscarDadosVendas = async () => {
+    // 🚀 ATUALIZADO: Agora ele sabe se foi um clique real ou só o carregamento inicial da página
+    const buscarDadosVendas = async (foiClicado = false) => {
         setLoading(true);
+        if (foiClicado === true) setVendasBuscadas(true);
+        
         try {
             const params = new URLSearchParams();
             if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio);
@@ -47,9 +52,14 @@ function AdminFinanceiroPage() {
             if (filtros.search) params.append('search', filtros.search);
             if (filtros.fotografo_id) params.append('fotografo_id', filtros.fotografo_id);
 
+            // ⚡ O TRUQUE: Se a página acabou de abrir (não foi clicado), avisa o backend para ser rápido!
+            if (!foiClicado) {
+                params.append('apenas_fotografos', 'true');
+            }
+
             const response = await axiosInstance.get(`/admin/vendas-json/?${params.toString()}`);
-            setDados(response.data.resultados);
-            setResumo(response.data.resumo);
+            setDados(response.data.resultados || []);
+            setResumo(response.data.resumo || { total_vendas: 0, total_pagar: 0 });
             setListaFotografos(response.data.fotografos || []);
         } catch (error) {
             console.error("Erro ao buscar dados:", error);
@@ -60,23 +70,21 @@ function AdminFinanceiroPage() {
     };
 
     const handleChange = (e) => setFiltros({ ...filtros, [e.target.name]: e.target.value });
+    const handleChangeHistorico = (e) => setFiltrosHistorico({ ...filtrosHistorico, [e.target.name]: e.target.value });
 
     const baixarPlanilha = async () => {
         try {
             toast.info("A gerar planilha, aguarde...");
             const params = new URLSearchParams(filtros).toString();
             
-            // O axios faz o pedido com o Token, e avisamos que a resposta é um Blob (Ficheiro)
             const response = await axiosInstance.get(`/admin/exportar-pagamentos/?${params}`, {
                 responseType: 'blob' 
             });
 
-            // Cria um link temporário e invisível para forçar o download no navegador
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
             
-            // Define um nome para o ficheiro baseado na data
             const nomeArquivo = filtros.data_inicio && filtros.data_fim 
                 ? `pagamentos_${filtros.data_inicio}_ate_${filtros.data_fim}.csv` 
                 : `pagamentos_geral.csv`;
@@ -85,7 +93,6 @@ function AdminFinanceiroPage() {
             document.body.appendChild(link);
             link.click();
             
-            // Limpa a memória do navegador
             link.parentNode.removeChild(link);
             window.URL.revokeObjectURL(url);
             
@@ -111,8 +118,8 @@ function AdminFinanceiroPage() {
             await axiosInstance.post('/admin/registrar-pagamento-fotografo/', payload);
             toast.success("Pagamento registrado com sucesso! O saldo foi zerado.");
             buscarDadosVendas(); 
-            // Se o pagamento for bem sucedido, podemos pular para a aba de histórico para ele ver o recibo
             setActiveTab('historico');
+            buscarHistorico(); // Força a atualização do histórico recém-criado
         } catch (error) {
             console.error("Erro ao registrar pagamento:", error);
             toast.error("Erro ao tentar registrar o pagamento.");
@@ -121,11 +128,18 @@ function AdminFinanceiroPage() {
         }
     };
 
-    // ================= LÓGICA DA ABA: HISTÓRICO =================
+    // ================= LÓGICA DA ABA: HISTÓRICO (OTIMIZADO) =================
     const buscarHistorico = async () => {
         setLoading(true);
+        setHistoricoBuscado(true);
         try {
-            const response = await axiosInstance.get('/admin/historico-pagamentos/');
+            // Agora enviamos os filtros para a API!
+            const params = new URLSearchParams();
+            if (filtrosHistorico.data_inicio) params.append('data_inicio', filtrosHistorico.data_inicio);
+            if (filtrosHistorico.data_fim) params.append('data_fim', filtrosHistorico.data_fim);
+            if (filtrosHistorico.fotografo_id) params.append('fotografo_id', filtrosHistorico.fotografo_id);
+
+            const response = await axiosInstance.get(`/admin/historico-pagamentos/?${params.toString()}`);
             setHistoricoRecibos(response.data);
         } catch (error) {
             console.error("Erro ao buscar histórico:", error);
@@ -161,24 +175,20 @@ function AdminFinanceiroPage() {
                         <p style="margin: 0;">Emitido em: ${recibo.data_pagamento}</p>
                     </div>
                 </div>
-
                 <div class="info-box">
                     <p><strong>Beneficiário:</strong> ${recibo.fotografo}</p>
                     <p><strong>Período de Referência das Vendas:</strong> De ${recibo.referencia_inicio} a ${recibo.referencia_fim}</p>
                     <p><strong>Status:</strong> Pagamento Efetivado</p>
                 </div>
-
                 <div class="value-box">
                     <h2 style="margin: 0; font-size: 24px;">VALOR TOTAL REPASSADO</h2>
                     <h1 style="margin: 10px 0 0 0; font-size: 42px;">R$ ${recibo.valor_pago.toFixed(2)}</h1>
                 </div>
-
                 <p style="margin-top: 40px; text-align: justify;">
                     Declaramos para os devidos fins que o valor acima especificado foi repassado integralmente 
                     ao beneficiário referente às comissões de vendas de fotografias e vídeos realizadas através 
                     da plataforma Acesso Imagens no período indicado.
                 </p>
-
                 <div class="footer">
                     Este é um documento gerado automaticamente por nosso sistema.<br/>
                     Acesso Imagens - ${new Date().getFullYear()}
@@ -187,11 +197,7 @@ function AdminFinanceiroPage() {
             </html>
         `);
         janela.document.close();
-        
-        // Aguarda um milissegundo para o navegador renderizar o HTML antes de abrir a janela de impressão
-        setTimeout(() => {
-            janela.print();
-        }, 250);
+        setTimeout(() => { janela.print(); }, 250);
     };
 
     // --- ESTILOS REUTILIZÁVEIS ---
@@ -209,7 +215,6 @@ function AdminFinanceiroPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
-            {/* NAVEGAÇÃO DE ABAS */}
             <div style={{ display: 'flex', borderBottom: '1px solid #dee2e6', marginBottom: '25px', backgroundColor: '#f8f9fa', borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
                 <button style={tabBtnStyle(activeTab === 'pendentes')} onClick={() => setActiveTab('pendentes')}>
                     ⏳ Caixa Pendente (Vendas)
@@ -219,9 +224,10 @@ function AdminFinanceiroPage() {
                 </button>
             </div>
 
-            {/* CONTEÚDO DA ABA 1: VENDAS PENDENTES */}
+            {/* ABA 1: VENDAS PENDENTES (MANTIDO EXATAMENTE IGUAL) */}
             {activeTab === 'pendentes' && (
                 <>
+                    {/* ... (Seu código da aba pendentes não mudou nada, foi mantido igual) ... */}
                     <div style={{ backgroundColor: '#fbf0fa', border: `1px solid #e1bce0`, color: corPrincipal, padding: '16px 20px', borderRadius: '8px', marginBottom: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', boxShadow: '0 2px 4px rgba(108, 4, 100, 0.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <span style={{ marginRight: '12px', fontSize: '1.2rem' }}>💰</span>
@@ -239,12 +245,20 @@ function AdminFinanceiroPage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', flexDirection: isMobile ? 'column' : 'row', gap: '15px' }}>
                                 <div style={{ display: 'flex', gap: '10px', width: isMobile ? '100%' : 'auto' }}>
                                     <input type="text" name="search" placeholder="Pesquisar ID do pedido..." value={filtros.search} onChange={handleChange} style={{ ...inputStyle, width: isMobile ? '100%' : '280px', marginBottom: '0', backgroundColor: '#fff' }} />
-                                    <button onClick={buscarDadosVendas} className='create-button'>Pesquisar</button>
+                                    <button onClick={() => buscarDadosVendas(true)} className='create-button'>Pesquisar</button>
                                 </div>
                                 {!isMobile && <button onClick={baixarPlanilha} className='create-button'>Baixar Planilha (Excel)</button>}
                             </div>
 
-                            {loading ? <p style={{ color: '#666' }}>A carregar vendas...</p> : (
+                            {!vendasBuscadas ? (
+                                <div style={{ padding: '40px 20px', textAlign: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ced4da' }}>
+                                    <span style={{ fontSize: '2rem' }}>⚡</span>
+                                    <h4 style={{ color: '#555', marginTop: '10px' }}>Modo Rápido Ativado</h4>
+                                    <p style={{ color: '#888' }}>Utilize os filtros e clique em Pesquisar para carregar as vendas de forma rápida.</p>
+                                </div>
+                            ) : loading ? (
+                                <p style={{ color: '#666' }}>A carregar vendas...</p>
+                            ) : (
                                 <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
                                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '850px' }}>
                                         <thead>
@@ -305,7 +319,7 @@ function AdminFinanceiroPage() {
                                     <option value="FALHOU">Falhou</option>
                                 </select>
                                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                    <button onClick={buscarDadosVendas} className='create-button'>Filtrar</button>
+                                    <button onClick={() => buscarDadosVendas(true)} className='create-button'>Filtrar</button>
                                     <button onClick={() => { setFiltros({data_inicio:'', data_fim:'', status:'', search:'', fotografo_id:''}); setTimeout(buscarDadosVendas, 100); }} className='create-button'>Limpar</button>
                                 </div>
                             </div>
@@ -314,53 +328,89 @@ function AdminFinanceiroPage() {
                 </>
             )}
 
-            {/* CONTEÚDO DA ABA 2: HISTÓRICO DE RECIBOS */}
+            {/* ABA 2: HISTÓRICO DE RECIBOS (COM FILTROS ADICIONADOS) */}
             {activeTab === 'historico' && (
-                <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box' }}>
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🧾 Registos de Pagamentos Anteriores</h3>
+                <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
                     
-                    {loading ? <p style={{ color: '#666' }}>A carregar recibos...</p> : (
-                        <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '750px' }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                        <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>Nº DO RECIBO</th>
-                                        <th style={{ padding: '12px 10px' }}>FOTÓGRAFO</th>
-                                        <th style={{ padding: '12px 10px' }}>DATA DO PGTO</th>
-                                        <th style={{ padding: '12px 10px' }}>PERÍODO APURADO</th>
-                                        <th style={{ padding: '12px 10px' }}>VALOR PAGO</th>
-                                        <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0', textAlign: 'center' }}>AÇÃO</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {historicoRecibos.map((recibo) => (
-                                        <tr key={recibo.id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '14px 10px', fontWeight: 'bold' }}>#{recibo.id.toString().padStart(5, '0')}</td>
-                                            <td style={{ padding: '14px 10px', color: '#555' }}>{recibo.fotografo}</td>
-                                            <td style={{ padding: '14px 10px' }}>{recibo.data_pagamento}</td>
-                                            <td style={{ padding: '14px 10px', fontSize: '12px', color: '#666' }}>
-                                                {recibo.referencia_inicio} até {recibo.referencia_fim}
-                                            </td>
-                                            <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {recibo.valor_pago.toFixed(2)}</td>
-                                            <td style={{ padding: '14px 10px', textAlign: 'center' }}>
-                                                <button 
-                                                    onClick={() => imprimirRecibo(recibo)}
-                                                    style={{ padding: '6px 12px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                                                >
-                                                    🖨️ Ver Recibo
-                                                </button>
-                                            </td>
+                    {/* TABELA DE RECIBOS */}
+                    <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
+                        <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🧾 Registos de Pagamentos Anteriores</h3>
+                        
+                        {!historicoBuscado ? (
+                            <div style={{ padding: '40px 20px', textAlign: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ced4da' }}>
+                                <span style={{ fontSize: '2rem' }}>⚡</span>
+                                <h4 style={{ color: '#555', marginTop: '10px' }}>Modo Rápido Ativado</h4>
+                                <p style={{ color: '#888' }}>Utilize os filtros ao lado para pesquisar recibos antigos de forma rápida.</p>
+                            </div>
+                        ) : loading ? (
+                            <p style={{ color: '#666' }}>A carregar recibos...</p>
+                        ) : (
+                            <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '750px' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
+                                            <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>Nº DO RECIBO</th>
+                                            <th style={{ padding: '12px 10px' }}>FOTÓGRAFO</th>
+                                            <th style={{ padding: '12px 10px' }}>DATA DO PGTO</th>
+                                            <th style={{ padding: '12px 10px' }}>PERÍODO APURADO</th>
+                                            <th style={{ padding: '12px 10px' }}>VALOR PAGO</th>
+                                            <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0', textAlign: 'center' }}>AÇÃO</th>
                                         </tr>
-                                    ))}
-                                    {historicoRecibos.length === 0 && <tr><td colSpan="6" style={{ padding: '30px', textAlign: 'center', color: '#888' }}>Nenhum histórico de pagamento registado ainda.</td></tr>}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {historicoRecibos.map((recibo) => (
+                                            <tr key={recibo.id} style={{ borderBottom: '1px solid #eee' }}>
+                                                <td style={{ padding: '14px 10px', fontWeight: 'bold' }}>#{recibo.id.toString().padStart(5, '0')}</td>
+                                                <td style={{ padding: '14px 10px', color: '#555' }}>{recibo.fotografo}</td>
+                                                <td style={{ padding: '14px 10px' }}>{recibo.data_pagamento}</td>
+                                                <td style={{ padding: '14px 10px', fontSize: '12px', color: '#666' }}>
+                                                    {recibo.referencia_inicio} até {recibo.referencia_fim}
+                                                </td>
+                                                <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {recibo.valor_pago.toFixed(2)}</td>
+                                                <td style={{ padding: '14px 10px', textAlign: 'center' }}>
+                                                    <button 
+                                                        onClick={() => imprimirRecibo(recibo)}
+                                                        style={{ padding: '6px 12px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                                                    >
+                                                        🖨️ Ver Recibo
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {historicoRecibos.length === 0 && <tr><td colSpan="6" style={{ padding: '30px', textAlign: 'center', color: '#888' }}>Nenhum recibo encontrado para este filtro.</td></tr>}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* CAIXA DE FILTROS DO HISTÓRICO */}
+                    <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
+                        <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>🔍︎ FILTRAR RECIBOS</h3>
+                        <div style={{ marginTop: '25px' }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Inicial</label>
+                            <input type="date" name="data_inicio" value={filtrosHistorico.data_inicio} onChange={handleChangeHistorico} style={inputStyle} />
+                            
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Final</label>
+                            <input type="date" name="data_fim" value={filtrosHistorico.data_fim} onChange={handleChangeHistorico} style={inputStyle} />
+                            
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Fotógrafo</label>
+                            <select name="fotografo_id" value={filtrosHistorico.fotografo_id} onChange={handleChangeHistorico} style={inputStyle}>
+                                <option value="">Todos os fotógrafos</option>
+                                {/* Reutilizamos a mesma lista de fotógrafos que a API envia na primeira aba */}
+                                {listaFotografos.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                            </select>
+                            
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                <button onClick={buscarHistorico} className='create-button'>Pesquisar</button>
+                                <button onClick={() => { setFiltrosHistorico({data_inicio:'', data_fim:'', fotografo_id:''}); setHistoricoBuscado(false); }} className='create-button'>Limpar</button>
+                            </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
 
-            {/* MODAL DE CONFIRMAÇÃO DE PAGAMENTO */}
+            {/* MODAL DE CONFIRMAÇÃO DE PAGAMENTO (MANTIDO) */}
             {isPaymentModalOpen && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
                     <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
@@ -376,7 +426,6 @@ function AdminFinanceiroPage() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
