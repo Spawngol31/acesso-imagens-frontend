@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
-import { color } from 'chart.js/helpers';
 
 function DashboardVendasPage() {
     const [activeTab, setActiveTab] = useState('vendas'); 
@@ -13,6 +12,10 @@ function DashboardVendasPage() {
 
     // --- ESTADOS DA ABA: MINHAS VENDAS ---
     const [dados, setDados] = useState([]);
+    
+    // 🚀 NOVO ESTADO: Controla qual venda está aberta no Modal
+    const [vendaSelecionada, setVendaSelecionada] = useState(null); 
+    
     const [resumo, setResumo] = useState({ saldo_pendente: 0, total_ja_recebido: 0 });
     const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status_repasse: '' });
 
@@ -44,7 +47,6 @@ function DashboardVendasPage() {
             if (filtros.data_fim) params.append('data_fim', filtros.data_fim);
             if (filtros.status_repasse) params.append('status_repasse', filtros.status_repasse);
 
-            // Chama a nova rota do Django que criámos
             const response = await axiosInstance.get(`/dashboard/minhas-vendas-json/?${params.toString()}`);
             setDados(response.data.resultados);
             setResumo(response.data.resumo);
@@ -59,7 +61,6 @@ function DashboardVendasPage() {
     const buscarHistorico = async () => {
         setLoading(true);
         try {
-            // Chama a rota de recibos do Django
             const response = await axiosInstance.get('/dashboard/meus-recibos/');
             setHistoricoRecibos(response.data);
         } catch (error) {
@@ -169,7 +170,6 @@ function DashboardVendasPage() {
                                         <thead>
                                             <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
                                                 <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>FOTO ID</th>
-                                                {/* --- NOVA COLUNA AQUI --- */}
                                                 <th style={{ padding: '12px 10px' }}>CLIENTE</th> 
                                                 <th style={{ padding: '12px 10px' }}>DATA DA VENDA</th>
                                                 <th style={{ padding: '12px 10px' }}>STATUS DO REPASSE</th>
@@ -179,8 +179,25 @@ function DashboardVendasPage() {
                                         <tbody>
                                             {dados.map((venda, index) => (
                                                 <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                                                    <td style={{ padding: '14px 10px', fontWeight: '500' }}>#{venda.foto_id}</td>
-                                                    {/* --- NOVO DADO AQUI --- */}
+                                                    <td style={{ padding: '14px 10px', fontWeight: '500' }}>
+                                                        {/* 🚀 BOTÃO QUE ABRE O MODAL COM A FOTO */}
+                                                        <button 
+                                                            onClick={() => setVendaSelecionada(venda)}
+                                                            style={{ 
+                                                                background: 'none', 
+                                                                border: 'none', 
+                                                                color: corPrincipal, 
+                                                                fontWeight: 'bold', 
+                                                                textDecoration: 'underline', 
+                                                                cursor: 'pointer',
+                                                                padding: 0,
+                                                                fontSize: '14px'
+                                                            }}
+                                                            title="Ver detalhes da foto"
+                                                        >
+                                                            #{venda.foto_id}
+                                                        </button>
+                                                    </td>
                                                     <td style={{ padding: '14px 10px', color: '#555' }}>{venda.cliente}</td>
                                                     <td style={{ padding: '14px 10px' }}>{venda.data}</td>
                                                     <td style={{ padding: '14px 10px' }}>
@@ -191,7 +208,6 @@ function DashboardVendasPage() {
                                                     <td style={{ padding: '14px 10px', fontWeight: 'bold' }}>R$ {venda.comissao.toFixed(2)}</td>
                                                 </tr>
                                             ))}
-                                            {/* Repare que mudei o colSpan de 4 para 5 para acompanhar a nova coluna */}
                                             {dados.length === 0 && <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Nenhuma venda encontrada com estes filtros.</td></tr>}
                                         </tbody>
                                     </table>
@@ -266,6 +282,52 @@ function DashboardVendasPage() {
                     )}
                 </div>
             )}
+
+            {/* 🚀 MODAL DE DETALHES DA FOTO VENDIDA */}
+            {vendaSelecionada && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
+                    <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '450px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
+                        
+                        <h3 style={{ color: '#6c0464', marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                            Detalhes da Venda
+                        </h3>
+                        
+                        {vendaSelecionada.foto_url ? (
+                            <img 
+                                src={vendaSelecionada.foto_url} 
+                                alt={`Foto ${vendaSelecionada.foto_id}`} 
+                                style={{ width: '100%', borderRadius: '8px', maxHeight: '350px', objectFit: 'contain', backgroundColor: '#f8f9fa', border: '1px solid #ddd' }} 
+                            />
+                        ) : (
+                            <div style={{ height: '200px', backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px dashed #ccc' }}>
+                                <p style={{ color: '#888', fontWeight: 'bold' }}>Opa! Imagem temporariamente indisponível no servidor.</p>
+                            </div>
+                        )}
+
+                        <div style={{ textAlign: 'left', marginTop: '20px', fontSize: '14px', color: '#444' }}>
+                            <p style={{ margin: '5px 0' }}><strong>📸 ID da Foto:</strong> #{vendaSelecionada.foto_id}</p>
+                            <p style={{ margin: '5px 0' }}><strong>📁 Álbum:</strong> {vendaSelecionada.album_nome}</p>
+                            <p style={{ margin: '5px 0' }}><strong>👤 Cliente:</strong> {vendaSelecionada.cliente}</p>
+                            <p style={{ margin: '5px 0' }}><strong>📅 Data da Venda:</strong> {vendaSelecionada.data}</p>
+                            
+                            <div style={{ backgroundColor: '#fbf0fa', padding: '15px', borderRadius: '6px', marginTop: '20px', border: '1px solid #e1bce0' }}>
+                                <p style={{ margin: 0, color: '#6c0464', fontWeight: 'bold', fontSize: '16px', textAlign: 'center' }}>
+                                    Sua Comissão: R$ {vendaSelecionada.comissao.toFixed(2)}
+                                </p>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => setVendaSelecionada(null)} 
+                            className="create-button" 
+                            style={{ width: '100%', marginTop: '20px', padding: '12px' }}
+                        >
+                            Fechar Imagem
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
