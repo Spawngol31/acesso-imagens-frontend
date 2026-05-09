@@ -28,14 +28,36 @@ function NewsDetailPage() {
     if (loading) return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar...</p>;
     if (!noticia) return <p style={{textAlign: 'center', marginTop: '2rem'}}>Notícia não encontrada.</p>;
 
+    // Atalho para facilitar a leitura da imagem de destaque
+    const featuredMedia = noticia._embedded?.['wp:featuredmedia']?.[0];
+
     return (
         <div className="page-container">
             <div className="news-detail-container">
                 <header className="news-header">
-                    <h1 dangerouslySetInnerHTML={{ __html: noticia.title.rendered }} />
-                    <p>Publicado em {new Date(noticia.date).toLocaleDateString()}</p>
-                    {noticia._embedded?.['wp:featuredmedia']?.[0]?.source_url && (
-                        <img src={noticia._embedded['wp:featuredmedia'][0].source_url} alt={noticia.title.rendered} className="news-featured-image" />
+                    <h1 dangerouslySetInnerHTML={{ __html: noticia.title.rendered }} style={{ color: '#6c0464' }} />
+                    <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>
+                        Publicado em {new Date(noticia.date).toLocaleDateString()}
+                    </p>
+                    
+                    {/* 🚀 IMAGEM DE DESTAQUE COM CRÉDITOS */}
+                    {featuredMedia?.source_url && (
+                        <div style={{ marginBottom: '30px' }}>
+                            <img 
+                                src={featuredMedia.source_url} 
+                                alt={noticia.title.rendered} 
+                                className="news-featured-image" 
+                                style={{ width: '100%', borderRadius: '8px', display: 'block' }}
+                            />
+                            {/* Puxa a legenda (créditos) direto do WordPress */}
+                            {featuredMedia.caption?.rendered && (
+                                <div 
+                                    className="image-credits"
+                                    style={{ fontSize: '13px', color: '#888', textAlign: 'right', marginTop: '8px', fontStyle: 'italic' }}
+                                    dangerouslySetInnerHTML={{ __html: featuredMedia.caption.rendered }} 
+                                />
+                            )}
+                        </div>
                     )}
                 </header>
 
@@ -44,11 +66,12 @@ function NewsDetailPage() {
                     dangerouslySetInnerHTML={{ __html: noticia.content.rendered }} 
                 />
 
-                <div className="back-link-wrapper">
+                <div className="back-link-wrapper" style={{ marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
                     <Link to="/noticias" className="button-outline">Voltar para Notícias</Link>
                 </div>
             </div>
         </div>
     );
 }
+
 export default NewsDetailPage;

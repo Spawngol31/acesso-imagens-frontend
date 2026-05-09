@@ -1588,6 +1588,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: block;
   margin: 1.5rem auto; /* Centra as imagens do artigo */
 }
+/* Estiliza os créditos das fotos dentro do texto da notícia */
+.news-content figcaption {
+    font-size: 13px !important;
+    color: #888 !important;
+    text-align: right !important;
+    font-style: italic !important;
+    margin-top: 5px !important;
+    margin-bottom: 25px !important;
+}
 /* O contentor do botão "Voltar" */
 .back-link-wrapper {
   text-align: center;

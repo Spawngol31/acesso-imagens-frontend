@@ -5,8 +5,6 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
 
-// src/pages/admin/AdminUserPage.jsx
-
 // --- COMPONENTE DE EDIÇÃO (MODAL) FINAL E CORRIGIDO ---
 function UserEditForm({ user, onSubmit, onCancel }) {
     const [formData, setFormData] = useState(user);
@@ -32,25 +30,8 @@ function UserEditForm({ user, onSubmit, onCancel }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(user.id, formData, profilePicFile); // <-- Adicionamos o profilePicFile aqui
+        onSubmit(user.id, formData, profilePicFile);
     };
-
-    // Função para fazer o upload da foto do fotógrafo
-    //const handleProfilePicUpload = async () => {
-        //if (!profilePicFile) return;
-        //const fileFormData = new FormData();
-        //fileFormData.append('foto_perfil', profilePicFile);
-        //try {
-            //await axiosInstance.post(`/admin/users/${user.id}/upload_foto_perfil/`, fileFormData, {
-                //headers: { 'Content-Type': 'multipart/form-data' }
-            //});
-            //toast.success("✅ Foto de perfil atualizada com sucesso!");
-            //setProfilePicFile(null); // Limpa o arquivo selecionado
-        //} catch (error) {
-            //console.error("Erro ao fazer upload da foto:", error);
-            //toast.error("❌ Erro ao enviar a foto. Verifique o arquivo.");
-        //}
-    //};
 
     // Estilo blindado contra Modo Escuro
     const inputStyle = { 
@@ -59,12 +40,12 @@ function UserEditForm({ user, onSubmit, onCancel }) {
         marginBottom: '15px', 
         borderRadius: '6px', 
         border: '1px solid #ced4da', 
-        backgroundColor: '#ffffff', // Branco absoluto
-        color: '#333333', // Texto escuro
+        backgroundColor: '#ffffff', 
+        color: '#333333', 
         fontSize: '14px',
         boxSizing: 'border-box', 
         outline: 'none',
-        colorScheme: 'light' // Força o navegador a renderizar a caixa no modo claro
+        colorScheme: 'light'
     };
 
     const labelStyle = {
@@ -122,46 +103,31 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                         </div>
                     )}
 
-                    {/* Agora verifica se é QUALQUER membro da equipa (isColaborador) */}
                     {isColaborador && formData.perfil_fotografo && (
                         <div style={{marginTop: '10px', padding: '20px', backgroundColor: '#fdfbfe', borderRadius: '10px', border: '1px solid #e1bce0'}}>
-                            {/* Mudei o título para ficar mais genérico para toda a equipa */}
                             <h4 style={{margin: '0 0 15px 0', color: '#6c0464'}}>💼 Perfil de Colaborador</h4>
                             
-                            {/* ======================================================================== */}
-                            {/* !!! UPLOAD DE FOTO - BOTÃO PERSONALIZADO (CRIADO DO ZERO) !!! */}
-                            {/* ======================================================================== */}
                             <div style={{ marginBottom: '20px', padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', backgroundColor: '#ffffff' }}>
                                 <label style={{ ...labelStyle, marginBottom: '12px' }}>Atualizar Foto de Perfil</label>
                                 
                                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                    
-                                    {/* 1. O Input original escondido (A verdadeira engrenagem) */}
                                     <input 
                                         type="file" 
-                                        id={`foto-upload-${user.id}`} // ID único para garantir o clique
+                                        id={`foto-upload-${user.id}`} 
                                         accept="image/*" 
                                         onChange={(e) => setProfilePicFile(e.target.files[0])} 
-                                        style={{ display: 'none' }} // Mantemos escondido de propósito
+                                        style={{ display: 'none' }} 
                                     />
                                     
-                                    {/* 2. O nosso novo botão (Uma label que finge ser botão e clica no input acima) */}
                                     <label 
                                         htmlFor={`foto-upload-${user.id}`} 
                                         className="create-button" 
-                                        style={{                                                                                        
-                                            fontSize: '13px', 
-                                            fontWeight: 'bold' 
-                                        }}
+                                        style={{ fontSize: '13px', fontWeight: 'bold' }}
                                     >
                                         Escolher Foto...
                                     </label>
-
-                                    {/* 3. O botão roxo de "Enviar" */}
-                                    
                                 </div>
 
-                                {/* Mensagem dinâmica que avisa se a foto foi carregada ou não */}
                                 {profilePicFile ? (
                                     <p style={{fontSize: '13px', color: '#28a745', marginTop: '10px', fontWeight: '600'}}>
                                         ✅ Arquivo selecionado: {profilePicFile.name} (Será enviado ao salvar)
@@ -172,7 +138,6 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                                     </p>
                                 )}
                             </div>
-                            {/* ======================================================================== */}
 
                             <div style={gridDuplo}>
                                 <div>
@@ -245,17 +210,18 @@ function AdminUserPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
 
+    // 🚀 NOVOS ESTADOS PARA O MODAL DE BLOQUEIO
+    const [modalBloqueioAberto, setModalBloqueioAberto] = useState(false);
+    const [usuarioParaBloquear, setUsuarioParaBloquear] = useState(null);
+
     // --- ESTADOS PARA OS FILTROS ---
     const [termoBusca, setTermoBusca] = useState('');
     const [filtroPapel, setFiltroPapel] = useState('');
     const [filtroStatus, setFiltroStatus] = useState('');
     
-    // Estado para saber se há filtros ativos na tela
     const hasActiveFilters = termoBusca !== '' || filtroPapel !== '' || filtroStatus !== '';
-
     const corPrincipal = '#6c0464';
 
-    // 🚀 AGORA O REACT MANDA OS FILTROS PARA O DJANGO FAZER O TRABALHO PESADO!
     const fetchUsers = async () => {
         try {
             setLoading(true);
@@ -274,39 +240,45 @@ function AdminUserPage() {
         }
     };
 
-    // Carrega a primeira vez (sem filtros, vai trazer os 50 mais recentes)
     useEffect(() => { fetchUsers(); }, []);
 
     const handleLimparFiltros = () => {
         setTermoBusca('');
         setFiltroPapel('');
         setFiltroStatus('');
-        // Usamos um setTimeout pequeno para garantir que os estados limparam antes de buscar
         setTimeout(() => {
             fetchUsers();
         }, 100);
     };
 
-    const handleToggleBlock = async (user) => {
-        const action = user.is_active ? 'bloquear' : 'desbloquear';
-        if (window.confirm(`Tem a certeza que deseja ${action} o utilizador ${user.email}?`)) {
-            try {
-                await axiosInstance.post(`/admin/users/${user.id}/${action}/`);
-                fetchUsers();
-            } catch (error) {
-                console.error(`Erro ao ${action} utilizador:`, error);
-            }
+    // 🚀 NOVA LÓGICA DE BLOQUEIO (ABRE O MODAL)
+    const abrirModalBloqueio = (user) => {
+        setUsuarioParaBloquear(user);
+        setModalBloqueioAberto(true);
+    };
+
+    // 🚀 NOVA LÓGICA DE BLOQUEIO (CONFIRMA A AÇÃO)
+    const confirmarBloqueio = async () => {
+        if (!usuarioParaBloquear) return;
+        const action = usuarioParaBloquear.is_active ? 'bloquear' : 'desbloquear';
+        
+        try {
+            await axiosInstance.post(`/admin/users/${usuarioParaBloquear.id}/${action}/`);
+            toast.success(`Utilizador ${action === 'bloquear' ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
+            
+            setModalBloqueioAberto(false);
+            setUsuarioParaBloquear(null);
+            fetchUsers(); // Recarrega a lista
+        } catch (error) {
+            console.error(`Erro ao ${action} utilizador:`, error);
+            toast.error("Erro ao alterar o status do utilizador.");
         }
     };
 
-    // No componente AdminUserPage (Pai)
     const handleEditSubmit = async (userId, userData, profileFile) => {
         const dataToSubmit = { ...userData };
-        
-        // A mesma lista de papéis da equipa
         const papeisColaborador = ['FOTOGRAFO', 'JORNALISTA', 'ASSESSOR_IMPRENSA', 'ASSESSOR_COMUNICACAO', 'VIDEOMAKER', 'CRIADOR_CONTEUDO'];
 
-        // Se for cliente, apaga o perfil da equipa. Se for da equipa, apaga o perfil de cliente.
         if (dataToSubmit.papel === 'CLIENTE') {
             delete dataToSubmit.perfil_fotografo; 
         } else if (papeisColaborador.includes(dataToSubmit.papel)) {
@@ -314,7 +286,6 @@ function AdminUserPage() {
         }
 
         try {
-            // 1. Primeiro, envia os dados em texto (Nome, CPF, etc.)
             await axiosInstance.patch(`/admin/users/${userId}/`, dataToSubmit);
             if (profileFile) {
                 const fileFormData = new FormData();
@@ -345,14 +316,11 @@ function AdminUserPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
-            {/* TÍTULO */}
             <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '10px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>👥 Gerir Utilizadores</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>👥 Gerir Usuários</h2>
             </div>
 
-            {/* CAIXA DE FILTROS SUPERIOR (COM BOTÕES AGORA) */}
             <div style={{ backgroundColor: '#fbf0fa', padding: '20px', borderRadius: '10px', marginBottom: '25px', border: '1px solid #e1bce0', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                
                 <div style={{ flex: '1 1 250px' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: corPrincipal, marginBottom: '5px', textTransform: 'uppercase' }}>Pesquisar por Nome ou Email</label>
                     <input 
@@ -388,21 +356,18 @@ function AdminUserPage() {
                     </select>
                 </div>
 
-                {/* BOTÕES DE AÇÃO DOS FILTROS */}
                 <div style={{ display: 'flex', gap: '10px', flex: '1 1 auto', justifyContent: 'flex-end' }}>
                     <button onClick={fetchUsers} className='create-button'>🔍 Filtrar</button>
                     <button onClick={handleLimparFiltros} className='create-button'>Limpar</button>
                 </div>
             </div>
 
-            {/* AVISO DO MODO RÁPIDO */}
             {!hasActiveFilters && !loading && (
                 <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#e2f3f5', color: '#0c5460', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', border: '1px solid #bee5eb' }}>
                     ⚡ MODO RÁPIDO: A mostrar apenas os 50 cadastros mais recentes. Use os filtros acima para pesquisar contas antigas.
                 </div>
             )}
 
-            {/* ÁREA DA TABELA */}
             <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                 {loading ? <p style={{ color: '#666' }}>A carregar utilizadores...</p> : (
                     <div style={{ overflowX: 'auto' }}>
@@ -418,7 +383,6 @@ function AdminUserPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {/* 🚀 A LISTA AGORA CHAMA-SE APENAS 'users' E VEM PRONTA DO BACKEND */}
                                 {users.map(user => (
                                     <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
                                         <td style={{ padding: '15px 10px', fontWeight: '500' }}>#{user.id}</td>
@@ -450,7 +414,7 @@ function AdminUserPage() {
                                                 Editar
                                             </button>
                                             <button 
-                                                onClick={() => handleToggleBlock(user)} 
+                                                onClick={() => abrirModalBloqueio(user)} 
                                                 style={{ ...btnAcaoStyle, backgroundColor: user.is_active ? '#dc3545' : '#28a745', color: 'white' }}
                                             >
                                                 {user.is_active ? 'Bloquear' : 'Desbloquear'}
@@ -474,6 +438,45 @@ function AdminUserPage() {
 
             {isModalOpen && (
                 <UserEditForm user={editingUser} onSubmit={handleEditSubmit} onCancel={() => setIsModalOpen(false)} />
+            )}
+
+            {/* 🚀 MODAL BONITÃO DE CONFIRMAÇÃO DE BLOQUEIO */}
+            {modalBloqueioAberto && usuarioParaBloquear && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
+                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '90%', maxWidth: '400px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                        
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>
+                            {usuarioParaBloquear.is_active ? '🔒' : '🔓'}
+                        </div>
+                        
+                        <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px', fontSize: '22px' }}>
+                            {usuarioParaBloquear.is_active ? 'Bloquear Utilizador?' : 'Desbloquear Utilizador?'}
+                        </h3>
+                        
+                        <p style={{ color: '#555', marginBottom: '25px', lineHeight: '1.5', fontSize: '15px' }}>
+                            Tem a certeza que deseja {usuarioParaBloquear.is_active ? 'bloquear o acesso de' : 'restaurar o acesso de'} <br/>
+                            <strong>{usuarioParaBloquear.email}</strong>?
+                        </p>
+                        
+                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                            <button 
+                                onClick={() => {
+                                    setModalBloqueioAberto(false);
+                                    setUsuarioParaBloquear(null);
+                                }} 
+                                style={{ padding: '12px 20px', borderRadius: '8px', border: '1px solid #ddd', backgroundColor: '#f8f9fa', color: '#555', cursor: 'pointer', fontWeight: 'bold', flex: 1, transition: '0.2s' }}
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={confirmarBloqueio} 
+                                style={{ padding: '12px 20px', borderRadius: '8px', border: 'none', backgroundColor: usuarioParaBloquear.is_active ? '#dc3545' : '#28a745', color: 'white', cursor: 'pointer', fontWeight: 'bold', flex: 1, transition: '0.2s' }}
+                            >
+                                Sim, {usuarioParaBloquear.is_active ? 'Bloquear' : 'Desbloquear'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

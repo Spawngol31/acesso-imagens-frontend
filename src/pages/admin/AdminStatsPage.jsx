@@ -13,7 +13,6 @@ import {
   Legend,
 } from 'chart.js';
 
-// Regista os componentes necessários do Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -26,15 +25,19 @@ ChartJS.register(
 function AdminStatsPage() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    
+    // 🚀 NOVO: Estado para controlar o período do filtro
+    const [periodo, setPeriodo] = useState('mensal');
 
-    // --- CORES DO PROJETO ---
     const corPrincipal = '#6c0464';
 
+    // O useEffect agora recarrega os dados toda a vez que o "periodo" muda!
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                const response = await axiosInstance.get('/admin/stats/');
+                // 🚀 NOVO: Enviamos o filtro para o Django através da URL
+                const response = await axiosInstance.get(`/admin/stats/?periodo=${periodo}`);
                 setStats(response.data);
             } catch (error) {
                 console.error("Erro ao buscar estatísticas:", error);
@@ -43,51 +46,72 @@ function AdminStatsPage() {
             }
         };
         fetchStats();
-    }, []);
+    }, [periodo]); 
 
-    // Prepara os dados para o gráfico de Top Fotógrafos usando a cor da sua marca
     const topFotografosChartData = {
         labels: stats?.top_fotografos.map(f => f.nome_completo) || [],
         datasets: [
             {
                 label: 'Total Vendido (R$)',
                 data: stats?.top_fotografos.map(f => f.total_vendido) || [],
-                backgroundColor: 'rgba(108, 4, 100, 0.7)', // Roxo do projeto com transparência
+                backgroundColor: 'rgba(108, 4, 100, 0.7)',
                 borderColor: corPrincipal,
                 borderWidth: 1,
-                borderRadius: 4, // Barras levemente arredondadas
+                borderRadius: 4,
             },
         ],
     };
 
-    if (loading) return <p style={{ padding: '20px', color: '#666' }}>A carregar estatísticas do sistema...</p>;
+    // 🚀 NOVO: Função para deixar os títulos dos cartões dinâmicos
+    const getLabelPeriodo = () => {
+        switch(periodo) {
+            case 'diario': return '(Hoje)';
+            case 'semanal': return '(Esta Semana)';
+            case 'mensal': return '(Este Mês)';
+            case 'anual': return '(Este Ano)';
+            default: return '(Todo o Período)';
+        }
+    };
+
+    if (loading && !stats) return <p style={{ padding: '20px', color: '#666' }}>A carregar estatísticas do sistema...</p>;
     if (!stats) return <p style={{ padding: '20px', color: 'red' }}>Não foi possível carregar as estatísticas.</p>;
 
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
-            {/* TÍTULO DA PÁGINA */}
-            <div style={{ marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '10px' }}>
+            {/* TÍTULO E FILTRO (FLEXBOX PARA FICAREM LADO A LADO) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px', flexWrap: 'wrap', gap: '15px' }}>
                 <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>📊 Visão Geral do Sistema</h2>
+                
+                {/* 🚀 NOVO: O Dropdown de Filtro */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Filtrar por:</label>
+                    <select 
+                        value={periodo} 
+                        onChange={(e) => setPeriodo(e.target.value)}
+                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ced4da', outline: 'none', color: corPrincipal, fontWeight: 'bold', backgroundColor: '#fdfbfe', cursor: 'pointer' }}
+                    >
+                        <option value="diario">Hoje (Diário)</option>
+                        <option value="semanal">Esta Semana</option>
+                        <option value="mensal">Este Mês</option>
+                        <option value="anual">Este Ano</option>
+                        <option value="todos">Todo o Histórico</option>
+                    </select>
+                </div>
             </div>
 
-            {/* CARTÕES DE RESUMO (GRID HORIZONTAL) */}
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-                gap: '20px', 
-                marginBottom: '40px' 
-            }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
                 <div style={cardStyle}>
-                    <p style={cardLabelStyle}>Faturação total</p>
+                    <p style={cardLabelStyle}>Faturação {getLabelPeriodo()}</p>
                     <h2 style={cardValueStyle}>R$ {parseFloat(stats.geral.faturacao_total).toFixed(2)}</h2>
                 </div>
                 <div style={cardStyle}>
-                    <p style={cardLabelStyle}>Fotos vendidas</p>
+                    <p style={cardLabelStyle}>Fotos vendidas {getLabelPeriodo()}</p>
                     <h2 style={cardValueStyle}>{stats.geral.fotos_vendidas_total}</h2>
                 </div>
                 <div style={cardStyle}>
                     <p style={cardLabelStyle}>Utilizadores totais</p>
+                    {/* Utilizadores não costumam ser filtrados por tempo, mantemos o total absoluto */}
                     <h2 style={cardValueStyle}>{stats.geral.utilizadores_total}</h2>
                 </div>
                 <div style={cardStyle}>
@@ -96,23 +120,18 @@ function AdminStatsPage() {
                 </div>
             </div>
 
-            {/* ÁREA DOS GRÁFICOS E TABELAS */}
+            {/* ÁREA DOS GRÁFICOS (Continua igual, mas repare que agora os dados vão respeitar o filtro) */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
                 
-                {/* GRÁFICO */}
                 <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>🏆 Top 5 Fotógrafos (Por Vendas)</h3>
+                    <h3 style={sectionTitleStyle}>🏆 Top 5 Fotógrafos {getLabelPeriodo()}</h3>
                     <div style={{ height: '300px' }}>
-                        <Bar 
-                            data={topFotografosChartData} 
-                            options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} 
-                        />
+                        <Bar data={topFotografosChartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
                     </div>
                 </div>
 
-                {/* TABELA TOP FOTOS */}
                 <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>📸 Top 5 Fotos Mais Vendidas</h3>
+                    <h3 style={sectionTitleStyle}>📸 Top 5 Fotos Mais Vendidas {getLabelPeriodo()}</h3>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                             <thead>
@@ -137,7 +156,7 @@ function AdminStatsPage() {
                                 {stats.top_fotos.length === 0 && (
                                     <tr>
                                         <td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                                            Nenhuma foto vendida ainda.
+                                            Nenhuma foto vendida neste período.
                                         </td>
                                     </tr>
                                 )}
@@ -181,10 +200,9 @@ const cardValueStyle = {
 
 const sectionStyle = {
     backgroundColor: '#fff',
-    padding: '5px',
+    padding: '20px', // Aumentei um pouco o padding para ficar mais elegante
     borderRadius: '10px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-    
 };
 
 const sectionTitleStyle = {
