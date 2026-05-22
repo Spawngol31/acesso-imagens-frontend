@@ -11,6 +11,7 @@ function AdminJornaisPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [jornalParaExcluir, setJornalParaExcluir] = useState(null);
     const [formData, setFormData] = useState({
+        id: null,
         nome_jornal: '',
         usuario: '',
         ftp_host: '',
@@ -39,17 +40,18 @@ function AdminJornaisPage() {
     };
 
     const fetchUsuarios = async () => {
-        try {
-            // Buscamos usuários para poder linkar o FTP a uma conta
-            const response = await axiosInstance.get('admin/users/');
-            const fotografos = response.data.filter(u =>
-                 u.papel === 'FOTOGRAFO'
-            );
-            setUsuariosDisponiveis(fotografos);
-        } catch (error) {
-            console.error("Erro ao buscar usuários:", error);
-        }
-    };
+        try {
+            // Pedimos ao servidor APENAS os usuários com o papel FOTOGRAFO
+            const response = await axiosInstance.get('admin/users/?papel=FOTOGRAFO');
+            
+            // Mantemos o filtro extra por segurança, caso a API devolva algo a mais
+            const fotografos = response.data.filter(u => u.papel === 'FOTOGRAFO');
+            
+            setUsuariosDisponiveis(fotografos);
+        } catch (error) {
+            console.error("Erro ao buscar usuários:", error);
+        }
+    };
 
     useEffect(() => {
         fetchJornais();
@@ -62,21 +64,29 @@ function AdminJornaisPage() {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await axiosInstance.post('admin/jornais-parceiros/', formData);
-            toast.success("Jornal cadastrado com sucesso!");
-            setIsModalOpen(false);
-            fetchJornais();
-            // Resetar form
-            setFormData({
-                nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true
-            });
-        } catch (error) {
-            toast.error(error.response?.data?.error || "Erro ao cadastrar jornal.");
-            console.error(error);
-        }
-    };
+        e.preventDefault();
+        try {
+            if (formData.id) {
+                // Se tem ID, estamos a EDITAR (Usamos PUT ou PATCH)
+                await axiosInstance.put(`admin/jornais-parceiros/${formData.id}/`, formData);
+                toast.success("Jornal atualizado com sucesso!");
+            } else {
+                // Se não tem ID, estamos a CRIAR (Usamos POST)
+                await axiosInstance.post('admin/jornais-parceiros/', formData);
+                toast.success("Jornal cadastrado com sucesso!");
+            }
+            
+            setIsModalOpen(false);
+            fetchJornais();
+            // Resetar form limpo
+            setFormData({
+                id: null, nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true
+            });
+        } catch (error) {
+            toast.error(error.response?.data?.error || "Erro ao salvar jornal.");
+            console.error(error);
+        }
+    };
 
     const toggleStatus = async (jornalId, statusAtual) => {
         try {
@@ -110,6 +120,21 @@ function AdminJornaisPage() {
         }
     };
 
+    // 3. Função que prepara o formulário para edição
+    const abrirModalEdicao = (jornal) => {
+        setFormData({
+            id: jornal.id,
+            nome_jornal: jornal.nome_jornal,
+            usuario: jornal.usuario || '', // Garante que pega o ID do fotógrafo
+            ftp_host: jornal.ftp_host,
+            ftp_user: jornal.ftp_user,
+            ftp_password: '', // Deixamos vazio por segurança, para você digitar a nova se quiser
+            ftp_pasta: jornal.ftp_pasta,
+            ativo: jornal.ativo
+        });
+        setIsModalOpen(true);
+    };
+
     // Estilos
     const inputStyle = { padding: '10px', width: '100%', marginBottom: '15px', borderRadius: '5px', border: '1px solid #ccc', backgroundColor: 'white', color: '#666' };
     const btnNovoStyle = { padding: '10px 20px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
@@ -118,7 +143,10 @@ function AdminJornaisPage() {
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>
                 <h2 style={{ color: corPrincipal, margin: 0 }}>📰 Distribuição via FTP (Jornais)</h2>
-                <button onClick={() => setIsModalOpen(true)} className='create_buttom'>+ Adicionar Jornal Parceiro</button>
+                <button onClick={() => {
+                    setFormData({ id: null, nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true });
+                    setIsModalOpen(true);
+                }} className='create_buttom'>+ Adicionar Jornal Parceiro</button>
             </div>
 
             {loading ? <p>Carregando parceiros...</p> : (
@@ -132,6 +160,14 @@ function AdminJornaisPage() {
                             <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Pasta:</strong> {jornal.ftp_pasta}</p>
                             <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Usuário FTP:</strong> {jornal.ftp_user}</p>
                             <div style={{ marginTop: '15px' }}>
+                                <button 
+                                    onClick={() => abrirModalEdicao(jornal)}
+                                    style={{ padding: '5px 10px', marginRight: '15px', borderRadius: '4px', fontSize: '12px', border: '1px solid #ccc', backgroundColor: '#f8f9fa', cursor: 'pointer', color: '#333' }}
+                                    title="Editar Jornal"
+                                >
+                                    ✏️ Editar
+                                </button>
+
                                 <button 
                                     onClick={() => toggleStatus(jornal.id, jornal.ativo)}
                                     style={{ padding: '5px 10px', fontSize: '12px', borderRadius: '4px', cursor: 'pointer', border: 'none', backgroundColor: jornal.ativo ? '#f8d7da' : '#d4edda', color: jornal.ativo ? '#721c24' : '#155724' }}
@@ -157,13 +193,15 @@ function AdminJornaisPage() {
             {isModalOpen && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', width: '400px', maxHeight: '90vh', overflowY: 'auto' }}>
-                        <h3 style={{ color: corPrincipal, marginTop: 0 }}>Novo Jornal Parceiro</h3>
+                        <h3 style={{ color: corPrincipal, marginTop: 0 }}>
+                            {formData.id ? 'Editar Jornal Parceiro' : 'Novo Jornal Parceiro'}
+                        </h3>
                         <form onSubmit={handleSubmit}>
                             <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Nome do Veículo (Jornal)</label>
                             <input name="nome_jornal" value={formData.nome_jornal} onChange={handleInputChange} style={inputStyle} required />
 
                             <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Vincular a Conta de Usuário</label>
-                            <select name="usuario" value={formData.usuario_id} onChange={handleInputChange} style={inputStyle} required>
+                            <select name="usuario" value={formData.usuario} onChange={handleInputChange} style={inputStyle} required>
                                 <option value="">Selecione um Fotógrafo(a)...</option>
                                 {usuariosDisponiveis.map(u => (
                                     <option key={u.id} value={u.id}>{u.nome_completo} ({u.email})</option>
@@ -187,7 +225,9 @@ function AdminJornaisPage() {
 
                             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                                 <button type="button" onClick={() => setIsModalOpen(false)} className='create_buttom' style={{ flex: 1, padding: '10px' }}>Cancelar</button>
-                                <button type="submit" className='create_buttom' style={{ flex: 1, padding: '10px' }}>Salvar Jornal</button>
+                                <button type="submit" className='create_buttom' style={{ flex: 1, padding: '10px' }}>
+                                    {formData.id ? 'Atualizar Jornal' : 'Salvar Jornal'}
+                                </button>
                             </div>
                         </form>
                     </div>
