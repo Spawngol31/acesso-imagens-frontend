@@ -38,7 +38,6 @@ function MediaEditForm({ media, mediaType, onSubmit, onCancel }) {
         onSubmit(media.id, formData);
     };
 
-    // Estilo blindado para os inputs (Evita modo escuro do navegador)
     const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', backgroundColor: '#fff', color: '#333', colorScheme: 'light' };
 
     return (
@@ -49,8 +48,7 @@ function MediaEditForm({ media, mediaType, onSubmit, onCancel }) {
                     <div className="rotation-preview-wrapper" style={{ textAlign: 'center', marginBottom: '15px' }}>
                         <img 
                             src={media.imagem_url} 
-                            alt="Pré-visualização da Foto" 
-                            className="rotation-preview-image"
+                            alt="Pré-visualização" 
                             style={{ transform: `rotate(${formData.rotacao}deg)`, maxHeight: '200px', borderRadius: '8px', objectFit: 'contain' }}
                         />
                     </div>
@@ -84,13 +82,16 @@ function DashboardAlbumDetailPage() {
     const [loading, setLoading] = useState(true);
     const { id } = useParams();
     
-    // Controla qual janela global está aberta
     const [activeGlobalModal, setActiveGlobalModal] = useState(null); 
 
     // Estados para Upload de Fotos
     const [fotoFiles, setFotoFiles] = useState([]);
     const [meusJornais, setMeusJornais] = useState([]); 
     const [selectedJornais, setSelectedJornais] = useState([]);
+    
+    // Controle de Destino Simples (Sem Metadados)
+    const [uploadDestino, setUploadDestino] = useState('site'); 
+
     const [fotoPreco, setFotoPreco] = useState('15.00');
     const [fotoLegenda, setFotoLegenda] = useState('');
     const [isUploadingFotos, setIsUploadingFotos] = useState(false);
@@ -108,11 +109,9 @@ function DashboardAlbumDetailPage() {
     const [newPhotoPrice, setNewPhotoPrice] = useState('');
     const [newVideoPrice, setNewVideoPrice] = useState('');
 
-    // Estados para o Menu de Opções da Mídia
     const [actionModalMedia, setActionModalMedia] = useState(null);
     const [actionModalType, setActionModalType] = useState(''); 
 
-    // Estados dos Modais de Confirmação
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [fotoParaMudar, setFotoParaMudar] = useState(null);
 
@@ -120,8 +119,6 @@ function DashboardAlbumDetailPage() {
     const [mediaToDelete, setMediaToDelete] = useState(null);
 
     const corPrincipal = '#6c0464';
-
-    // 🚀 ESTILOS PADRÃO BLINDADOS (Rosado e Inputs brancos)
     const overlayRosado = 'rgba(108, 4, 100, 0.4)';
     const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', backgroundColor: '#fff', color: '#333', colorScheme: 'light' };
     
@@ -129,22 +126,18 @@ function DashboardAlbumDetailPage() {
     const globalModalContent = { backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' };
     const globalModalHeader = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '20px' };
 
-
     const fetchAlbumDetails = useCallback(async () => {
         try {
             const response = await axiosInstance.get(`/albuns/${id}/?timestamp=${new Date().getTime()}`);
             setAlbum(response.data);
         } catch (error) {
-            console.error("Erro ao buscar detalhes do álbum:", error);
             toast.error("Erro ao carregar os detalhes do álbum.");
         } finally {
             setLoading(false);
         }
     }, [id]);
 
-    useEffect(() => {
-        fetchAlbumDetails();
-    }, [fetchAlbumDetails]);
+    useEffect(() => { fetchAlbumDetails(); }, [fetchAlbumDetails]);
 
     useEffect(() => {
         const fetchJornais = async () => {
@@ -159,28 +152,24 @@ function DashboardAlbumDetailPage() {
     }, []);
 
     const toggleJornal = (jornalId) => {
-        setSelectedJornais(prev => 
-            prev.includes(jornalId) 
-            ? prev.filter(id => id !== jornalId) 
-            : [...prev, jornalId] 
-        );
+        if (selectedJornais.includes(jornalId)) {
+            setSelectedJornais(prev => prev.filter(id => id !== jornalId));
+        } else {
+            setSelectedJornais(prev => [...prev, jornalId]);
+        }
     };
 
     const pollingIntervalRef = useRef(null);
 
     const startPolling = useCallback(() => {
-        if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-        }
-
+        if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
         setIsPolling(true);
         let pollCount = 0;
-        const maxPolls = 24; 
         
         pollingIntervalRef.current = setInterval(() => {
             fetchAlbumDetails();
             pollCount++;
-            if (pollCount >= maxPolls) {
+            if (pollCount >= 24) {
                 clearInterval(pollingIntervalRef.current);
                 pollingIntervalRef.current = null;
                 setIsPolling(false);
@@ -188,33 +177,38 @@ function DashboardAlbumDetailPage() {
         }, 5000);
     }, [fetchAlbumDetails]);
 
-    useEffect(() => {
-        return () => {
-            if (pollingIntervalRef.current) {
-                clearInterval(pollingIntervalRef.current);
-            }
-        };
-    }, []);
+    useEffect(() => { return () => { if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current); }; }, []);
 
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
-        if (fotoFiles.length === 0) { toast.info("Por favor, selecione pelo menos um ficheiro de foto."); return; }
+        if (fotoFiles.length === 0) { toast.info("Selecione pelo menos uma foto."); return; }
         
+        if ((uploadDestino === 'ambos' || uploadDestino === 'ftp') && selectedJornais.length === 0) {
+            toast.error("Selecione pelo menos um jornal parceiro na lista!");
+            return;
+        }
+
         setIsUploadingFotos(true);
         let fotosEnviadasComSucesso = 0;
         let fotosComErro = 0;
 
         for (let i = 0; i < fotoFiles.length; i++) {
             const file = fotoFiles[i];
-            setUploadStatusMsg(`A enviar a foto ${i + 1} de ${fotoFiles.length}...`);
+            setUploadStatusMsg(`A processar a foto ${i + 1} de ${fotoFiles.length}...`);
             
             const formData = new FormData();
             formData.append('album', id);
             formData.append('imagem', file);
-            formData.append('preco', fotoPreco);
-            formData.append('legenda', fotoLegenda);
+            formData.append('destino_upload', uploadDestino);
+            
+            if (uploadDestino !== 'ftp') {
+                formData.append('preco', fotoPreco);
+                formData.append('legenda', fotoLegenda);
+            }
 
-            if (selectedJornais.length > 0) formData.append('jornais', selectedJornais.join(','));
+            if (uploadDestino !== 'site') {
+                formData.append('jornais', selectedJornais.join(','));
+            }
             
             try {
                 await axiosInstance.post('/fotos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -228,15 +222,17 @@ function DashboardAlbumDetailPage() {
         setUploadStatusMsg('');
         
         if (fotosComErro > 0) {
-            toast.error(`${fotosEnviadasComSucesso} fotos enviadas. ${fotosComErro} fotos falharam.`);
+            toast.error(`${fotosEnviadasComSucesso} fotos enviadas. ${fotosComErro} falharam.`);
         } else {
-            toast.success(`Sucesso! ${fotosEnviadasComSucesso} foto(s) enviadas e em processamento.`);
+            toast.success(`Sucesso! ${fotosEnviadasComSucesso} foto(s) enviadas com sucesso.`);
             setActiveGlobalModal(null); 
+            setFotoFiles([]);
+            setSelectedJornais([]);
+            setUploadDestino('site');
         }
         
-        setFotoFiles([]);
         fetchAlbumDetails();
-        startPolling();
+        if (uploadDestino !== 'ftp') startPolling(); 
     };
 
     const handleVideoSelect = (e) => {
@@ -250,93 +246,59 @@ function DashboardAlbumDetailPage() {
 
     const handleVideoSubmit = async (e) => {
         e.preventDefault();
-        if (stagedVideos.length === 0) { toast.info("Nenhum vídeo selecionado para envio."); return; }
-        
-        for (const video of stagedVideos) {
-            if (!video.titulo) { toast.error(`Por favor, adicione um título para o vídeo: ${video.videoFile.name}`); return; }
-        }
+        if (stagedVideos.length === 0) return;
+        for (const video of stagedVideos) { if (!video.titulo) return; }
         
         setIsUploadingVideos(true);
-        setUploadProgressVideos(0);
         
         for (let i = 0; i < stagedVideos.length; i++) {
             const video = stagedVideos[i];
-            setUploadProgressVideos(i + 1);
             const formData = new FormData();
             formData.append('album', id);
             formData.append('titulo', video.titulo);
             formData.append('preco', video.preco);
             formData.append('arquivo_video', video.videoFile);
             
-            try {
-                await axiosInstance.post('/dashboard/videos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-            } catch (error) { 
-                toast.error(`Erro ao enviar o vídeo ${video.videoFile.name}`);
-            }
+            try { await axiosInstance.post('/dashboard/videos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }); } 
+            catch (error) { toast.error(`Erro no vídeo ${video.videoFile.name}`); }
         }
         
         setIsUploadingVideos(false);
-        toast.success(`${stagedVideos.length} vídeo(s) enviados com sucesso!`);
-        
+        toast.success(`Vídeos enviados com sucesso!`);
         setStagedVideos([]);
         setActiveGlobalModal(null); 
         fetchAlbumDetails();
         startPolling();
     };
 
-    const handleToggleArchivePhotoClick = (foto) => {
-        setFotoParaMudar(foto);
-        setIsConfirmModalOpen(true);
-    };
-
+    const handleToggleArchivePhotoClick = (foto) => { setFotoParaMudar(foto); setIsConfirmModalOpen(true); };
     const confirmarArquivamentoFoto = async () => {
-        if (!fotoParaMudar) return;
         const acao = fotoParaMudar.is_arquivado ? 'desarquivar' : 'arquivar';
         try {
             await axiosInstance.post(`/dashboard/fotos/${fotoParaMudar.id}/${acao}/`);
             fetchAlbumDetails();
-            toast.success(`Foto ${fotoParaMudar.is_arquivado ? 'restaurada' : 'arquivada'} com sucesso.`);
-        } catch (error) {
-            toast.error(`Erro ao tentar ${acao} a foto.`);
-        } finally {
-            setIsConfirmModalOpen(false);
-            setFotoParaMudar(null);
-        }
+            toast.success(`Sucesso.`);
+        } catch (error) { } 
+        finally { setIsConfirmModalOpen(false); setFotoParaMudar(null); }
     };
 
     const handleSetCover = async (fotoId) => {
-        const toastId = toast.loading("A definindo nova capa...");
         try {
             await axiosInstance.post(`/dashboard/albuns/${id}/definir_capa/`, { foto_id: fotoId });
-            toast.update(toastId, { render: "⭐ Capa do álbum atualizada com sucesso!", type: "success", isLoading: false, autoClose: 3000 });
             fetchAlbumDetails();
-        } catch (error) {
-            toast.update(toastId, { render: "Erro ao definir a foto como capa.", type: "error", isLoading: false, autoClose: 4000 });
-        }
+            toast.success("Capa updated.");
+        } catch (error) { }
     };
     
-    const handleDeleteMediaClick = (mediaId, type) => {
-        setMediaToDelete({ id: mediaId, type });
-        setIsDeleteModalOpen(true);
-    };
-
+    const handleDeleteMediaClick = (mediaId, type) => { setMediaToDelete({ id: mediaId, type }); setIsDeleteModalOpen(true); };
     const confirmDeleteMedia = async () => {
-        if (!mediaToDelete) return;
-        const { id: mediaId, type } = mediaToDelete;
         try {
-            await axiosInstance.delete(`/dashboard/${type}s/${mediaId}/`);
+            await axiosInstance.delete(`/dashboard/${mediaToDelete.type}s/${mediaToDelete.id}/`);
             fetchAlbumDetails();
-            toast.success(`${type === 'foto' ? 'Foto apagada' : 'Vídeo apagado'} com sucesso.`);
-        } catch (error) {
-            if (error.response?.status === 500) {
-                toast.error(`Erro: ${type === 'foto' ? 'Esta foto' : 'Este vídeo'} não pode ser apagado pois já faz parte de um pedido de cliente. Por favor, use a opção 'Arquivar'.`);
-            } else {
-                toast.error(`Erro ao apagar ${type}.`);
-            }
-        } finally {
-            setIsDeleteModalOpen(false);
-            setMediaToDelete(null);
-        }
+            toast.success(`Excluído com sucesso.`);
+        } catch (error) { 
+            toast.error("Erro ao apagar. Pode já estar vinculada a uma venda.");
+        } finally { setIsDeleteModalOpen(false); setMediaToDelete(null); }
     };
 
     const handleEditSubmit = async (mediaId, formData) => {
@@ -345,47 +307,36 @@ function DashboardAlbumDetailPage() {
             await axiosInstance.patch(`/dashboard/${mediaType}s/${mediaId}/`, dataToSubmit);
             setEditingMedia(null);
             fetchAlbumDetails();
-            toast.success("Mídia atualizada com sucesso!");
-        } catch (error) { 
-            toast.error("Erro ao salvar alterações.");
-        }
+            toast.success("Atualizado com sucesso!");
+        } catch (error) { }
     };
 
-    const openEditForm = (media, type) => {
-        setEditingMedia(media);
-        setMediaType(type);
-    };
+    const openEditForm = (media, type) => { setEditingMedia(media); setMediaType(type); };
 
     const handleBulkUpdatePhotos = async (e) => {
         e.preventDefault();
-        if (!newPhotoPrice || parseFloat(newPhotoPrice) < 0) { toast.info("Por favor, insira um preço válido."); return; }
         try {
             const response = await axiosInstance.post(`/dashboard/albuns/${id}/bulk_update_photos/`, { preco: newPhotoPrice });
             toast.success(response.data.status);
             fetchAlbumDetails();
             setNewPhotoPrice('');
             setActiveGlobalModal(null); 
-        } catch (error) {
-            toast.error("Erro ao atualizar preços.");
-        }
+        } catch (error) { toast.error("Erro ao atualizar."); }
     };
 
     const handleBulkUpdateVideos = async (e) => {
         e.preventDefault();
-        if (!newVideoPrice || parseFloat(newVideoPrice) < 0) { toast.info("Por favor, insira um preço válido."); return; }
         try {
             const response = await axiosInstance.post(`/dashboard/albuns/${id}/bulk_update_videos/`, { preco: newVideoPrice });
             toast.success(response.data.status);
             fetchAlbumDetails();
             setNewVideoPrice('');
             setActiveGlobalModal(null); 
-        } catch (error) {
-            toast.error("Erro ao atualizar preços.");
-        }
+        } catch (error) { toast.error("Erro ao atualizar."); }
     };
 
     if (loading) return <p>Carregando...</p>;
-    if (!album) return <p>Álbum não encontrado ou falha ao carregar.</p>;
+    if (!album) return <p>Álbum não encontrado.</p>;
 
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -416,7 +367,6 @@ function DashboardAlbumDetailPage() {
                         <div className="dashboard-media-info">
                             <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
                             {foto.is_arquivado && <span className="status-archived-small">Arquivado</span>}
-                            
                             <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
                                 <button onClick={() => { setActionModalMedia(foto); setActionModalType('foto'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
                                     ⚙️ Opções
@@ -438,7 +388,6 @@ function DashboardAlbumDetailPage() {
                         <div className="dashboard-media-info">
                             <p className="media-title">{video.titulo}</p>
                             <p>R$ {parseFloat(video.preco).toFixed(2)}</p>
-                            
                             <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
                                 <button onClick={() => { setActionModalMedia(video); setActionModalType('video'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
                                     ⚙️ Opções
@@ -448,10 +397,9 @@ function DashboardAlbumDetailPage() {
                     </div>
                 ))}
             </div>
-            {album.videos?.length === 0 && <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhum vídeo neste álbum.</p>}
 
             {/* ========================================================================= */}
-            {/* 🚀 MODAIS GLOBAIS COM FUNDO ROSADO */}
+            {/* 🚀 MODAIS DE UPLOAD SIMPLIFICADOS (SEM FORMULÁRIO DE METADADOS) */}
             {/* ========================================================================= */}
             
             {activeGlobalModal === 'uploadFotos' && (
@@ -462,27 +410,49 @@ function DashboardAlbumDetailPage() {
                             <button onClick={() => setActiveGlobalModal(null)} disabled={isUploadingFotos} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✖</button>
                         </div>
                         <form onSubmit={handlePhotoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            
+                            {meusJornais.length > 0 && (
+                                <div style={{ backgroundColor: '#f0f4f8', padding: '15px', borderRadius: '8px', border: '1px solid #d1e3ea' }}>
+                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', marginBottom: '8px', display: 'block' }}>📍 Qual o destino destas fotos?</label>
+                                    <select 
+                                        value={uploadDestino} 
+                                        onChange={(e) => {
+                                            setUploadDestino(e.target.value);
+                                            if(e.target.value === 'site') setSelectedJornais([]); 
+                                        }} 
+                                        style={inputStyle}
+                                    >
+                                        <option value="site">🛒 Salvar APENAS na minha Loja (Site)</option>
+                                        <option value="ambos">🔄 Salvar na Loja + Enviar para Jornais (FTP)</option>
+                                        <option value="ftp">🚀 Enviar APENAS para Jornais (Não salvar no Site)</option>
+                                    </select>
+                                </div>
+                            )}
+
                             <div style={{ padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', textAlign: 'center', backgroundColor: '#fdfbfe' }}>
                                 <label htmlFor="photo-upload" className="create-button" style={{ display: 'inline-block', cursor: 'pointer' }}>Selecionar Ficheiros...</label>
                                 <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos} style={{ display: 'none' }} />
                                 {fotoFiles.length > 0 && <p style={{ color: '#28a745', fontWeight: 'bold', margin: '10px 0 0 0', fontSize: '13px' }}>✅ {fotoFiles.length} foto(s) selecionada(s)</p>}
                             </div>
                             
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Legenda Padrão (Opcional)</label>
-                                <input type="text" style={inputStyle} onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos} />
-                            </div>
+                            {uploadDestino !== 'ftp' && (
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <div style={{ flex: 2 }}>
+                                        <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Legenda para o Site (Opcional)</label>
+                                        <input type="text" style={inputStyle} onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos} />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Preço de Venda (R$)</label>
+                                        <input type="number" step="0.01" style={inputStyle} value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required={uploadDestino !== 'ftp'} disabled={isUploadingFotos} />
+                                    </div>
+                                </div>
+                            )}
                             
-                            <div>
-                                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Preço para todas (R$)</label>
-                                <input type="number" step="0.01" style={inputStyle} value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required disabled={isUploadingFotos} />
-                            </div>
-                            
-                            {isUploadingFotos && <div style={{ padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold', textAlign: 'center' }}>⏳ {uploadStatusMsg}</div>}
-                            
-                            {meusJornais.length > 0 && (
+                            {uploadDestino !== 'site' && meusJornais.length > 0 && (
                                 <div style={{ padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #e1bce0' }}>
-                                    <h4 style={{ margin: '0 0 10px 0', color: corPrincipal }}>🚀 Distribuir via FTP (Opcional)</h4>
+                                    <h4 style={{ margin: 0, color: corPrincipal, marginBottom: '10px' }}>🚀 Envio via FTP (Imprensa)</h4>
+                                    <p style={{ fontSize: '12px', color: '#666', marginTop: 0 }}>Selecione os jornais para onde deseja enviar estas fotos:</p>
+                                    
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         {meusJornais.map(jornal => (
                                             <label key={jornal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#333' }}>
@@ -494,9 +464,16 @@ function DashboardAlbumDetailPage() {
                                 </div>
                             )}
 
-                            <button type="submit" className="create-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ opacity: isUploadingFotos ? 0.6 : 1, width: '100%', padding: '15px', fontSize: '16px' }}>
-                                {isUploadingFotos ? '🔒 A enviar... Aguarde.' : `Enviar ${fotoFiles.length || 0} Foto(s)`}
-                            </button>
+                            {isUploadingFotos && <div style={{ padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold', textAlign: 'center' }}>⏳ {uploadStatusMsg}</div>}
+
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                <button type="button" onClick={() => setActiveGlobalModal(null)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #ccc', backgroundColor: '#f8f9fa', cursor: 'pointer', fontWeight: 'bold', color: '#555' }}>
+                                    Voltar
+                                </button>
+                                <button type="submit" className="create-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ flex: 1, opacity: isUploadingFotos ? 0.6 : 1, padding: '12px', fontSize: '14px' }}>
+                                    {isUploadingFotos ? '🔒 A enviar...' : `Enviar Fotos`}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -514,7 +491,6 @@ function DashboardAlbumDetailPage() {
                                 <label htmlFor="video-upload" className="create-button" style={{ display: 'inline-block', cursor: 'pointer' }}>Selecionar Ficheiros de Vídeo...</label>
                                 <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple disabled={isUploadingVideos} style={{ display: 'none' }} />
                             </div>
-                            
                             {stagedVideos.length > 0 && (
                                 <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #eee' }}>
                                     <h4 style={{ marginTop: 0 }}>Vídeos selecionados:</h4>
@@ -530,11 +506,9 @@ function DashboardAlbumDetailPage() {
                                     ))}
                                 </div>
                             )}
-                            
-                            {isUploadingVideos && <p style={{ fontWeight: 'bold', color: corPrincipal, textAlign: 'center' }}>⏳ Enviando e processando vídeo {uploadProgressVideos} de {stagedVideos.length}...</p>}
-                            
+                            {isUploadingVideos && <p style={{ fontWeight: 'bold', color: corPrincipal, textAlign: 'center' }}>⏳ Enviando vídeo {uploadProgressVideos} de {stagedVideos.length}...</p>}
                             <button onClick={handleVideoSubmit} className="create-button" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ opacity: isUploadingVideos ? 0.6 : 1, width: '100%', padding: '15px', fontSize: '16px' }}>
-                                {isUploadingVideos ? '🔒 A enviar... Aguarde.' : `Enviar ${stagedVideos.length} Vídeo(s)`}
+                                {isUploadingVideos ? '🔒 A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
                             </button>
                         </div>
                     </div>
