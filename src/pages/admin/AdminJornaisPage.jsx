@@ -159,10 +159,17 @@ function AdminJornaisPage() {
                             <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Host:</strong> {jornal.ftp_host}</p>
                             <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Pasta:</strong> {jornal.ftp_pasta}</p>
                             <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Usuário FTP:</strong> {jornal.ftp_user}</p>
-                            <div style={{ marginTop: '15px' }}>
+                            <div style={{ 
+                                marginTop: '15px', 
+                                display: 'flex', 
+                                gap: '8px', 
+                                flexWrap: 'nowrap',
+                                overflowX: 'auto',
+                                paddingBottom: '5px' // Dá um espacinho caso apareça a barra de rolagem em telas muito pequenas
+                            }}>
                                 <button 
                                     onClick={() => abrirModalEdicao(jornal)}
-                                    style={{ padding: '5px 10px', marginRight: '15px', borderRadius: '4px', fontSize: '12px', border: '1px solid #ccc', backgroundColor: '#f8f9fa', cursor: 'pointer', color: '#333' }}
+                                    style={{ padding: '5px 10px', borderRadius: '4px', fontSize: '12px', border: '1px solid #ccc', backgroundColor: '#f8f9fa', cursor: 'pointer', color: '#333', whiteSpace: 'nowrap' }}
                                     title="Editar Jornal"
                                 >
                                     ✏️ Editar
@@ -170,7 +177,7 @@ function AdminJornaisPage() {
 
                                 <button 
                                     onClick={() => toggleStatus(jornal.id, jornal.ativo)}
-                                    style={{ padding: '5px 10px', fontSize: '12px', borderRadius: '4px', cursor: 'pointer', border: 'none', backgroundColor: jornal.ativo ? '#f8d7da' : '#d4edda', color: jornal.ativo ? '#721c24' : '#155724' }}
+                                    style={{ padding: '5px 10px', fontSize: '12px', borderRadius: '4px', cursor: 'pointer', border: 'none', backgroundColor: jornal.ativo ? '#f8d7da' : '#d4edda', color: jornal.ativo ? '#721c24' : '#155724', whiteSpace: 'nowrap' }}
                                 >
                                     {jornal.ativo ? 'Pausar Envios' : 'Retomar Envios'}
                                 </button>
@@ -178,7 +185,7 @@ function AdminJornaisPage() {
                                 <button 
                                     onClick={() => abrirModalExclusao(jornal.id, jornal.nome_jornal)}
                                     className= 'delete-button-pill'
-                                    style={{ padding: '5px 10px', marginLeft: '15px', borderRadius: '4px', fontSize: '12px'}}
+                                    style={{ padding: '5px 10px', borderRadius: '4px', fontSize: '12px', whiteSpace: 'nowrap' }}
                                     title="Excluir Jornal"
                                 >
                                     🗑️ Excluir
