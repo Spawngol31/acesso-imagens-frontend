@@ -467,7 +467,7 @@ function DashboardAlbumDetailPage() {
                             {isUploadingFotos && <div style={{ padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold', textAlign: 'center' }}>⏳ {uploadStatusMsg}</div>}
 
                             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button type="button" onClick={() => setActiveGlobalModal(null)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #ccc', backgroundColor: '#f8f9fa', cursor: 'pointer', fontWeight: 'bold', color: '#555' }}>
+                                <button type="button" onClick={() => setActiveGlobalModal(null)} className='create-button' style={{ flex: 1, padding: '12px'}}>
                                     Voltar
                                 </button>
                                 <button type="submit" className="create-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ flex: 1, opacity: isUploadingFotos ? 0.6 : 1, padding: '12px', fontSize: '14px' }}>
