@@ -11,9 +11,12 @@ function DashboardUploadPage() {
     const [fotoFiles, setFotoFiles] = useState([]);
     const [fotoPreco, setFotoPreco] = useState('15.00');
     const [fotoLegenda, setFotoLegenda] = useState('');
-    const [meusJornais, setMeusJornais] = useState([]); // Guarda os jornais vindos do backend
-    const [selectedJornais, setSelectedJornais] = useState([]); // Guarda os que o fotógrafo marcou
+    const [meusJornais, setMeusJornais] = useState([]); 
+    const [selectedJornais, setSelectedJornais] = useState([]); 
     
+    // --- ESTADO NOVO DE DESTINO ---
+    const [uploadDestino, setUploadDestino] = useState('site');
+
     const [isUploadingFotos, setIsUploadingFotos] = useState(false);
     const [uploadStatusMsg, setUploadStatusMsg] = useState('');
 
@@ -21,17 +24,14 @@ function DashboardUploadPage() {
     const [isUploadingVideos, setIsUploadingVideos] = useState(false);
     const [uploadProgressVideos, setUploadProgressVideos] = useState(0);
 
-    // --- 1. ESTADO DO RADAR ---
     const [tamanhoFila, setTamanhoFila] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Busca os álbuns
                 const resAlbuns = await axiosInstance.get('/dashboard/albuns/');
                 setAlbuns(resAlbuns.data);
                 
-                // Busca os jornais vinculados a este fotógrafo
                 const resJornais = await axiosInstance.get('/admin/jornais-parceiros/meus_jornais/');
                 setMeusJornais(resJornais.data);
             } catch (error) {
@@ -42,7 +42,6 @@ function DashboardUploadPage() {
         fetchData();
     }, []);
 
-    // --- 2. LÓGICA DO RADAR (RODA A CADA 10 SEGUNDOS) ---
     useEffect(() => {
         const verificarFila = async () => {
             try {
@@ -58,13 +57,12 @@ function DashboardUploadPage() {
 
         return () => clearInterval(intervalo); 
     }, []);
-    // ----------------------------------------------------
 
     const toggleJornal = (jornalId) => {
         setSelectedJornais(prev => 
             prev.includes(jornalId) 
-            ? prev.filter(id => id !== jornalId) // Desmarca se já estava marcado
-            : [...prev, jornalId] // Marca se estava desmarcado
+            ? prev.filter(id => id !== jornalId) 
+            : [...prev, jornalId] 
         );
     };
 
@@ -77,6 +75,12 @@ function DashboardUploadPage() {
         }
         if (fotoFiles.length === 0) {
             toast.info("Por favor, selecione pelo menos um ficheiro de foto.");
+            return;
+        }
+        
+        // Bloqueio de segurança se tentar enviar para FTP sem selecionar jornais
+        if ((uploadDestino === 'ambos' || uploadDestino === 'ftp') && selectedJornais.length === 0) {
+            toast.error("Selecione pelo menos um jornal parceiro na lista de FTP!");
             return;
         }
 
@@ -95,10 +99,16 @@ function DashboardUploadPage() {
                 const formData = new FormData();
                 formData.append('album', selectedAlbum);
                 formData.append('imagem', file);
-                formData.append('preco', fotoPreco);
-                formData.append('legenda', fotoLegenda);
+                formData.append('destino_upload', uploadDestino); // Adicionando destino
+                
+                // Se não for exclusividade do FTP, envia os metadados do site
+                if (uploadDestino !== 'ftp') {
+                    formData.append('preco', fotoPreco);
+                    formData.append('legenda', fotoLegenda);
+                }
 
-                if (selectedJornais.length > 0) {
+                // Se não for exclusividade do site, envia os jornais
+                if (uploadDestino !== 'site' && selectedJornais.length > 0) {
                     formData.append('jornais', selectedJornais.join(','));
                 }
 
@@ -130,7 +140,10 @@ function DashboardUploadPage() {
             toast.success(`${fotosEnviadasComSucesso} foto(s) enviadas com sucesso para a fila de processamento!`);
         }
 
+        // Limpeza dos formulários
         setFotoFiles([]);
+        setUploadDestino('site');
+        setSelectedJornais([]);
         const photoForm = e.target;
         const fileInput = photoForm.querySelector('#photo-upload');
         if (fileInput) fileInput.value = '';
@@ -199,7 +212,6 @@ function DashboardUploadPage() {
                 <h2 style={{ margin: 0, fontSize: '24px' }}>📤 Upload de mídias</h2>
             </div>
 
-            {/* --- 3. VISUAL DO RADAR --- */}
             {tamanhoFila > 0 && (
                 <div style={{ 
                     backgroundColor: '#e6f7ff', 
@@ -221,7 +233,6 @@ function DashboardUploadPage() {
                     </span>
                 </div>
             )}
-            {/* -------------------------- */}
             
             <div className="album-selector-wrapper">
                 <label htmlFor="album-select">1. Selecione o álbum de destino:</label>
@@ -237,12 +248,45 @@ function DashboardUploadPage() {
                     {/* FORMULÁRIO DE FOTOS */}
                     <form onSubmit={handlePhotoSubmit} className="upload-form">
                         <h3>2. Adicionar novas fotos</h3>
+
+                        {/* --- NOVO SELETOR DE DESTINO PADRONIZADO --- */}
+                        <div style={{ 
+                            marginBottom: '20px', padding: '15px', borderRadius: '8px', 
+                            backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' 
+                        }}>
+                            <label style={{ display: 'block', fontWeight: '600', fontSize: '13px', color: '#333', marginBottom: '8px' }}>
+                                📍 Qual o destino destas fotos?
+                            </label>
+                            <select
+                                value={uploadDestino}
+                                onChange={(e) => {
+                                    setUploadDestino(e.target.value);
+                                    if(e.target.value === 'site') setSelectedJornais([]);
+                                }}
+                                style={{
+                                    width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ced4da',
+                                    backgroundColor: '#ffffff', color: '#333333', fontSize: '14px', outline: 'none', cursor: 'pointer'
+                                }}
+                                disabled={isUploadingFotos}
+                            >
+                                <option value="site">🛒 Salvar APENAS na minha Loja (Site)</option>
+                                <option value="ambos">✨ Duplo Envio: Salvar na Loja + Enviar para Jornais</option>
+                                <option value="ftp">🚀 Enviar APENAS para os Jornais (FTP)</option>
+                            </select>
+                        </div>
+                        {/* ------------------------------------------- */}
+
                         <label htmlFor="photo-upload" className="custom-file-upload">Escolher ficheiros</label>
                         <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos}/>
                         {fotoFiles.length > 0 && <span className='file-name'>{fotoFiles.length} foto(s) selecionada(s)</span>}
                         
-                        <input type="text" placeholder="Legenda (será aplicada a todas)" onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos}/>
-                        <input type="number" step="0.01" placeholder="Preço (para todas as fotos)" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required disabled={isUploadingFotos} />
+                        {/* Os campos Legenda e Preço só aparecem se o destino NÃO FOR EXCLUSIVO para FTP */}
+                        {uploadDestino !== 'ftp' && (
+                            <>
+                                <input type="text" placeholder="Legenda (será aplicada a todas)" onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos}/>
+                                <input type="number" step="0.01" placeholder="Preço (para todas as fotos)" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required disabled={isUploadingFotos} />
+                            </>
+                        )}
                         
                         {isUploadingFotos && (
                             <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', border: '1px solid #ffeeba', fontWeight: 'bold' }}>
@@ -250,11 +294,12 @@ function DashboardUploadPage() {
                             </div>
                         )}
                         
-                        {meusJornais.length > 0 && (
+                        {/* A caixa de Jornais só aparece se o destino NÃO FOR EXCLUSIVO para o SITE */}
+                        {uploadDestino !== 'site' && meusJornais.length > 0 && (
                             <div style={{ marginTop: '15px', marginBottom: '15px', padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #e1bce0' }}>
                                 <h4 style={{ margin: '0 0 10px 0', color: '#6c0464' }}>🚀 Distribuir via FTP para:</h4>
                                 <p style={{ fontSize: '12px', color: '#555', marginTop: 0, marginBottom: '10px' }}>
-                                    (Opcional) Escolha para quais parceiros deseja enviar estas fotos automaticamente.
+                                    (Obrigatório) Escolha para quais parceiros deseja enviar estas fotos automaticamente.
                                 </p>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     {meusJornais.map(jornal => (

@@ -1,7 +1,5 @@
-// src/pages/dashboard/AlbumCreatePage.jsx
-
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import AlbumForm from './AlbumForm';
 import { toast } from 'react-toastify';
@@ -9,7 +7,8 @@ import { toast } from 'react-toastify';
 function AlbumCreatePage() {
     const navigate = useNavigate();
 
-    const handleCreateAlbum = async (albumData, capaFile) => {
+    // Removemos o parâmetro capaFile daqui
+    const handleCreateAlbum = async (albumData) => {
         const formData = new FormData();
 
         Object.keys(albumData).forEach(key => {
@@ -18,11 +17,8 @@ function AlbumCreatePage() {
             }
         });
 
-        if (capaFile) {
-            formData.append('capa', capaFile);
-        }
-
         try {
+            // Agora envia os dados puros, sem o campo de arquivo 'capa'
             const response = await axiosInstance.post('/dashboard/albuns/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -44,15 +40,14 @@ function AlbumCreatePage() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
             }}>
                 <h2 style={{ margin: 0, fontSize: '28px' }}>🖼️ Criação de álbuns</h2>
-                {/* O botão de cancelar agora fica dentro do próprio formulário */}
             </div>
 
-            {/* --- MUDANÇA PRINCIPAL AQUI --- */}
-            {/* Envolvemos o formulário num contentor com o estilo que já temos */}
             <div className="table-wrapper" style={{ padding: '2rem' }}>
+                {/* O AlbumForm agora lida apenas com os campos de texto/dados */}
                 <AlbumForm 
                     onSubmit={handleCreateAlbum}
                     onCancel={() => navigate('/dashboard/albuns')}
+                    isCreation={true} // Uma prop útil caso queira esconder o campo lá dentro condicionalmente
                 />
             </div>
         </div>

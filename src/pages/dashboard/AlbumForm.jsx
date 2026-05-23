@@ -21,6 +21,9 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
     });
     const [capaFile, setCapaFile] = useState(null);
 
+    // Identifica se estamos em modo de Edição (se possui ID válido)
+    const isEditing = !!initialData?.id;
+
     useEffect(() => {
         if (initialData && initialData.id) {
             setAlbumData({
@@ -56,7 +59,12 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             if (!dadosFormatados[campo]) dadosFormatados[campo] = 0;
         });
 
-        onSubmit(dadosFormatados, capaFile);
+        // Se estiver editando, passa o capaFile. Se estiver criando, passa apenas os dados puros.
+        if (isEditing) {
+            onSubmit(dadosFormatados, capaFile);
+        } else {
+            onSubmit(dadosFormatados);
+        }
     };
 
     // --- ESTILOS VISUAIS BLINDADOS ---
@@ -65,9 +73,9 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
     const inputStyle = { 
         width: '100%', padding: '10px 12px', marginBottom: '15px', 
         borderRadius: '6px', border: '1px solid #ced4da', 
-        backgroundColor: '#ffffff', color: '#333333', // Força branco no fundo e escuro no texto
+        backgroundColor: '#ffffff', color: '#333333', 
         fontSize: '14px', boxSizing: 'border-box', outline: 'none', 
-        colorScheme: 'light' // Impede que o navegador aplique o Modo Escuro nestas caixas
+        colorScheme: 'light'
     };
 
     const labelStyle = {
@@ -81,7 +89,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             
             {/* TÍTULO DO MODAL */}
             <h2 style={{ color: corPrincipal, marginTop: 0, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '20px' }}>
-                {initialData.id ? '✏️ Editar álbum' : '📸 Criar novo álbum'}
+                {isEditing ? '✏️ Editar álbum' : '📸 Criar novo álbum'}
             </h2>
             
             <label style={labelStyle}>Título do Álbum</label>
@@ -123,37 +131,38 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                     </div>
                 ))}
             </div>
-            {/* ------------------------------------------- */}
 
-            {/* UPLOAD DA IMAGEM DE CAPA COM BOTÃO PERSONALIZADO */}
-            <div style={{ marginTop: '20px', padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', backgroundColor: '#ffffff' }}>
-                <label style={{ ...labelStyle, marginBottom: '8px' }}>Imagem de Capa do Álbum</label>
-                
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <input 
-                        id="album-cover-upload" 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={(e) => setCapaFile(e.target.files[0])} 
-                        style={{ display: 'none' }} // Esconde o botão feio do navegador
-                    />
+            {/* UPLOAD DA IMAGEM DE CAPA COM BOTÃO PERSONALIZADO (APENAS APARECE SE ESTIVER A EDITAR) */}
+            {isEditing && (
+                <div style={{ marginTop: '20px', padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', backgroundColor: '#ffffff' }}>
+                    <label style={{ ...labelStyle, marginBottom: '8px' }}>Imagem de Capa do Álbum</label>
                     
-                    <label 
-                        htmlFor="album-cover-upload" 
-                        style={{ padding: '8px 15px', backgroundColor: '#fbf0fa', color: corPrincipal, border: `1px solid ${corPrincipal}`, borderRadius: '20px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block', textAlign: 'center', transition: 'all 0.2s' }}
-                    >
-                        📁 Escolher Imagem...
-                    </label>
-                    
-                    <div style={{ fontSize: '12px', color: '#555' }}>
-                        {capaFile ? (
-                            <span style={{color: '#28a745', fontWeight: 'bold'}}>✅ {capaFile.name}</span>
-                        ) : (
-                            initialData.capa && <span>Atual: {initialData.capa.split('/').pop()}</span>
-                        )}
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <input 
+                            id="album-cover-upload" 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={(e) => setCapaFile(e.target.files[0])} 
+                            style={{ display: 'none' }} 
+                        />
+                        
+                        <label 
+                            htmlFor="album-cover-upload" 
+                            style={{ padding: '8px 15px', backgroundColor: '#fbf0fa', color: corPrincipal, border: `1px solid ${corPrincipal}`, borderRadius: '20px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block', textAlign: 'center', transition: 'all 0.2s' }}
+                        >
+                            📁 Escolher Imagem...
+                        </label>
+                        
+                        <div style={{ fontSize: '12px', color: '#555' }}>
+                            {capaFile ? (
+                                <span style={{color: '#28a745', fontWeight: 'bold'}}>✅ {capaFile.name}</span>
+                            ) : (
+                                initialData.capa && <span>Atual: {initialData.capa.split('/').pop()}</span>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
             
             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginTop: '20px', fontSize: '14px', fontWeight: 'bold', color: '#444' }}>
                 <input name="is_publico" type="checkbox" checked={albumData.is_publico} onChange={handleChange} style={{ width: '18px', height: '18px', accentColor: corPrincipal }} />
@@ -166,7 +175,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                     Cancelar
                 </button>
                 <button type="submit" className='create-button' style={{ flex: 1, padding: '12px' }}>
-                    {initialData.id ? '💾 Salvar Alterações' : '🚀 Criar Álbum'}
+                    {isEditing ? '💾 Salvar Alterações' : '🚀 Criar Álbum'}
                 </button>
             </div>
         </form>
