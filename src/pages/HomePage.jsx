@@ -1,7 +1,7 @@
 // src/pages/HomePage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // <-- Adicionado useNavigate
 import axiosInstance from '../api/axiosInstance';
 import axios from 'axios';
 
@@ -24,16 +24,29 @@ const banners = [
 
 function HomePage() {
     const [latestAlbuns, setLatestAlbuns] = useState([]);
-    const [latestNews, setLatestNews] = useState([]); // --- 1. NOVO ESTADO PARA AS NOTÍCIAS ---
+    const [latestNews, setLatestNews] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+    
+    // --- NOVO ESTADO PARA A BUSCA NA HOME ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
 
-    // --- 2. BUSCANDO ÁLBUNS E NOTÍCIAS AO MESMO TEMPO ---
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            // Redireciona para a página de álbuns passando o termo de busca na URL
+            navigate(`/eventos?q=${encodeURIComponent(searchTerm)}`);
+        } else {
+            navigate(`/eventos`);
+        }
+    };
+    // ----------------------------------------
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // 1. Busca os Álbuns do seu Django
                 try {
                     const albunsResponse = await axiosInstance.get('/albuns/');
                     if (Array.isArray(albunsResponse.data)) {
@@ -45,12 +58,8 @@ function HomePage() {
                     console.error("Erro ao buscar álbuns:", error);
                 }
 
-                // 2. Busca as Notícias do WordPress
                 try {
-                    // O parâmetro ?_embed é essencial para o WordPress enviar a foto de capa junto
-                    // O per_page=3 garante que venham apenas as 3 últimas
                     const wpUrl = 'https://portal.acessoimagens.com.br/wp-json/wp/v2/posts?_embed&per_page=4';
-                    
                     const newsResponse = await axios.get(wpUrl);
                     setLatestNews(newsResponse.data);
                 } catch (error) {
@@ -64,7 +73,6 @@ function HomePage() {
         fetchData();
     }, []);
 
-    // Efeito para a rotação automática do banner
     useEffect(() => {
         if (banners.length > 1) {
             const timer = setInterval(() => {
@@ -101,10 +109,54 @@ function HomePage() {
 
     return (
         <div className="homepage">
+            
+            {/* --- SEÇÃO HERO RESPONSIVA --- */}
             <section className="hero-section">
-                <div className="hero-overlay"></div>
+                <div className="hero-overlay" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                    
+                    <h1 className="hero-title">
+                        Encontre suas fotos
+                    </h1>
+                    
+                    <div className="hero-search-container">
+                        
+                        {/* 1. BARRA DE PESQUISA */}
+                        <form onSubmit={handleSearchSubmit} className="search-bar-wrapper">
+                            <span style={{ color: '#b0b0b0', fontSize: '1.2rem', marginRight: '10px' }}>🔍</span>
+                            <input 
+                                type="text" 
+                                placeholder="Pesquise por álbuns..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)} style={{color: 'rgb(109, 109, 109)'}}
+                            />
+                        </form>
+
+                        {/* 2. DIVISOR "OU" */}
+                        <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '15px' }}>
+                            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.4)' }}></div>
+                            <span style={{ color: 'white', fontSize: '16px', fontWeight: '500', textShadow: '1px 1px 4px rgba(0,0,0,0.5)' }}>
+                                ou
+                            </span>
+                            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.4)' }}></div>
+                        </div>
+
+                        {/* 3. BOTÃO DE BUSCA FACIAL */}
+                        <div onClick={() => navigate('/busca')} className="selfie-card">
+                            <div className="selfie-icon">🤳🏻</div>
+                            <div className="selfie-text-container" style={{ flex: 1 }}>
+                                <h3>Encontre suas fotos com uma selfie</h3>
+                                
+                            </div>
+                            <div style={{ color: '#313b53', fontSize: '1.5rem', marginLeft: '10px' }}>
+                                &rarr;
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </section>
 
+            {/* ------------------------------------------- */}
             {/* SEÇÃO 1: ÚLTIMOS ÁLBUNS */}
             <section className="category-section">
                 <h2>🎞️ Últimos álbuns</h2>
@@ -126,7 +178,7 @@ function HomePage() {
                 )}
             </section>
 
-            {/* --- SECÇÃO 2: ÚLTIMAS NOTÍCIAS --- */}
+            {/* SECÇÃO 2: ÚLTIMAS NOTÍCIAS */}
             {!loading && latestNews.length > 0 && (
                 <section className="category-section" style={{ marginTop: '0.2rem', paddingTop: '0.5rem' }}>
                     <h2>📰 Últimas Notícias</h2>
@@ -135,7 +187,6 @@ function HomePage() {
                             const imagemUrl = noticia._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/images/capa-padrao.jpg';
                             
                             return (
-                                /* Trocamos a tag <a> pelo <Link> e usamos a rota interna do React */
                                 <Link 
                                     to={`/noticias/${noticia.slug}`} 
                                     key={noticia.id} 
@@ -148,12 +199,13 @@ function HomePage() {
                                             Ler notícia &rarr;
                                         </p>
                                     </div>
-                                </Link> /* Lembrar de fechar com </Link> em vez de </a> */
+                                </Link>
                             );
                         })}
                     </div>
                 </section>
             )}
+
             {/* SEÇÃO 3: BANNER DE PUBLICIDADE */}
             {banners.length > 0 && (
                 <section className="banner-section" style={{ marginTop: '3rem' }}>
