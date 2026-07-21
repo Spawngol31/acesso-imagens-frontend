@@ -1,6 +1,6 @@
 // src/pages/AlbumDetail.jsx
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -38,11 +38,11 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
             onMouseLeave={handleMouseLeave}
             style={{ position: 'relative', overflow: 'hidden' }}
         >
-            {/* Se houver URL de preview, renderizamos o elemento de vídeo */}
-            {video.preview_url ? (
+            {/* CORREÇÃO AQUI: Usando arquivo_preview_url em vez de preview_url */}
+            {video.arquivo_preview_url ? (
                 <video 
                     ref={videoRef}
-                    src={video.preview_url}
+                    src={video.arquivo_preview_url}
                     poster={video.miniatura_url} /* A imagem estática fica aqui como capa */
                     muted /* É OBRIGATÓRIO estar sem som para os navegadores permitirem o autoplay */
                     loop
@@ -55,7 +55,8 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
             )}
             
             {/* O ícone de play sobreposto (só aparece quando NÃO está com o hover) */}
-            {!isHovered && video.preview_url && (
+            {/* CORREÇÃO AQUI TAMBÉM: arquivo_preview_url */}
+            {!isHovered && video.arquivo_preview_url && (
                 <div style={{
                     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                     backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '50%', width: '50px', height: '50px',
