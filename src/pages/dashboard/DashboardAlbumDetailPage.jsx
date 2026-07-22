@@ -291,6 +291,28 @@ function DashboardAlbumDetailPage() {
     };
     
     const handleDeleteMediaClick = (mediaId, type) => { setMediaToDelete({ id: mediaId, type }); setIsDeleteModalOpen(true); };
+    
+    const handleDownloadOriginal = async (fotoId) => {
+        try {
+            toast.info("Preparando arquivo para download...");
+            // Faz a chamada para a rota que criamos no Django
+            const response = await axiosInstance.get(`/dashboard/fotos/${fotoId}/baixar_original/`);
+            const urlDownload = response.data.url_download;
+            
+            // Cria um link temporário invisível e clica nele para iniciar o download
+            const link = document.createElement('a');
+            link.href = urlDownload;
+            link.setAttribute('download', ''); // Instrui o navegador a baixar
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+        } catch (error) {
+            console.error("Erro ao baixar a foto original:", error);
+            toast.error("Não foi possível gerar o link de download no momento.");
+        }
+    };
+    
     const confirmDeleteMedia = async () => {
         try {
             await axiosInstance.delete(`/dashboard/${mediaToDelete.type}s/${mediaToDelete.id}/`);
@@ -558,6 +580,7 @@ function DashboardAlbumDetailPage() {
                                 <>
                                     <button onClick={() => { handleSetCover(actionModalMedia.id); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #6c0464', backgroundColor: '#fbf0fa', color: '#6c0464', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>⭐ Definir como Capa</button>
                                     <button onClick={() => { handleToggleArchivePhotoClick(actionModalMedia); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2a03f', backgroundColor: '#fcf6ec', color: '#b97a00', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>📦 {actionModalMedia.is_arquivado ? 'Restaurar Foto na Loja' : 'Arquivar (Ocultar da Loja)'}</button>
+                                    <button onClick={() => { handleDownloadOriginal(actionModalMedia.id); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #28a745', backgroundColor: '#d4edda', color: '#155724', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>⬇️ Baixar Arquivo Original</button>
                                 </>
                             )}
                             <button onClick={() => { openEditForm(actionModalMedia, actionModalType); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #17a2b8', backgroundColor: '#e2f3f5', color: '#0c5460', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>✏️ Editar Informações</button>

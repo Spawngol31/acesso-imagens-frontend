@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 
 function DashboardAlbunsPage() {
     const [albuns, setAlbuns] = useState([]);
+    const [termoPesquisa, setTermoPesquisa] = useState('');
     const [loading, setLoading] = useState(true);
     
     // Modais diferentes para funções diferentes
@@ -96,6 +97,22 @@ function DashboardAlbunsPage() {
 
     if (loading) return <p style={{ padding: '20px', color: '#666' }}>A carregar os seus álbuns...</p>;
 
+    const albunsProcessados = albuns
+    .filter(album => {
+        // Se a barra estiver vazia, mostra todos
+        if (!termoPesquisa) return true;
+        // Filtra comparando o título digitado (ignorando maiúsculas/minúsculas)
+        return album.titulo.toLowerCase().includes(termoPesquisa.toLowerCase());
+    })
+    .sort((a, b) => {
+        // Opção A: Se você tiver um campo de data de criação exato vindo da API
+        // return new Date(b.data_criacao) - new Date(a.data_criacao);
+        
+        // Opção B: Ordenar pelo ID costuma ser a forma mais segura de trazer os mais recentes primeiro,
+        // já que os IDs maiores são sempre os criados por último.
+        return b.id - a.id; 
+    });
+
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
@@ -111,6 +128,26 @@ function DashboardAlbunsPage() {
                 </div>
             </div>
 
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                <div style={{ flex: 1, maxWidth: '400px' }}>
+                    <input 
+                        type="text" 
+                        placeholder="🔍 Pesquisar álbum por título..." 
+                        value={termoPesquisa}
+                        onChange={(e) => setTermoPesquisa(e.target.value)}
+                        style={{ 
+                            backgroundColor: '#fff',
+                            width: '100%', 
+                            padding: '12px 15px', 
+                            borderRadius: '8px', 
+                            border: '1px solid #e1bce0', 
+                            outline: 'none',
+                            color: '#333'
+                        }}
+                    />
+                </div>
+            </div>
+
             <div style={{ backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '600px' }}>
@@ -123,7 +160,7 @@ function DashboardAlbunsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {albuns.map(album => (
+                            {albunsProcessados.map(album => (
                                 <tr key={album.id} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '15px 10px', fontWeight: 'bold' }}>
                                         <Link to={`/dashboard/albuns/${album.id}`} style={{ color: corPrincipal, textDecoration: 'none' }}>
