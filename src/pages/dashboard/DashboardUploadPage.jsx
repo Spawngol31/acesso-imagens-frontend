@@ -334,7 +334,7 @@ function DashboardUploadPage() {
                                 {stagedVideos.map((video) => (
                                     <div key={video.id} className="staged-item">
                                         <p className='staged-item-name'>{video.videoFile.name}</p>
-                                        <input type="text" placeholder="Título do vídeo" onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} required disabled={isUploadingVideos}/>
+                                        <input type="text" placeholder="Título do vídeo" onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} disabled={isUploadingVideos}/>
                                         <input type="number" step="0.01" value={video.preco} onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} required disabled={isUploadingVideos}/>
                                         <button type="button" onClick={() => removeStagedVideo(video.id)} className="remove-button-small" disabled={isUploadingVideos}>Remover</button>
                                     </div>
