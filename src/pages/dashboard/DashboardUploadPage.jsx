@@ -173,12 +173,7 @@ function DashboardUploadPage() {
             toast.info("Nenhum vídeo selecionado para envio.");
             return;
         }
-        for (const video of stagedVideos) {
-            if (!video.titulo) {
-                toast.error(`Por favor, adicione um título para o vídeo: ${video.videoFile.name}`);
-                return;
-            }
-        }
+        
         setIsUploadingVideos(true);
         setUploadProgressVideos(0);
         for (let i = 0; i < stagedVideos.length; i++) {

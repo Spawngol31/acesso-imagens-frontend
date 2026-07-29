@@ -247,7 +247,6 @@ function DashboardAlbumDetailPage() {
     const handleVideoSubmit = async (e) => {
         e.preventDefault();
         if (stagedVideos.length === 0) return;
-        for (const video of stagedVideos) { if (!video.titulo) return; }
         
         setIsUploadingVideos(true);
         
@@ -383,8 +382,15 @@ function DashboardAlbumDetailPage() {
             <div className="media-grid">
                 {album.fotos?.map(foto => (
                     <div key={foto.id} className={`dashboard-media-card ${foto.is_arquivado ? 'archived' : ''}`}>
-                        <div className="dashboard-media-image">
-                           <img src={foto.imagem_url} alt={foto.legenda} style={{ transform: `rotate(${foto.rotacao}deg)` }} />
+                        <div className="dashboard-media-image" style={{ backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {video.miniatura_url ? (
+                                <img src={video.miniatura_url} alt={video.titulo} />
+                            ) : (
+                                <div style={{ textAlign: 'center', color: '#888', padding: '15px' }}>
+                                    <div style={{ fontSize: '24px', marginBottom: '5px' }}>⏳</div>
+                                    <p style={{ fontSize: '12px', fontWeight: 'bold', margin: 0 }}>Processando...</p>
+                                </div>
+                            )}
                         </div>
                         <div className="dashboard-media-info">
                             <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
@@ -520,7 +526,7 @@ function DashboardAlbumDetailPage() {
                                         <div key={video.id} style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #ddd' }}>
                                             <p style={{ fontWeight: 'bold', fontSize: '13px', margin: '0 0 5px 0', color: corPrincipal }}>{video.videoFile.name}</p>
                                             <div style={{ display: 'flex', gap: '10px' }}>
-                                                <input type="text" placeholder="Título" style={{...inputStyle, flex: 2}} onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} required disabled={isUploadingVideos} />
+                                                <input type="text" placeholder="Título" style={{...inputStyle, flex: 2}} onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} disabled={isUploadingVideos} />
                                                 <input type="number" step="0.01" placeholder="R$" value={video.preco} style={{...inputStyle, flex: 1}} onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} required disabled={isUploadingVideos} />
                                             </div>
                                             <button type="button" onClick={() => removeStagedVideo(video.id)} disabled={isUploadingVideos} style={{ marginTop: '8px', padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>Remover</button>
