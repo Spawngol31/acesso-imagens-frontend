@@ -76,6 +76,70 @@ function MediaEditForm({ media, mediaType, onSubmit, onCancel }) {
     );
 }
 
+// --- COMPONENTE DO CARD DE VÍDEO DO PAINEL (Adicione aqui) ---
+function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalType }) {
+    const videoRef = useRef(null);
+    const [isHovered, setIsHovered] = useState(false);
+
+    const handleMouseEnter = () => {
+        setIsHovered(true);
+        if (videoRef.current) {
+            videoRef.current.play().catch(error => console.log("Erro ao reproduzir:", error));
+        }
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0; 
+        }
+    };
+
+    return (
+        <div className="dashboard-media-card" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <div className="dashboard-media-image" style={{ width: '100%', aspectRatio: '1 / 1', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '8px 8px 0 0', position: 'relative' }}>
+                
+                {video.arquivo_preview_url ? (
+                    <>
+                        <video 
+                            ref={videoRef}
+                            src={video.arquivo_preview_url}
+                            poster={video.miniatura_url}
+                            muted 
+                            loop 
+                            playsInline
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        {!isHovered && (
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
+                                <span style={{ color: 'white', fontSize: '18px', marginLeft: '3px' }}>▶</span>
+                            </div>
+                        )}
+                    </>
+                ) : video.miniatura_url ? (
+                    <img src={video.miniatura_url} alt={video.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                    <div style={{ textAlign: 'center', color: '#555', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <span style={{ fontSize: '32px', marginBottom: '10px' }}>⏳</span>
+                        <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Processando...</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="dashboard-media-info">
+                <p className="media-title">{video.titulo}</p>
+                <p>R$ {parseFloat(video.preco).toFixed(2)}</p>
+                <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
+                    <button onClick={() => { setActionModalMedia(video); setActionModalType('video'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
+                        ⚙️ Opções
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+// --------------------------------------------------------------
 // --- Componente Principal da Página ---
 function DashboardAlbumDetailPage() {
     const [album, setAlbum] = useState(null);
@@ -402,27 +466,12 @@ function DashboardAlbumDetailPage() {
             <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px', marginTop: '40px' }}>🎬 Galeria de Vídeos ({album.videos?.length || 0})</h3>
             <div className="media-grid" style={{paddingBottom: '2rem'}}>
                 {album.videos?.map(video => (
-                    <div key={video.id} className="dashboard-media-card" >
-                        <div className="dashboard-media-image" style={{ backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {video.miniatura_url ? (
-                                <img src={video.miniatura_url} alt={video.titulo} />
-                            ) : (
-                                <div style={{ textAlign: 'center', color: '#888', padding: '15px' }}>
-                                    <div style={{ fontSize: '24px', marginBottom: '5px' }}>⏳</div>
-                                    <p style={{ fontSize: '12px', fontWeight: 'bold', margin: 0 }}>Processando...</p>
-                                </div>
-                            )}
-                        </div>
-                        <div className="dashboard-media-info">
-                            <p className="media-title">{video.titulo}</p>
-                            <p>R$ {parseFloat(video.preco).toFixed(2)}</p>
-                            <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
-                                <button onClick={() => { setActionModalMedia(video); setActionModalType('video'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
-                                    ⚙️ Opções
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <DashboardVideoPreviewCard 
+                        key={video.id} 
+                        video={video} 
+                        setActionModalMedia={setActionModalMedia} 
+                        setActionModalType={setActionModalType} 
+                    />
                 ))}
             </div>
 
