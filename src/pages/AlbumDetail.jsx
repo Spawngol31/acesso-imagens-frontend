@@ -231,6 +231,28 @@ function AlbumDetail() {
       }
   };
 
+  // --- ESTADOS E LÓGICA DE PAGINAÇÃO DOS VÍDEOS ---
+  const [currentVideoPage, setCurrentVideoPage] = useState(1);
+  const videosPorPagina = 20;
+
+  const baseVideoList = album?.videos || [];
+  const totalVideoPages = Math.ceil(baseVideoList.length / videosPorPagina);
+  
+  // Fatiar a lista para mostrar apenas os vídeos da página atual
+  const indexOfLastVideo = currentVideoPage * videosPorPagina;
+  const indexOfFirstVideo = indexOfLastVideo - videosPorPagina;
+  const currentVideos = baseVideoList.slice(indexOfFirstVideo, indexOfLastVideo);
+
+  // Funções de navegação
+  const irParaPaginaAnteriorVideo = () => {
+      if (currentVideoPage > 1) setCurrentVideoPage(currentVideoPage - 1);
+  };
+
+  const irParaProximaPaginaVideo = () => {
+      if (currentVideoPage < totalVideoPages) setCurrentVideoPage(currentVideoPage + 1);
+  };
+  // -------------------------------------------------
+
   if (loading) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar álbum...</p>; }
   if (!album) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>Álbum não encontrado.</p>; }
 
@@ -359,16 +381,15 @@ function AlbumDetail() {
             </div>
         )}
 
-        {/* SECÇÃO DE VÍDEOS (Os vídeos não são paginados, aparecem todos de uma vez abaixo das fotos) */}
-        {/* SECÇÃO DE VÍDEOS */}
-        {faceSearchResults === null && album.videos && album.videos.length > 0 && (
+        {/* SECÇÃO DE VÍDEOS PAGINADOS */}
+        {faceSearchResults === null && baseVideoList.length > 0 && (
           <>
             <div className="section-header" style={{marginTop: '3rem'}}>
-              <h2>🎥 Vídeos</h2>
+              <h2>🎥 Vídeos ({baseVideoList.length})</h2>
             </div>
             
             <div className="photo-grid">
-              {album.videos.map(video => (
+              {currentVideos.map(video => (
                   <VideoPreviewCard 
                       key={video.id} 
                       video={video} 
@@ -377,6 +398,38 @@ function AlbumDetail() {
                   />
               ))}
             </div>
+
+            {/* --- BARRA DE PAGINAÇÃO DOS VÍDEOS --- */}
+            {totalVideoPages > 1 && (
+                <div style={{ 
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', 
+                    gap: '20px', marginTop: '3rem', padding: '1rem', 
+                    backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee'
+                }}>
+                    <button 
+                        onClick={irParaPaginaAnteriorVideo} 
+                        disabled={currentVideoPage === 1}
+                        className="button-outline"
+                        style={{ opacity: currentVideoPage === 1 ? 0.4 : 1, cursor: currentVideoPage === 1 ? 'not-allowed' : 'pointer' }}
+                    >
+                        &laquo; Anterior
+                    </button>
+                    
+                    <span style={{ fontWeight: 'bold', color: '#555' }}>
+                        Página {currentVideoPage} de {totalVideoPages}
+                    </span>
+
+                    <button 
+                        onClick={irParaProximaPaginaVideo} 
+                        disabled={currentVideoPage === totalVideoPages}
+                        className="button-outline"
+                        style={{ opacity: currentVideoPage === totalVideoPages ? 0.4 : 1, cursor: currentVideoPage === totalVideoPages ? 'not-allowed' : 'pointer' }}
+                    >
+                        Próxima &raquo;
+                    </button>
+                </div>
+            )}
+            {/* --------------------------------------- */}
           </>
         )}
       </main>
