@@ -382,15 +382,8 @@ function DashboardAlbumDetailPage() {
             <div className="media-grid">
                 {album.fotos?.map(foto => (
                     <div key={foto.id} className={`dashboard-media-card ${foto.is_arquivado ? 'archived' : ''}`}>
-                        <div className="dashboard-media-image" style={{ backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {video.miniatura_url ? (
-                                <img src={video.miniatura_url} alt={video.titulo} />
-                            ) : (
-                                <div style={{ textAlign: 'center', color: '#888', padding: '15px' }}>
-                                    <div style={{ fontSize: '24px', marginBottom: '5px' }}>⏳</div>
-                                    <p style={{ fontSize: '12px', fontWeight: 'bold', margin: 0 }}>Processando...</p>
-                                </div>
-                            )}
+                        <div className="dashboard-media-image">
+                           <img src={foto.imagem_url} alt={foto.legenda} style={{ transform: `rotate(${foto.rotacao}deg)` }} />
                         </div>
                         <div className="dashboard-media-info">
                             <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
@@ -410,8 +403,15 @@ function DashboardAlbumDetailPage() {
             <div className="media-grid" style={{paddingBottom: '2rem'}}>
                 {album.videos?.map(video => (
                     <div key={video.id} className="dashboard-media-card" >
-                        <div className="dashboard-media-image">
-                           <img src={video.miniatura_url} alt={video.titulo} />
+                        <div className="dashboard-media-image" style={{ backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {video.miniatura_url ? (
+                                <img src={video.miniatura_url} alt={video.titulo} />
+                            ) : (
+                                <div style={{ textAlign: 'center', color: '#888', padding: '15px' }}>
+                                    <div style={{ fontSize: '24px', marginBottom: '5px' }}>⏳</div>
+                                    <p style={{ fontSize: '12px', fontWeight: 'bold', margin: 0 }}>Processando...</p>
+                                </div>
+                            )}
                         </div>
                         <div className="dashboard-media-info">
                             <p className="media-title">{video.titulo}</p>
