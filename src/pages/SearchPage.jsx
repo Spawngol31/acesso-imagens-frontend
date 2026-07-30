@@ -96,8 +96,8 @@ function SearchPage() {
                             // --- GRELHA DE RESULTADOS ATUALIZADA ---
                             <div className="purchase-grid">
                                 {searchResults.map(foto => (
-                                    <div key={foto.id} className="purchase-card">
-                                        <div className="purchase-card-image" onClick={() => setSelectedImage({ url: foto.imagem_url, rotacao: foto.rotacao })}>
+                                    <div key={foto.id} className="purchase-card">                                        
+                                        <div className="purchase-card-image" onClick={() => setSelectedImage(foto)}>
                                             <img 
                                                 src={foto.imagem_url} 
                                                 alt={foto.legenda || `Foto ${foto.id}`}
@@ -105,9 +105,11 @@ function SearchPage() {
                                             />
                                         </div>
                                         <div className="purchase-card-info">
-                                            <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
-                                            {user && user.papel === 'CLIENTE' && (
-                                                <button onClick={() => addToCart(foto.id)} className="create-button">
+                                            <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>                                            
+                                            
+                                            {(!user || user.papel === 'CLIENTE') && (
+                                                
+                                                <button onClick={() => addToCart(foto)} className="create-button">
                                                     Adicionar ao carrinho
                                                 </button>
                                             )}

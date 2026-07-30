@@ -14,7 +14,13 @@ export function CartProvider({ children }) {
     // --- 1. FUNÇÕES DO CARRINHO LOCAL (VISITANTE) ---
     const getGuestCart = () => {
         const localItems = JSON.parse(localStorage.getItem('guestCart')) || [];
-        const subtotal = localItems.reduce((acc, item) => acc + parseFloat(item.preco_item || item.foto.preco), 0);
+        
+        // CORREÇÃO: Usando isNaN para garantir que se um preço vier quebrado, ele vira 0 e não trava a soma
+        const subtotal = localItems.reduce((acc, item) => {
+            const preco = parseFloat(item.preco_item || item.foto?.preco);
+            return acc + (isNaN(preco) ? 0 : preco);
+        }, 0);
+        
         return {
             itens: localItems,
             subtotal: subtotal.toFixed(2),
