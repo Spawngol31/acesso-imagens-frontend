@@ -273,6 +273,39 @@ function AlbumDetail() {
       </header>
       <main>
         
+        {/* 🔥 NOVO: BANNER DE DESCONTOS PROGRESSIVOS AUTOMÁTICO 🔥 */}
+        {(album.qtd_desconto_1 > 0 || album.qtd_desconto_2 > 0 || album.qtd_desconto_3 > 0) && (
+            <div style={{ 
+                backgroundColor: '#f2e6f2', 
+                borderLeft: '6px solid #bd01b0', 
+                padding: '20px', 
+                marginBottom: '2rem',
+                borderRadius: '4px',
+                boxShadow: '0 2px 8px rgba(250, 173, 20, 0.15)'
+            }}>
+                <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px', fontSize: '1.2rem' }}>
+                    🏷️ Aproveite nossos descontos!
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {album.qtd_desconto_1 > 0 && album.pct_desconto_1 > 0 && (
+                        <p style={{ margin: 0, color: '#AD02AD', fontSize: '1.05rem' }}>
+                            Compre <strong>{album.qtd_desconto_1} </strong> e ganhe <strong>{parseFloat(album.pct_desconto_1)}% de desconto</strong>
+                        </p>
+                    )}
+                    {album.qtd_desconto_2 > 0 && album.pct_desconto_2 > 0 && (
+                        <p style={{ margin: 0, color: '#AD02AD', fontSize: '1.05rem' }}>
+                            Compre <strong>{album.qtd_desconto_2} </strong> e ganhe <strong>{parseFloat(album.pct_desconto_2)}% de desconto</strong>
+                        </p>
+                    )}
+                    {album.qtd_desconto_3 > 0 && album.pct_desconto_3 > 0 && (
+                        <p style={{ margin: 0, color: '#AD02AD', fontSize: '1.05rem' }}>
+                            Compre <strong>{album.qtd_desconto_3} ou mais fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_3)}% de desconto</strong>
+                        </p>
+                    )}
+                </div>
+            </div>
+        )}
+
         {/* MINI BARRA DE BUSCA FACIAL */}
         {album.fotos && album.fotos.length > 0 && (
             <div style={{ 
