@@ -140,6 +140,78 @@ function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalT
     );
 }
 // --------------------------------------------------------------
+
+// --- NOVO COMPONENTE DE PAGINAÇÃO NUMÉRICA ---
+const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
+    if (totalPages <= 1) return null;
+
+    const getPaginationRange = () => {
+        const delta = 1;
+        const range = [];
+        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+            range.push(i);
+        }
+        if (currentPage - delta > 2) range.unshift("...");
+        if (currentPage + delta < totalPages - 1) range.push("...");
+
+        range.unshift(1);
+        if (totalPages > 1) range.push(totalPages);
+        return range;
+    };
+
+    const pages = getPaginationRange();
+
+    return (
+        <div style={{ 
+            display: 'flex', justifyContent: 'center', alignItems: 'center', 
+            gap: '8px', marginTop: '1rem', marginBottom: '2rem', padding: '1rem' 
+        }}>
+            <button 
+                onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
+                style={{ 
+                    border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1,
+                }}
+            >
+                &lt;
+            </button>
+
+            {pages.map((page, index) => (
+                <React.Fragment key={index}>
+                    {page === "..." ? (
+                        <span style={{ padding: '5px', color: '#888', letterSpacing: '2px' }}>...</span>
+                    ) : (
+                        <button
+                            onClick={() => onPageChange(page)}
+                            style={{
+                                width: '40px', height: '40px', border: 'none', borderRadius: '8px',
+                                backgroundColor: currentPage === page ? '#6c0464' : 'transparent',
+                                color: currentPage === page ? 'white' : '#333',
+                                cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
+                                fontSize: '1rem', transition: 'all 0.2s'
+                            }}
+                        >
+                            {page}
+                        </button>
+                    )}
+                </React.Fragment>
+            ))}
+
+            <button 
+                onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
+                style={{ 
+                    border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1,
+                }}
+            >
+                &gt;
+            </button>
+        </div>
+    );
+};
+
+// --------------------------------------------------------------
+
 // --- Componente Principal da Página ---
 function DashboardAlbumDetailPage() {
     const [album, setAlbum] = useState(null);
@@ -194,8 +266,11 @@ function DashboardAlbumDetailPage() {
     const totalPhotoPages = Math.ceil(basePhotoList.length / itensPorPagina);
     const currentPhotos = basePhotoList.slice((currentPhotoPage - 1) * itensPorPagina, currentPhotoPage * itensPorPagina);
 
-    const irParaPaginaAnteriorFoto = () => { if (currentPhotoPage > 1) setCurrentPhotoPage(currentPhotoPage - 1); };
-    const irParaProximaPaginaFoto = () => { if (currentPhotoPage < totalPhotoPages) setCurrentPhotoPage(currentPhotoPage + 1); };
+    // Funções da nova paginação de Fotos
+    const handlePhotoPageChange = (novaPagina) => {
+        setCurrentPhotoPage(novaPagina);
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+    };
 
     // Paginação de Vídeos
     const [currentVideoPage, setCurrentVideoPage] = useState(1);
@@ -203,9 +278,11 @@ function DashboardAlbumDetailPage() {
     const totalVideoPages = Math.ceil(baseVideoList.length / itensPorPagina);
     const currentVideos = baseVideoList.slice((currentVideoPage - 1) * itensPorPagina, currentVideoPage * itensPorPagina);
 
-    const irParaPaginaAnteriorVideo = () => { if (currentVideoPage > 1) setCurrentVideoPage(currentVideoPage - 1); };
-    const irParaProximaPaginaVideo = () => { if (currentVideoPage < totalVideoPages) setCurrentVideoPage(currentVideoPage + 1); };
-    // ----------------------------------------------
+    // Funções da nova paginação de Vídeos
+    const handleVideoPageChange = (novaPagina) => {
+        setCurrentVideoPage(novaPagina);
+        window.scrollTo({ top: 800, behavior: 'smooth' }); // Rola direto para os vídeos
+    };
 
     const globalModalOverlay = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: overlayRosado, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, backdropFilter: 'blur(3px)' };
     const globalModalContent = { backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' };
@@ -485,18 +562,13 @@ function DashboardAlbumDetailPage() {
             
             {basePhotoList.length === 0 && <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhuma foto neste álbum.</p>}
 
+            
             {/* --- CONTROLES DE PAGINAÇÃO DAS FOTOS --- */}
-            {totalPhotoPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', marginTop: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee' }}>
-                    <button onClick={irParaPaginaAnteriorFoto} disabled={currentPhotoPage === 1} className="button-outline" style={{ opacity: currentPhotoPage === 1 ? 0.4 : 1, cursor: currentPhotoPage === 1 ? 'not-allowed' : 'pointer' }}>
-                        &laquo; Anterior
-                    </button>
-                    <span style={{ fontWeight: 'bold', color: '#555' }}>Página {currentPhotoPage} de {totalPhotoPages}</span>
-                    <button onClick={irParaProximaPaginaFoto} disabled={currentPhotoPage === totalPhotoPages} className="button-outline" style={{ opacity: currentPhotoPage === totalPhotoPages ? 0.4 : 1, cursor: currentPhotoPage === totalPhotoPages ? 'not-allowed' : 'pointer' }}>
-                        Próxima &raquo;
-                    </button>
-                </div>
-            )}
+            <CustomPagination 
+                currentPage={currentPhotoPage} 
+                totalPages={totalPhotoPages} 
+                onPageChange={handlePhotoPageChange} 
+            />
 
             <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px', marginTop: '40px' }}>🎬 Galeria de Vídeos ({baseVideoList.length})</h3>
             <div className="media-grid" style={{paddingBottom: '2rem'}}>
@@ -510,18 +582,13 @@ function DashboardAlbumDetailPage() {
                 ))}
             </div>
 
+            
             {/* --- CONTROLES DE PAGINAÇÃO DOS VÍDEOS --- */}
-            {totalVideoPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', marginTop: '1rem', marginBottom: '3rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee' }}>
-                    <button onClick={irParaPaginaAnteriorVideo} disabled={currentVideoPage === 1} className="button-outline" style={{ opacity: currentVideoPage === 1 ? 0.4 : 1, cursor: currentVideoPage === 1 ? 'not-allowed' : 'pointer' }}>
-                        &laquo; Anterior
-                    </button>
-                    <span style={{ fontWeight: 'bold', color: '#555' }}>Página {currentVideoPage} de {totalVideoPages}</span>
-                    <button onClick={irParaProximaPaginaVideo} disabled={currentVideoPage === totalVideoPages} className="button-outline" style={{ opacity: currentVideoPage === totalVideoPages ? 0.4 : 1, cursor: currentVideoPage === totalVideoPages ? 'not-allowed' : 'pointer' }}>
-                        Próxima &raquo;
-                    </button>
-                </div>
-            )}
+            <CustomPagination 
+                currentPage={currentVideoPage} 
+                totalPages={totalVideoPages} 
+                onPageChange={handleVideoPageChange} 
+            />
 
             {/* ========================================================================= */}
             {/* 🚀 MODAIS DE UPLOAD SIMPLIFICADOS (SEM FORMULÁRIO DE METADADOS) */}

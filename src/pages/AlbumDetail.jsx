@@ -76,6 +76,77 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
     );
 };
 
+// Coloque AQUI, logo abaixo do VideoPreviewCard e acima do AlbumDetail
+
+// --- NOVO COMPONENTE DE PAGINAÇÃO NUMÉRICA ---
+const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
+    if (totalPages <= 1) return null;
+
+    const getPaginationRange = () => {
+        const delta = 1;
+        const range = [];
+        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+            range.push(i);
+        }
+        if (currentPage - delta > 2) range.unshift("...");
+        if (currentPage + delta < totalPages - 1) range.push("...");
+
+        range.unshift(1);
+        if (totalPages > 1) range.push(totalPages);
+        return range;
+    };
+
+    const pages = getPaginationRange();
+
+    return (
+        <div style={{ 
+            display: 'flex', justifyContent: 'center', alignItems: 'center', 
+            gap: '8px', marginTop: '3rem', padding: '1rem' 
+        }}>
+            <button 
+                onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
+                style={{ 
+                    border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1,
+                }}
+            >
+                &lt;
+            </button>
+
+            {pages.map((page, index) => (
+                <React.Fragment key={index}>
+                    {page === "..." ? (
+                        <span style={{ padding: '5px', color: '#888', letterSpacing: '2px' }}>...</span>
+                    ) : (
+                        <button
+                            onClick={() => onPageChange(page)}
+                            style={{
+                                width: '40px', height: '40px', border: 'none', borderRadius: '8px',
+                                backgroundColor: currentPage === page ? '#6c0464' : 'transparent',
+                                color: currentPage === page ? 'white' : '#333',
+                                cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
+                                fontSize: '1rem', transition: 'all 0.2s'
+                            }}
+                        >
+                            {page}
+                        </button>
+                    )}
+                </React.Fragment>
+            ))}
+
+            <button 
+                onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
+                style={{ 
+                    border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
+                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1,
+                }}
+            >
+                &gt;
+            </button>
+        </div>
+    );
+};
+
 function AlbumDetail() {
   const [album, setAlbum] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -216,19 +287,10 @@ function AlbumDetail() {
     }
   };
 
-  // Funções dos botões da páginação
-  const irParaPaginaAnterior = () => {
-      if (currentPage > 1) {
-          setCurrentPage(currentPage - 1);
-          window.scrollTo({ top: 300, behavior: 'smooth' }); // Sobe um pouquinho a tela
-      }
-  };
-
-  const irParaProximaPagina = () => {
-      if (currentPage < totalPages) {
-          setCurrentPage(currentPage + 1);
-          window.scrollTo({ top: 300, behavior: 'smooth' });
-      }
+  // Funções da nova paginação
+  const handlePageChange = (novaPagina) => {
+      setCurrentPage(novaPagina);
+      window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
   // --- ESTADOS E LÓGICA DE PAGINAÇÃO DOS VÍDEOS ---
@@ -243,15 +305,11 @@ function AlbumDetail() {
   const indexOfFirstVideo = indexOfLastVideo - videosPorPagina;
   const currentVideos = baseVideoList.slice(indexOfFirstVideo, indexOfLastVideo);
 
-  // Funções de navegação
-  const irParaPaginaAnteriorVideo = () => {
-      if (currentVideoPage > 1) setCurrentVideoPage(currentVideoPage - 1);
+  // Função de navegação dos vídeos
+  const handleVideoPageChange = (novaPagina) => {
+      setCurrentVideoPage(novaPagina);
+      window.scrollTo({ top: 600, behavior: 'smooth' });
   };
-
-  const irParaProximaPaginaVideo = () => {
-      if (currentVideoPage < totalVideoPages) setCurrentVideoPage(currentVideoPage + 1);
-  };
-  // -------------------------------------------------
 
   if (loading) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar álbum...</p>; }
   if (!album) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>Álbum não encontrado.</p>; }
@@ -376,35 +434,11 @@ function AlbumDetail() {
         </div>
 
         {/* --- CONTROLOS DE PAGINAÇÃO --- */}
-        {totalPages > 1 && (
-            <div style={{ 
-                display: 'flex', justifyContent: 'center', alignItems: 'center', 
-                gap: '20px', marginTop: '3rem', padding: '1rem', 
-                backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee'
-            }}>
-                <button 
-                    onClick={irParaPaginaAnterior} 
-                    disabled={currentPage === 1}
-                    className="button-outline"
-                    style={{ opacity: currentPage === 1 ? 0.4 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
-                >
-                    &laquo; Anterior
-                </button>
-                
-                <span style={{ fontWeight: 'bold', color: '#555' }}>
-                    Página {currentPage} de {totalPages}
-                </span>
-
-                <button 
-                    onClick={irParaProximaPagina} 
-                    disabled={currentPage === totalPages}
-                    className="button-outline"
-                    style={{ opacity: currentPage === totalPages ? 0.4 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
-                >
-                    Próxima &raquo;
-                </button>
-            </div>
-        )}
+        <CustomPagination 
+            currentPage={currentPage} 
+            totalPages={totalPages} 
+            onPageChange={handlePageChange} 
+        />
         {/* -------------------------------- */}
 
         {faceSearchResults !== null && currentPhotos.length === 0 && (
@@ -433,35 +467,11 @@ function AlbumDetail() {
             </div>
 
             {/* --- BARRA DE PAGINAÇÃO DOS VÍDEOS --- */}
-            {totalVideoPages > 1 && (
-                <div style={{ 
-                    display: 'flex', justifyContent: 'center', alignItems: 'center', 
-                    gap: '20px', marginTop: '3rem', padding: '1rem', 
-                    backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #eee'
-                }}>
-                    <button 
-                        onClick={irParaPaginaAnteriorVideo} 
-                        disabled={currentVideoPage === 1}
-                        className="button-outline"
-                        style={{ opacity: currentVideoPage === 1 ? 0.4 : 1, cursor: currentVideoPage === 1 ? 'not-allowed' : 'pointer' }}
-                    >
-                        &laquo; Anterior
-                    </button>
-                    
-                    <span style={{ fontWeight: 'bold', color: '#555' }}>
-                        Página {currentVideoPage} de {totalVideoPages}
-                    </span>
-
-                    <button 
-                        onClick={irParaProximaPaginaVideo} 
-                        disabled={currentVideoPage === totalVideoPages}
-                        className="button-outline"
-                        style={{ opacity: currentVideoPage === totalVideoPages ? 0.4 : 1, cursor: currentVideoPage === totalVideoPages ? 'not-allowed' : 'pointer' }}
-                    >
-                        Próxima &raquo;
-                    </button>
-                </div>
-            )}
+            <CustomPagination 
+                currentPage={currentVideoPage} 
+                totalPages={totalVideoPages} 
+                onPageChange={handleVideoPageChange} 
+            />
             {/* --------------------------------------- */}
           </>
         )}
