@@ -93,6 +93,27 @@ function Layout() {
                         <Link to="/privacidade">Política de Privacidade</Link>
                     </div>
                 </div>
+
+                {/* --- INÍCIO DO AVISO DE COPYRIGHT --- */}
+                <div style={{
+                    borderTop: '1px solid rgba(255, 255, 255, 0.1)', // Linha sutil para separar
+                    marginTop: '25px',
+                    paddingTop: '20px',
+                    paddingBottom: '10px',
+                    textAlign: 'center',
+                    fontSize: '13px',
+                    color: '#fff', // Cor cinza discreta
+                    width: '100%'
+                }}>
+                    <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>
+                        &copy; {new Date().getFullYear()} Acesso Imagens. Todos os direitos reservados.
+                    </p>
+                    <p style={{ margin: 0, fontSize: '11px', opacity: 0.8, maxWidth: '800px', display: 'inline-block' }}>
+                        É terminantemente proibida a cópia, reprodução, download não autorizado ou uso comercial e pessoal das fotografias desta plataforma sem a devida compra. Lei de Direitos Autorais (Lei nº 9.610/98).
+                    </p>
+                </div>
+                {/* --- FIM DO AVISO DE COPYRIGHT --- */}
+
             </footer>
             <a 
                 href="https://wa.me/5592984840065"

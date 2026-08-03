@@ -1,14 +1,20 @@
 // src/components/Lightbox.jsx
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { toast } from 'react-toastify';
 
-// Adicionamos as propriedades onNext e onPrev
 function Lightbox({ image, onClose, onNext, onPrev }) {
   const { user } = useAuth();
   const { addToCart } = useCart();
+  
+  // Estado que controla qual lado está borrado ('left' ou 'right')
+  const [blurSide, setBlurSide] = useState('left');
+
+  // Sempre que a imagem mudar, reseta o borrão para a esquerda
+  useEffect(() => {
+      setBlurSide('left');
+  }, [image]);
 
   if (!image) return null;
 
@@ -23,6 +29,12 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
     e.stopPropagation();
     addToCart(image);
     toast.success("🛒 Sucesso! Foto adicionada ao carrinho."); 
+  };
+
+  // Função que inverte o lado do borrão ao clicar na foto
+  const handleToggleBlur = (e) => {
+    e.stopPropagation();
+    setBlurSide(prev => prev === 'left' ? 'right' : 'left');
   };
 
   return (
@@ -42,16 +54,79 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
           &#10094;
         </button>
       )}
+      
       <div className="lightbox-content" style={{flexDirection: 'column', alignItems: 'center'}}>
-        <img 
-          src={image.url || image.imagem_url} 
-          alt="Visualização ampliada" 
-          style={{ 
-            // transform: `rotate(${image.rotacao || 0}deg)`, 
-            maxHeight: '80vh', maxWidth: '100%' 
-          }}
-        />
+        
+        {/* 📸 CONTAINER DA IMAGEM E DA MÁGICA ANTI-PRINT */}
+        <div onClick={handleToggleBlur} style={{
+            position: 'relative',
+            display: 'inline-block', // Ajusta ao tamanho da imagem
+            cursor: 'pointer',
+            overflow: 'hidden', // Impede que o borrão vaze
+            borderRadius: '8px',
+            userSelect: 'none'
+        }}>
+            {/* A Imagem Real */}
+            <img 
+              src={image.url || image.imagem_url} 
+              alt="Visualização ampliada" 
+              style={{ 
+                // transform: `rotate(${image.rotacao || 0}deg)`, 
+                maxHeight: '80vh', maxWidth: '100%',
+                display: 'block'
+              }}
+            />
 
+            {/* 🛡️ O Overlay de Borrão */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '50%', // Cobre exatamente metade
+                height: '100%',
+                backdropFilter: 'blur(15px)',
+                WebkitBackdropFilter: 'blur(15px)', // Suporte para iOS/Safari
+                backgroundColor: 'rgba(255, 255, 255, 0.05)', // Leve brilho
+                transition: 'transform 0.4s ease-in-out', // Animação de deslize
+                transform: blurSide === 'left' ? 'translateX(0)' : 'translateX(100%)',
+                pointerEvents: 'none', // O clique ignora o borrão e atinge a div pai
+                zIndex: 10
+            }} />
+
+            {/* 💡 Dica visual flutuante */}
+            <div style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: 'rgba(108, 4, 100, 0.9)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '30px',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                pointerEvents: 'none',
+                zIndex: 11,
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+            }}>
+                👆 Toque para ver o outro lado
+            </div>
+        </div>
+
+        {/* TEXTO DE COPYRIGHT NO LIGHTBOX */}
+        <div style={{
+            marginTop: '10px',
+            marginBottom: '15px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontSize: '11px',
+            textAlign: 'center',
+            textShadow: '1px 1px 2px black'
+        }}>
+            &copy; {new Date().getFullYear()} Acesso Imagens. Imagem protegida por direitos autorais.
+        </div>
+
+        {/* 🛒 SEU BOTÃO DE CARRINHO ORIGINAL */}
         {(!user || user.papel === 'CLIENTE') && (
             <button 
               onClick={handleAddCart} 
