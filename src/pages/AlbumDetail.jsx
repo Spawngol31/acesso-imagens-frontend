@@ -167,6 +167,10 @@ function AlbumDetail() {
   const fotosPorPagina = 20; // Quantas fotos mostrar por vez
   // ---------------------------------
 
+  const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
+  const [propostaForm, setPropostaForm] = useState({ qtdFotos: '', qtdVideos: '', valor: '' });
+  const [isSendingProposta, setIsSendingProposta] = useState(false);
+
   const getAlbumDetail = useCallback(async () => {
     try {
       setLoading(true);
@@ -199,11 +203,17 @@ function AlbumDetail() {
       });
   };
 
-  const handleAddToCartClick = (e, foto) => {
-    e.preventDefault(); 
-    e.stopPropagation(); 
-    addToCart(foto);
-    toast.success("Sucesso! Foto adicionada ao carrinho."); 
+  const handleAddToCartClick = async (e, media) => {
+      e.preventDefault(); 
+      e.stopPropagation(); 
+      
+      try {
+          // O "await" obriga o React a esperar a confirmação do servidor
+          await addToCart(media); 
+      } catch (error) {
+          console.error("Erro no carrinho:", error);
+          toast.error("Erro ao adicionar ao carrinho. O servidor recusou o item.");
+      }
   };
 
   // --- Lógica da Busca Facial ---
@@ -311,6 +321,30 @@ function AlbumDetail() {
       window.scrollTo({ top: 600, behavior: 'smooth' });
   };
 
+  const handlePropostaSubmit = async (e) => {
+      e.preventDefault();
+      if (!user) {
+          toast.warning("Precisa iniciar sessão como cliente para enviar uma proposta.");
+          return;
+      }
+      setIsSendingProposta(true);
+      try {
+          await axiosInstance.post('/propostas/criar/', {
+              album: id,
+              quantidade_fotos: propostaForm.qtdFotos || 0,
+              quantidade_videos: propostaForm.qtdVideos || 0,
+              valor_oferecido: propostaForm.valor
+          });
+          toast.success("🤝 Proposta enviada com sucesso! O fotógrafo analisará em breve.");
+          setIsPropostaModalOpen(false);
+          setPropostaForm({ qtd: '', valor: '' });
+      } catch (error) {
+          toast.error(error.response?.data?.error || "Erro ao enviar proposta.");
+      } finally {
+          setIsSendingProposta(false);
+      }
+  };
+
   if (loading) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar álbum...</p>; }
   if (!album) { return <p style={{textAlign: 'center', marginTop: '2rem'}}>Álbum não encontrado.</p>; }
 
@@ -325,9 +359,9 @@ function AlbumDetail() {
         <p>{album.descricao}</p>
         <p><strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}</p>
         
-        <button onClick={handleShareClick} className="button-outline" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-          🔗 Compartilhar
-        </button>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">🤝 Fazer uma Proposta / Negociar</button>
+        </div>
       </header>
       <main>
         
@@ -479,6 +513,41 @@ function AlbumDetail() {
 
       {selectedImage && (
         <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} onNext={handleNextImage} onPrev={handlePrevImage} />
+      )}
+      {isPropostaModalOpen && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+              <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                  <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px' }}>🤝 Fazer uma Proposta</h3>
+                  <p style={{ color: '#555', fontSize: '14px', marginBottom: '20px' }}>
+                      Quer comprar um pacote de fotos? Diga ao fotógrafo quantas fotos quer e qual valor deseja pagar.
+                  </p>
+                  
+                  <form onSubmit={handlePropostaSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                          <div style={{ flex: 1 }}>
+                              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '5px' }}>Qtd. Fotos</label>
+                              <input type="number" min="0" placeholder="Ex: 20" value={propostaForm.qtdFotos} onChange={(e) => setPropostaForm({...propostaForm, qtdFotos: e.target.value})} style={{ backgroundColor: '#fff', color: '#666', width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '5px' }}>Qtd. Vídeos</label>
+                              <input type="number" min="0" placeholder="Ex: 5" value={propostaForm.qtdVideos} onChange={(e) => setPropostaForm({...propostaForm, qtdVideos: e.target.value})} style={{ backgroundColor: '#fff', color: '#666', width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
+                          </div>
+                      </div>
+                      
+                      <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '5px' }}>Valor Oferecido (R$)</label>
+                          <input type="number" step="0.01" required min="1" placeholder="Ex: 150.00" value={propostaForm.valor} onChange={(e) => setPropostaForm({...propostaForm, valor: e.target.value})} style={{ backgroundColor: '#fff', color: '#666', width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                          <button type="button" onClick={() => setIsPropostaModalOpen(false)} className="button-outline" style={{ flex: 1 }}>Cancelar</button>
+                          <button type="submit" disabled={isSendingProposta} className="create-button" style={{ flex: 1 }}>
+                              {isSendingProposta ? 'A enviar...' : 'Enviar Proposta'}
+                          </button>
+                      </div>
+                  </form>
+              </div>
+          </div>
       )}
     </div>
   );

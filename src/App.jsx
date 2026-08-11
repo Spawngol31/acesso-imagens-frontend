@@ -25,6 +25,7 @@ import RegisterPage from './pages/RegisterPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
+import MinhasPropostasPage from './pages/MinhasPropostasPage';
 import MinhasComprasPage from './pages/MinhasComprasPage';
 import AdminUserPage from './pages/admin/AdminUserPage';
 import AdminJornaisPage from './pages/admin/AdminJornaisPage';
@@ -32,9 +33,11 @@ import AdminStatsPage from './pages/admin/AdminStatsPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminFinanceiroPage from './pages/admin/AdminFinanceiroPage';
 import DashboardAlbunsPage from './pages/dashboard/DashboardAlbunsPage';
+import DashboardCarrinhosPage from './pages/dashboard/DashboardCarrinhosPage';
 import DashboardAlbumDetailPage from './pages/dashboard/DashboardAlbumDetailPage';
 import DashboardVendasPage from './pages/dashboard/DashboardVendasPage';
 import DashboardCuponsPage from './pages/dashboard/DashboardCuponsPage';
+import DashboardPropostasPage from './pages/dashboard/DashboardPropostasPage';
 import DashboardUploadPage from './pages/dashboard/DashboardUploadPage';
 import DashboardPerfilPage from './pages/dashboard/DashboardPerfilPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -60,6 +63,7 @@ function App() {
           <Route path="busca" element={<SearchPage />} />
           <Route path="carrinho" element={<CartPage />} />
           <Route path="minhas-compras" element={<MinhasComprasPage />} />
+          <Route path="minhas-propostas" element={<MinhasPropostasPage />} />
           <Route path="perfil" element={<DashboardPerfilPage />} />
           <Route path="contato" element={<ContactPage />} />
           <Route path="quem-somos" element={<AboutPage />} />
@@ -85,6 +89,8 @@ function App() {
             <Route path="upload" element={<DashboardUploadPage />} />
             <Route path="vendas" element={<DashboardVendasPage />} />
             <Route path="cupons" element={<DashboardCuponsPage />} />
+            <Route path="carrinhos-ativos" element={<DashboardCarrinhosPage />} />
+            <Route path="propostas" element={<DashboardPropostasPage />} />
             <Route path="watermark-tool" element={<WatermarkToolPage />} />
           </Route>
         </Route>

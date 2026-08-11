@@ -13,8 +13,11 @@ function UserEditForm({ user, onSubmit, onCancel }) {
     useEffect(() => { setFormData(user); }, [user]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: type === 'checkbox' ? checked : value 
+        }));
     };
 
     const handleProfileChange = (profileType, e) => {
@@ -81,6 +84,26 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                                 <option value="CRIADOR_CONTEUDO">Criador(a) de Conteúdo</option>
                             </select>
                         </div>
+                        
+                        {/* --- 🔥 NOVO CHECKBOX DE VISIBILIDADE PARA O ADMIN 🔥 --- */}
+                        {isColaborador && (
+                            <div style={{ gridColumn: '1 / -1', marginTop: '5px', marginBottom: '20px', padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #6c0464' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 'bold', color: '#6c0464' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        name="mostrar_no_quem_somos" 
+                                        checked={formData.mostrar_no_quem_somos !== false} // Se for undefined, marca como true por padrão
+                                        onChange={handleChange} 
+                                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                    />
+                                    Mostrar profissional na página "Quem Somos"
+                                </label>
+                                <p style={{ margin: '5px 0 0 30px', fontSize: '12px', color: '#666' }}>
+                                    Se desmarcado, este profissional venderá fotos normalmente no site, mas ficará oculto na página oficial da sua equipe.
+                                </p>
+                            </div>
+                        )}
+                        {/* --------------------------------------------------------- */}
                     </div>
                     
                     {formData.papel === 'CLIENTE' && formData.perfil_cliente && (

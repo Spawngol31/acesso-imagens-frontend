@@ -33,7 +33,8 @@ function Layout() {
                                     {user.papel === 'ADMIN' && <NavLink to="/admin">Painel admin</NavLink>}
                                     {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Meu painel</NavLink>}
                                     {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Minhas compras</NavLink>}
-                                    
+                                    {user.papel === 'CLIENTE' && <NavLink to="/minhas-propostas">Minhas Propostas</NavLink>}
+
                                     {/* O Perfil é igual para Fotógrafo e Cliente */}
                                     {(user.papel === 'FOTOGRAFO' || user.papel === 'CLIENTE') && (
                                         <NavLink to="/perfil" className="nav-link">Meu Perfil</NavLink>

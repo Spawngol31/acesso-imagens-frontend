@@ -15,9 +15,9 @@ export function CartProvider({ children }) {
     const getGuestCart = () => {
         const localItems = JSON.parse(localStorage.getItem('guestCart')) || [];
         
-        // CORREÇÃO: Usando isNaN para garantir que se um preço vier quebrado, ele vira 0 e não trava a soma
         const subtotal = localItems.reduce((acc, item) => {
-            const preco = parseFloat(item.preco_item || item.foto?.preco);
+            // Verifica os preços nos 3 locais possíveis (foto, video ou preco_item genérico)
+            const preco = parseFloat(item.preco_item || item.foto?.preco || item.video?.preco);
             return acc + (isNaN(preco) ? 0 : preco);
         }, 0);
         
@@ -88,34 +88,45 @@ export function CartProvider({ children }) {
 
     // ATENÇÃO: Agora precisamos receber o objeto 'foto' inteiro (não só o ID) 
     // para podermos salvar a imagem e o preço na memória do visitante.
-    const addToCart = async (foto) => {
-        // Se passarem apenas o ID por engano, tentamos isolá-o
-        const fotoId = typeof foto === 'object' ? foto.id : foto;
+    const addToCart = async (media) => {
+        // MÁGICA: Descobre se é vídeo verificando se existe 'arquivo_preview_url'
+        const isVideo = typeof media === 'object' && media.arquivo_preview_url !== undefined;
+        const mediaId = typeof media === 'object' ? media.id : media;
 
         if (authToken && user?.papel === 'CLIENTE') {
             try {
-                await axiosInstance.post('carrinho/', { foto_id: fotoId });
+                // Envia foto_id OU video_id dinamicamente para o backend
+                const payload = isVideo ? { video_id: mediaId } : { foto_id: mediaId };
+                await axiosInstance.post('carrinho/', payload);
                 fetchCart();
+                toast.success(`🛒 Sucesso! ${isVideo ? 'Vídeo' : 'Foto'} adicionado(a) ao carrinho.`); 
             } catch (error) {
                 console.error("Erro ao adicionar ao carrinho:", error);
+                toast.error("Erro ao adicionar. O item pode já estar no carrinho.");
             }
         } else {
             // Visitante: Salva no localStorage
             const localItems = JSON.parse(localStorage.getItem('guestCart')) || [];
-            const exists = localItems.find(item => item.foto.id === fotoId);
+            
+            // Verifica se a mesma mídia (foto ou video) já existe
+            const exists = localItems.find(item => 
+                (isVideo && item.video?.id === mediaId) || (!isVideo && item.foto?.id === mediaId)
+            );
             
             if (!exists) {
-                // Se o componente passou o objeto foto completo, salvamos!
                 const newItem = {
                     id: `local_${Date.now()}`, 
-                    foto: typeof foto === 'object' ? foto : { id: fotoId, preco: 0, imagem_url: '' }, 
-                    preco_item: typeof foto === 'object' ? foto.preco : 0
+                    // Salva na chave correta dependendo do que for
+                    foto: !isVideo ? (typeof media === 'object' ? media : { id: mediaId, preco: 0 }) : null,
+                    video: isVideo ? media : null,
+                    preco_item: typeof media === 'object' ? media.preco : 0
                 };
                 localItems.push(newItem);
                 localStorage.setItem('guestCart', JSON.stringify(localItems));
-                setCart(getGuestCart()); // Atualiza a tela
+                setCart(getGuestCart()); 
+                toast.success(`🛒 Sucesso! ${isVideo ? 'Vídeo' : 'Foto'} adicionado(a) ao carrinho.`);
             } else {
-                toast.warning("Esta foto já está no seu carrinho!");
+                toast.warning(`Este ${isVideo ? 'vídeo' : 'item'} já está no seu carrinho!`);
             }
         }
     };

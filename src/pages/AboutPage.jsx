@@ -13,10 +13,12 @@ function AboutPage() {
                 setLoading(true);
                 const response = await axiosInstance.get('/fotografos/');
                 
-                // 🚀 O CÓDIGO FICOU MAIS LIMPO!
-                // Como o Django já vai mandar na ordem certa, só precisamos de guardar no estado.
                 if (Array.isArray(response.data)) {
-                    setColaboradores(response.data); 
+                    // 🚀 CORREÇÃO: Mostra todos, exceto se estiver explicitamente marcado como false
+                    const equipeOficial = response.data.filter(
+                        colaborador => colaborador.mostrar_no_quem_somos === true
+                    );
+                    setColaboradores(equipeOficial); 
                 } else {
                     setColaboradores([]); 
                 }

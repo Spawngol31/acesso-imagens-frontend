@@ -25,10 +25,17 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
     }
   };
 
-  const handleAddCart = (e) => {
-    e.stopPropagation();
-    addToCart(image);
-    toast.success("🛒 Sucesso! Foto adicionada ao carrinho."); 
+  const handleAddToCartClick = async (e, media) => {
+      e.preventDefault(); 
+      e.stopPropagation(); 
+      
+      try {
+          // O "await" obriga o React a esperar a confirmação do servidor
+          await addToCart(media); 
+      } catch (error) {
+          console.error("Erro no carrinho:", error);
+          toast.error("Erro ao adicionar ao carrinho. O servidor recusou o item.");
+      }
   };
 
   // Função que inverte o lado do borrão ao clicar na foto
