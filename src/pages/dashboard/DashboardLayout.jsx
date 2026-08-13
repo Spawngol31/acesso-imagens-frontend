@@ -17,6 +17,7 @@ const DashboardLayout = () => {
                     <nav className="dashboard-main-nav">
                         <NavLink to="/dashboard/albuns">Meus álbuns</NavLink>
                         <NavLink to="/dashboard/vendas">Minhas vendas</NavLink>
+                        <NavLink to="/dashboard/saques">Meus saques</NavLink>
                         <NavLink to="/dashboard/cupons">Meus cupons</NavLink>
                         <NavLink to="/dashboard/carrinhos-ativos" className={({ isActive }) => isActive ? 'active' : ''}>
                             Carrinhos em Aberto

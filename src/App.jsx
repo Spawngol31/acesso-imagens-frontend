@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
@@ -50,6 +48,10 @@ import NewsDetailPage from './pages/NewsDetailPage';
 import PoliticaPrivacidade from './pages/PoliticaPrivacidade';
 import PromotionalArtCreatorPage from './pages/dashboard/PromotionalArtCreatorPage';
 
+// --- AS NOVAS PÁGINAS DE SAQUE ---
+import FotografoSaquesPage from './pages/dashboard/FotografoSaquesPage';
+import AdminSaquesPage from './pages/admin/AdminSaquesPage';
+
 import './App.css';
 
 function App() {
@@ -72,7 +74,6 @@ function App() {
           <Route path="/privacidade" element={<PoliticaPrivacidade />} />
         </Route>
 
-        {/* Removi rotas duplicadas de login e registrar */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registrar" element={<RegisterPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
@@ -80,6 +81,7 @@ function App() {
         <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
         <Route path="/resetar-senha/:uidb64/:token" element={<ResetPasswordPage />} />
 
+        {/* ROTAS DO FOTÓGRAFO */}
         <Route element={<ProtectedRoute allowedRoles={['FOTOGRAFO']} />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route path="albuns" element={<DashboardAlbunsPage />} />
@@ -92,9 +94,13 @@ function App() {
             <Route path="carrinhos-ativos" element={<DashboardCarrinhosPage />} />
             <Route path="propostas" element={<DashboardPropostasPage />} />
             <Route path="watermark-tool" element={<WatermarkToolPage />} />
+            
+            {/* ROTA DO SAQUE AQUI */}
+            <Route path="saques" element={<FotografoSaquesPage />} /> 
           </Route>
         </Route>
 
+        {/* ROTAS DO ADMIN */}
         <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminStatsPage />} />
@@ -102,11 +108,13 @@ function App() {
             <Route path="jornais" element={<AdminJornaisPage />} />
             <Route path="users/:id" element={<AdminUserDetailPage />} />
             <Route path="vendas" element={<AdminFinanceiroPage />} />
+            
+            {/* ROTA DO SAQUE DO ADMIN AQUI */}
+            <Route path="saques" element={<AdminSaquesPage />} />
           </Route>
         </Route>
       </Routes>
 
-      {/* --- O CONTAINER GLOBAL DOS TOASTS FICA AQUI --- */}
       <ToastContainer 
         position="top-right" 
         autoClose={4000} 
@@ -119,7 +127,6 @@ function App() {
         pauseOnHover 
         theme="colored" 
       />
-      {/* ----------------------------------------------- */}
     </>
   );
 }

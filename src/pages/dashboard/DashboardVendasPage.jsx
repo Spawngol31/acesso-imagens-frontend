@@ -1,6 +1,7 @@
 // src/pages/dashboard/DashboardVendasPage.jsx
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
 
@@ -147,15 +148,14 @@ function DashboardVendasPage() {
             {/* ==================== ABA 1: MINHAS VENDAS E FILTROS ==================== */}
             {activeTab === 'vendas' && (
                 <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '25px' }}>
-                        <div style={{ backgroundColor: '#fff', borderLeft: `5px solid #28a745`, padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <div style={{ backgroundColor: '#fff', borderLeft: `5px solid #28a745`, padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                        <div>
                             <p style={{ margin: 0, color: '#666', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>Saldo Pendente (A Receber)</p>
                             <h2 style={{ margin: '10px 0 0 0', color: '#28a745', fontSize: '32px' }}>R$ {parseFloat(resumo.saldo_pendente).toFixed(2)}</h2>
                         </div>
-                        <div style={{ backgroundColor: '#fff', borderLeft: `5px solid ${corPrincipal}`, padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                            <p style={{ margin: 0, color: '#666', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>Total Já Recebido na Plataforma</p>
-                            <h2 style={{ margin: '10px 0 0 0', color: corPrincipal, fontSize: '32px' }}>R$ {parseFloat(resumo.total_ja_recebido).toFixed(2)}</h2>
-                        </div>
+                        <Link to="/dashboard/saques" className="create-button" >
+                            💲 Solicitar Saque
+                        </Link>
                     </div>
 
                     <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>

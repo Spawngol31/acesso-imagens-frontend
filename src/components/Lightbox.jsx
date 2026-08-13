@@ -136,7 +136,7 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
         {/* 🛒 SEU BOTÃO DE CARRINHO ORIGINAL */}
         {(!user || user.papel === 'CLIENTE') && (
             <button 
-              onClick={handleAddCart} 
+              onClick={(e) => handleAddToCartClick(e, image)} 
               className="create-button" 
               style={{
                 position: 'fixed', bottom: '40px', left: '50%', transform: 'translateX(-50%)',
