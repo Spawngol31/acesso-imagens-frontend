@@ -92,9 +92,9 @@ function DashboardCuponsPage() {
                 marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
             }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >🏷️ Meus Cupons</h2>
+                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >🏷️ Meus cupons</h2>
                 <button className="create-button" onClick={() => { setEditingCupom({}); setIsModalOpen(true); }}>
-                    Criar Novo Cupom +
+                    Criar novo cupom +
                 </button>
             </div>
             

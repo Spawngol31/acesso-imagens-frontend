@@ -1,12 +1,10 @@
-// src/pages/RegisterPage.jsx
-
 import React, { useState } from 'react';
 import axiosInstance from '../api/axiosInstance';
 import { useNavigate, Link } from 'react-router-dom';
 
 function RegisterPage() {
+    // 1. Removemos o 'username' do estado inicial
     const [formData, setFormData] = useState({
-        username: '',
         email: '',
         nome_completo: '',
         password: '',
@@ -34,25 +32,34 @@ function RegisterPage() {
         }
 
         try {
-            await axiosInstance.post('/registrar/', formData);
+            // 2. O TRUQUE: Criamos um 'payload' onde o username copia exatamente o email
+            // Assim, o Django recebe o campo obrigatório e não dá erro, usando o email como login.
+            const payload = {
+                ...formData,
+                username: formData.email 
+            };
+
+            await axiosInstance.post('/registrar/', payload);
             navigate('/login', { state: { message: 'Conta criada com sucesso! Por favor, faça o login.' } });
         
         } catch (error) {
-            // --- TRATAMENTO DE ERRO CORRIGIDO ---
             if (error.response) {
-                // O servidor respondeu com um erro (ex: username já existe)
                 console.error("Erro no registo (dados):", error.response.data);
-                setErrors(error.response.data);
+                
+                // Pequeno ajuste: se o erro vier no 'username' oculto, mostramos no 'email'
+                let dadosErro = error.response.data;
+                if (dadosErro.username) {
+                    dadosErro.email = dadosErro.username; 
+                }
+                setErrors(dadosErro);
+
             } else if (error.request) {
-                // O pedido foi feito, mas não houve resposta (ex: CORS ou servidor offline)
                 console.error("Erro no registo (rede):", error.request);
                 setErrors({ detail: "Não foi possível ligar ao servidor. Tente novamente." });
             } else {
-                // Algo correu mal a preparar o pedido
                 console.error("Erro no registo (inesperado):", error.message);
                 setErrors({ detail: "Ocorreu um erro inesperado." });
             }
-            // ------------------------------------
         } finally {
             setLoading(false);
         }
@@ -66,13 +73,13 @@ function RegisterPage() {
                 </Link>
                 <h2>✍🏼 Criar Conta</h2>
                 <form onSubmit={handleSubmit} className="auth-form">
-                    <input name="nome_completo" type="text" placeholder="Nome Completo" onChange={handleChange} required />
+                    
+                    <input name="nome_completo" type="text" placeholder="Nome Completo" value={formData.nome_completo} onChange={handleChange} required />
                     {errors.nome_completo && <p className="error-message">{errors.nome_completo[0]}</p>}
 
-                    <input name="username" type="text" placeholder="Nome de Utilizador" onChange={handleChange} required />
-                    {errors.username && <p className="error-message">{errors.username[0]}</p>}
+                    {/* O input de 'Nome de Utilizador' foi completamente removido daqui! */}
                     
-                    <input name="email" type="email" placeholder="E-mail" onChange={handleChange} required />
+                    <input name="email" type="email" placeholder="E-mail" value={formData.email} onChange={handleChange} required />
                     {errors.email && <p className="error-message">{errors.email[0]}</p>}
 
                     <div className="password-input-wrapper">

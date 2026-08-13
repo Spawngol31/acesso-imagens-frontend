@@ -130,7 +130,7 @@ function DashboardPropostasPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '40px' }}>
             <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🤝 Negociações e Propostas</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🤝 Negociações e propostas</h2>
             </div>
 
             {loading ? <p>A carregar propostas...</p> : propostas.length === 0 ? (

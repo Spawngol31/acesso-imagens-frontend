@@ -80,7 +80,7 @@ function AdminSaquesPage() {
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }}>🏦 Gestão de Saques</h2>
+                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }}>🏦 Gestão de saques</h2>
                 
                 <select 
                     value={filtroStatus} 
@@ -88,8 +88,8 @@ function AdminSaquesPage() {
                     style={{ backgroundColor: '#fff', color:'#666', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', outline: 'none' }}
                 >
                     <option value="">Todos os Status</option>
-                    <option value="PENDENTE">Apenas Pendentes (Fila de Pagamento)</option>
-                    <option value="PAGO">Já Pagos</option>
+                    <option value="PENDENTE">Apenas pendentes (fila de pagamento)</option>
+                    <option value="PAGO">Já pagos</option>
                     <option value="RECUSADA">Recusados</option>
                 </select>
             </div>
@@ -166,7 +166,6 @@ function AdminSaquesPage() {
                                     
                                     <label style={{ display: 'inline-block', backgroundColor: '#6c0464', color: 'white', padding: '10px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                                         📎 Procurar Ficheiro (Opcional)
-                                        {/* O input real fica escondido aqui dentro */}
                                         <input 
                                             type="file" 
                                             accept="image/*,application/pdf"

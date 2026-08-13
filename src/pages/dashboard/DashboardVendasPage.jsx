@@ -136,25 +136,25 @@ function DashboardVendasPage() {
             
             {/* TÍTULO */}
             <div className="page-header" style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >💰 Meu Financeiro</h2>
+                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >💰 Meu financeiro</h2>
             </div>
 
             {/* NAVEGAÇÃO DE ABAS */}
             <div style={{ display: 'flex', borderBottom: '1px solid #dee2e6', marginBottom: '25px', backgroundColor: '#f8f9fa', borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
-                <button style={tabBtnStyle(activeTab === 'vendas')} onClick={() => setActiveTab('vendas')}>📈 Minhas Vendas</button>
-                <button style={tabBtnStyle(activeTab === 'historico')} onClick={() => setActiveTab('historico')}>🧾 Meus Recebimentos</button>
+                <button style={tabBtnStyle(activeTab === 'vendas')} onClick={() => setActiveTab('vendas')}>📈 Minhas vendas</button>
+                <button style={tabBtnStyle(activeTab === 'historico')} onClick={() => setActiveTab('historico')}>🧾 Meus recebimentos</button>
             </div>
 
             {/* ==================== ABA 1: MINHAS VENDAS E FILTROS ==================== */}
             {activeTab === 'vendas' && (
                 <>
-                    <div style={{ backgroundColor: '#fff', borderLeft: `5px solid #28a745`, padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                    <div style={{ backgroundColor: '#fff', borderLeft: `5px solid #28a745`, padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '1rem' }}>
                         <div>
-                            <p style={{ margin: 0, color: '#666', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>Saldo Pendente (A Receber)</p>
+                            <p style={{ margin: 0, color: '#666', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>Saldo pendente (A Receber)</p>
                             <h2 style={{ margin: '10px 0 0 0', color: '#28a745', fontSize: '32px' }}>R$ {parseFloat(resumo.saldo_pendente).toFixed(2)}</h2>
                         </div>
                         <Link to="/dashboard/saques" className="create-button" >
-                            💲 Solicitar Saque
+                            💲 Solicitar saque
                         </Link>
                     </div>
 
@@ -162,7 +162,7 @@ function DashboardVendasPage() {
                         
                         {/* TABELA DE VENDAS */}
                         <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
-                            <h3 style={{ marginTop: 0, color: corPrincipal, marginBottom: '20px' }}>Lista de Vendas Confirmadas</h3>
+                            <h3 style={{ marginTop: 0, color: corPrincipal, marginBottom: '20px' }}>Lista de vendas confirmadas</h3>
 
                             {loading ? <p style={{ color: '#666' }}>A carregar vendas...</p> : (
                                 <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
@@ -245,7 +245,7 @@ function DashboardVendasPage() {
             {/* ==================== ABA 2: HISTÓRICO DE RECIBOS ==================== */}
             {activeTab === 'historico' && (
                 <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box' }}>
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🧾 Meus Recibos da Plataforma</h3>
+                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🧾 Meus recibos da plataforma</h3>
                     
                     {loading ? <p style={{ color: '#666' }}>A carregar recibos...</p> : (
                         <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>

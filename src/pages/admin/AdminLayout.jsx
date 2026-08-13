@@ -18,8 +18,8 @@ const AdminLayout = () => {
                     <nav className="dashboard-main-nav">
                         <NavLink to="/admin" end>Estatísticas</NavLink>
                         <NavLink to="/admin/vendas">Financeiro (Vendas)</NavLink>
-                        <NavLink to="/admin/saques">Aprovações de Saque</NavLink>
-                        <NavLink to="/admin/users">Gerir usuários</NavLink>
+                        <NavLink to="/admin/saques">Saques</NavLink>
+                        <NavLink to="/admin/users">Usuários</NavLink>
                         <NavLink to="/admin/jornais">Jornais & FTP</NavLink>
                     </nav>
                     <div className="dashboard-user-actions">

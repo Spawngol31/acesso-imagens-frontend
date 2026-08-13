@@ -19,7 +19,7 @@ function AdminFinanceiroPage() {
     const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status: '', search: '', fotografo_id: '' });
     const [vendasBuscadas, setVendasBuscadas] = useState(false);
 
-    // --- ESTADOS DA ABA DE HISTÓRICO (OTIMIZADO) ---
+    // --- ESTADOS DA ABA DE HISTÓRICO ---
     const [historicoRecibos, setHistoricoRecibos] = useState([]);
     const [filtrosHistorico, setFiltrosHistorico] = useState({ data_inicio: '', data_fim: '', fotografo_id: '' });
     const [historicoBuscado, setHistoricoBuscado] = useState(false); // Diz se o usuário já clicou em filtrar
@@ -35,11 +35,9 @@ function AdminFinanceiroPage() {
         if (activeTab === 'pendentes') {
             buscarDadosVendas();
         } 
-        // 🚀 OTIMIZAÇÃO: Removemos a busca automática da aba histórico para não sobrecarregar o servidor!
     }, [activeTab]);
 
     // ================= LÓGICA DA ABA: VENDAS PENDENTES =================
-    // 🚀 ATUALIZADO: Agora ele sabe se foi um clique real ou só o carregamento inicial da página
     const buscarDadosVendas = async (foiClicado = false) => {
         setLoading(true);
         if (foiClicado === true) setVendasBuscadas(true);
@@ -52,7 +50,6 @@ function AdminFinanceiroPage() {
             if (filtros.search) params.append('search', filtros.search);
             if (filtros.fotografo_id) params.append('fotografo_id', filtros.fotografo_id);
 
-            // ⚡ O TRUQUE: Se a página acabou de abrir (não foi clicado), avisa o backend para ser rápido!
             if (!foiClicado) {
                 params.append('apenas_fotografos', 'true');
             }
@@ -119,7 +116,7 @@ function AdminFinanceiroPage() {
             toast.success("Pagamento registrado com sucesso! O saldo foi zerado.");
             buscarDadosVendas(); 
             setActiveTab('historico');
-            buscarHistorico(); // Força a atualização do histórico recém-criado
+            buscarHistorico();
         } catch (error) {
             console.error("Erro ao registrar pagamento:", error);
             toast.error("Erro ao tentar registrar o pagamento.");
@@ -133,7 +130,6 @@ function AdminFinanceiroPage() {
         setLoading(true);
         setHistoricoBuscado(true);
         try {
-            // Agora enviamos os filtros para a API!
             const params = new URLSearchParams();
             if (filtrosHistorico.data_inicio) params.append('data_inicio', filtrosHistorico.data_inicio);
             if (filtrosHistorico.data_fim) params.append('data_fim', filtrosHistorico.data_fim);
@@ -224,7 +220,6 @@ function AdminFinanceiroPage() {
                 </button>
             </div>
 
-            {/* ABA 1: VENDAS PENDENTES (MANTIDO EXATAMENTE IGUAL) */}
             {activeTab === 'pendentes' && (
                 <>
                     {/* ... (Seu código da aba pendentes não mudou nada, foi mantido igual) ... */}

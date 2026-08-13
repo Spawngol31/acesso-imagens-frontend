@@ -184,7 +184,9 @@ function MinhasComprasPage() {
     return (
         <div className="page-container" style={{ position: 'relative', paddingBottom: selecionadas.length > 0 ? '100px' : '40px' }}>
             <h1>💰 Minhas compras</h1>
-            <p>Aqui estão todas as fotos que comprou. O link para download é válido por 60 dias após a data da compra.</p>
+            <p style={{ textAlign: 'center', marginBottom: '30px' }}>
+                Aqui estão todas as fotos que comprou. O link para download é válido por 60 dias após a data da compra.
+            </p>
 
             {itensComprados.length === 0 ? (
                 <div className="empty-state-container">

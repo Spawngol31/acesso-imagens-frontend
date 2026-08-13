@@ -16,7 +16,6 @@ export function CartProvider({ children }) {
         const localItems = JSON.parse(localStorage.getItem('guestCart')) || [];
         
         const subtotal = localItems.reduce((acc, item) => {
-            // Verifica os preços nos 3 locais possíveis (foto, video ou preco_item genérico)
             const preco = parseFloat(item.preco_item || item.foto?.preco || item.video?.preco);
             return acc + (isNaN(preco) ? 0 : preco);
         }, 0);
@@ -34,7 +33,6 @@ export function CartProvider({ children }) {
         const localItems = JSON.parse(localStorage.getItem('guestCart')) || [];
         if (localItems.length > 0) {
             try {
-                // Manda os itens do navegador para o Django
                 for (const item of localItems) {
                     try {
                         await axiosInstance.post('carrinho/', { foto_id: item.foto.id });
@@ -42,7 +40,6 @@ export function CartProvider({ children }) {
                         console.error("Erro ao sincronizar item (pode já estar no carrinho):", err);
                     }
                 }
-                // Limpa o carrinho local pois agora está no banco de dados!
                 localStorage.removeItem('guestCart');
             } catch (error) {
                 console.error("Erro ao sincronizar carrinho de visitante:", error);
@@ -52,16 +49,13 @@ export function CartProvider({ children }) {
     // -------------------------------------------------
 
     const fetchCart = useCallback(async () => {
-        // Se não está logado como cliente, usa o carrinho da memória do navegador
         if (!authToken || user?.papel !== 'CLIENTE') {
             setCart(getGuestCart());
             return;
         }
 
         try {
-            // Se acabou de fazer login, primeiro sincroniza o que tinha guardado localmente
             await syncGuestCartToServer();
-            // Depois busca o carrinho real, oficial, do servidor
             const response = await axiosInstance.get('carrinho/');
             setCart(response.data);
         } catch (error) {
@@ -83,19 +77,15 @@ export function CartProvider({ children }) {
     };
 
     useEffect(() => {
-        fetchCart(); // Agora sempre carrega (seja local ou do servidor)
+        fetchCart();
     }, [fetchCart]);
 
-    // ATENÇÃO: Agora precisamos receber o objeto 'foto' inteiro (não só o ID) 
-    // para podermos salvar a imagem e o preço na memória do visitante.
     const addToCart = async (media) => {
-        // MÁGICA: Descobre se é vídeo verificando se existe 'arquivo_preview_url'
         const isVideo = typeof media === 'object' && media.arquivo_preview_url !== undefined;
         const mediaId = typeof media === 'object' ? media.id : media;
 
         if (authToken && user?.papel === 'CLIENTE') {
             try {
-                // Envia foto_id OU video_id dinamicamente para o backend
                 const payload = isVideo ? { video_id: mediaId } : { foto_id: mediaId };
                 await axiosInstance.post('carrinho/', payload);
                 fetchCart();
@@ -105,18 +95,15 @@ export function CartProvider({ children }) {
                 toast.error("Erro ao adicionar. O item pode já estar no carrinho.");
             }
         } else {
-            // Visitante: Salva no localStorage
             const localItems = JSON.parse(localStorage.getItem('guestCart')) || [];
             
-            // Verifica se a mesma mídia (foto ou video) já existe
             const exists = localItems.find(item => 
                 (isVideo && item.video?.id === mediaId) || (!isVideo && item.foto?.id === mediaId)
             );
             
             if (!exists) {
                 const newItem = {
-                    id: `local_${Date.now()}`, 
-                    // Salva na chave correta dependendo do que for
+                    id: `local_${Date.now()}`,
                     foto: !isVideo ? (typeof media === 'object' ? media : { id: mediaId, preco: 0 }) : null,
                     video: isVideo ? media : null,
                     preco_item: typeof media === 'object' ? media.preco : 0
@@ -140,7 +127,6 @@ export function CartProvider({ children }) {
                 console.error("Erro ao remover do carrinho:", error);
             }
         } else {
-            // Visitante: Remove do localStorage
             let localItems = JSON.parse(localStorage.getItem('guestCart')) || [];
             localItems = localItems.filter(item => item.id !== itemId);
             localStorage.setItem('guestCart', JSON.stringify(localItems));

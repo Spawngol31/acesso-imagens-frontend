@@ -11,19 +11,19 @@ import { toast } from 'react-toastify';
 const TEMPLATES = {
     CARD_FLOATING: { 
         id: 'card_floating', 
-        name: 'Clássico (Flutuante)', 
+        name: 'Clássico (flutuante)', 
         bgUrl: '/images/fundo-arte.png', 
         overlayUrl: null 
     },
     PHONE_MOCKUP: { 
         id: 'phone_mockup', 
-        name: 'Moldura Celular', 
+        name: 'Moldura celular', 
         bgUrl: '/images/fundo-arte.png', 
         overlayUrl: '/images/phone-frame.png' 
     },
     CAROUSEL_MIMIC: { 
         id: 'carousel_mimic', 
-        name: 'Moldura Quadrada', 
+        name: 'Moldura quadrada', 
         bgUrl: '/images/fundo-arte.png', 
         overlayUrl: '/images/carousel-overlay.png' 
     }
@@ -183,9 +183,9 @@ function PromotionalArtCreatorPage() {
                 marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
             }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🎨 Criar Arte de Divulgação</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🎨 Criar arte de divulgação</h2>
                 <Link to={`/dashboard/albuns/${id}`} className="button-outline" style={{ textDecoration: 'none' }}>
-                    Voltar para o Álbum
+                    Voltar para o Álbuns
                 </Link>
             </div>
 
@@ -193,7 +193,7 @@ function PromotionalArtCreatorPage() {
                 
                 <div style={{ flex: '1 1 350px', backgroundColor: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
                     
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>1. Escolher Moldura (Template)</h3>
+                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>1. Escolher moldura (template)</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '15px', marginBottom: '25px' }}>
                         {Object.values(TEMPLATES).map(tmpl => (
                             <button 
@@ -216,25 +216,25 @@ function PromotionalArtCreatorPage() {
                         ))}
                     </div>
 
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>2. Personalizar Textos e Foto</h3>
+                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>2. Personalizar textos e foto</h3>
                     
                     <form className="auth-form" style={{ marginTop: '20px', gap: '12px' }}>
                         
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Título do Álbum</label>
+                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Título do álbum</label>
                         <input name="title" value={customSettings.title} onChange={handleSettingChange} placeholder="Ex: FUTEBOL 2026" style={{padding: '8px'}} />
                         
                         <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Fotógrafo(a)</label>
                         <input name="photographerName" value={customSettings.photographerName} onChange={handleSettingChange} placeholder="Ex: João Silva" style={{padding: '8px'}} />
 
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Local do Evento</label>
+                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Local do evento</label>
                         <input name="locationText" value={customSettings.locationText} onChange={handleSettingChange} placeholder="Ex: Estádio do Vale" style={{padding: '8px'}} />
 
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Data / Horário</label>
+                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Data / horário</label>
                         <input name="dateText" value={customSettings.dateText} onChange={handleSettingChange} placeholder="Ex: 31/01/2026" style={{padding: '8px'}} />
 
                         {/* --- CAMPOS DE CORES E TEXTO CTA REMOVIDOS DAQUI --- */}
 
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555', marginTop: '8px'}}>Escolher Foto do Álbum</label>
+                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555', marginTop: '8px'}}>Escolher foto do álbum</label>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', maxHeight: '120px', overflowY: 'auto', padding: '5px', border: '1px solid #eee', borderRadius: '8px' }}>
                             {album.fotos?.map(foto => (
                                 <img 

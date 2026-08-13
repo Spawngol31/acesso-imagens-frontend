@@ -67,12 +67,12 @@ function FotografoSaquesPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '40px' }}>
             <h2 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '25px' }}>
-                💸 Meus Saques
+                💸 Meus saques
             </h2>
 
             {/* FORMULÁRIO DE SOLICITAÇÃO */}
             <div style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '30px', borderLeft: `5px solid ${corPrincipal}` }}>
-                <h3 style={{ marginTop: 0, color: '#333' }}>Solicitar Repasse de Vendas</h3>
+                <h3 style={{ marginTop: 0, color: '#333' }}>Solicitar repasse de vendas</h3>
                 <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
                     O sistema transfere automaticamente todo o seu saldo disponível em uma única transação.
                 </p>
@@ -81,26 +81,26 @@ function FotografoSaquesPage() {
                     
                     {/* --- CAIXA DE SALDO BLOQUEADA --- */}
                     <div style={{ flex: '1 1 200px' }}>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>Valor do Saque (R$)</label>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>Valor do saque (R$)</label>
                         <div style={{ backgroundColor: '#e9ecef', color: saldoPendente > 0 ? '#28a745' : '#666', width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', fontWeight: 'bold', fontSize: '16px' }}>
                             R$ {parseFloat(saldoPendente).toFixed(2)}
                         </div>
                     </div>
 
                     <div style={{ flex: '2 1 300px' }}>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>Sua Chave PIX</label>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>Sua chave PIX</label>
                         <input type="text" required value={chavePix} onChange={(e) => setChavePix(e.target.value)} placeholder="CPF, E-mail, Telefone ou Chave Aleatória" style={{ backgroundColor: '#fff', color: '#666', width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
                     </div>
                     
-                    <button type="submit" disabled={isSubmitting || saldoPendente <= 0} className="create-button" style={{ padding: '12px 24px', height: '43px', flex: '1 1 150px', opacity: (isSubmitting || saldoPendente <= 0) ? 0.6 : 1 }}>
-                        {isSubmitting ? 'Enviando...' : 'Pedir Saque Total'}
+                    <button type="submit" disabled={isSubmitting || saldoPendente <= 0} className="create-button" style={{ height: '43px', flex: '1 1 150px', opacity: (isSubmitting || saldoPendente <= 0) ? 0.6 : 1 }}>
+                        {isSubmitting ? 'Enviando...' : 'Pedir saque total'}
                     </button>
                 </form>
             </div>
 
             {/* HISTÓRICO DE SAQUES */}
             <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ marginTop: 0, color: corPrincipal, marginBottom: '20px' }}>Histórico de Solicitações</h3>
+                <h3 style={{ marginTop: 0, color: corPrincipal, marginBottom: '20px' }}>Histórico de solicitações</h3>
                 
                 {loading ? <p>A carregar histórico...</p> : saques.length === 0 ? (
                     <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhuma solicitação de saque realizada até o momento.</p>

@@ -19,28 +19,27 @@ function Layout() {
                     </Link>
                     
                     <nav className="main-nav">
-                        {/* 1. LINKS PRINCIPAIS (Esquerda) */}
+                        {/*  LINKS PRINCIPAIS PUBLICO */}
                         <NavLink to="/busca">Procurar fotos</NavLink>
                         <NavLink to="/eventos">Álbuns</NavLink>
                         <NavLink to="/noticias">Notícias</NavLink>
 
-                        {/* 2. ÁREA DE UTILIZADOR E CARRINHO (Direita) */}
+                        {/* 2. ÁREA DE UTILIZADOR E CARRINHO */}
                         <div className="nav-user-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            
                             {user ? (
                                 <>
                                     {/* Links específicos por papel */}
                                     {user.papel === 'ADMIN' && <NavLink to="/admin">Painel admin</NavLink>}
-                                    {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Meu painel</NavLink>}
-                                    {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Minhas compras</NavLink>}
-                                    {user.papel === 'CLIENTE' && <NavLink to="/minhas-propostas">Minhas Propostas</NavLink>}
+                                    {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Painel</NavLink>}
+                                    {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Compras</NavLink>}
+                                    {user.papel === 'CLIENTE' && <NavLink to="/minhas-propostas">Propostas</NavLink>}
 
                                     {/* O Perfil é igual para Fotógrafo e Cliente */}
                                     {(user.papel === 'FOTOGRAFO' || user.papel === 'CLIENTE') && (
-                                        <NavLink to="/perfil" className="nav-link">Meu Perfil</NavLink>
+                                        <NavLink to="/perfil" className="nav-link">Perfil</NavLink>
                                     )}
 
-                                    {/* Carrinho (Só aparece para clientes ou quem não é Admin/Fotógrafo) */}
+                                    {/* Carrinho (Só aparece para clientes) */}
                                     {user.papel === 'CLIENTE' && (
                                         <Link to="/carrinho" className="cart-link" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
                                             <img src="/images/carrinho.png" alt="Carrinho de Compras" className="cart-icon" />
@@ -73,6 +72,7 @@ function Layout() {
                 </div>
             </main>
 
+            {/* Links rodapé */}
             <footer className="main-footer">
                 <div className="container">
                     <div className="footer-social">
@@ -103,7 +103,7 @@ function Layout() {
                     paddingBottom: '10px',
                     textAlign: 'center',
                     fontSize: '13px',
-                    color: '#fff', // Cor cinza discreta
+                    color: '#fff',
                     width: '100%'
                 }}>
                     <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>
@@ -116,6 +116,9 @@ function Layout() {
                 {/* --- FIM DO AVISO DE COPYRIGHT --- */}
 
             </footer>
+            {/* --- fim links rodapé --- */}
+
+            {/* --- Whats flutuante --- */}
             <a 
                 href="https://wa.me/5592984840065"
                 className="whatsapp-fab"
@@ -125,6 +128,7 @@ function Layout() {
             >
                 <img src="/images/icon_whatsapp.png" alt="Ícone do WhatsApp" />
             </a>
+            {/* --- Fim Whats flutuante --- */}
         </div>
     );
 }

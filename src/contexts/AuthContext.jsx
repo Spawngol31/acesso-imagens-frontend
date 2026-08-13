@@ -39,7 +39,6 @@ export const AuthProvider = ({ children }) => {
         window.location.href = '/';
     }, []);
 
-    // Este useEffect configura os INTERCETORES (o "robô")
     useEffect(() => {
         const requestInterceptor = axiosInstance.interceptors.request.use(
             (config) => {
@@ -57,7 +56,6 @@ export const AuthProvider = ({ children }) => {
             async (error) => {
                 const originalRequest = error.config;
                 
-                // Verifica se o erro é 401 e se NÃO é um pedido de refresh que falhou
                 if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== 'token/refresh/') {
                     originalRequest._retry = true;
                     
@@ -72,7 +70,6 @@ export const AuthProvider = ({ children }) => {
                             const newAuthToken = response.data.access;
                             localStorage.setItem('authToken', newAuthToken);
                             
-                            // Atualiza o estado (dispara o outro useEffect)
                             setAuthToken(newAuthToken); 
                             
                             axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + newAuthToken;
@@ -99,27 +96,22 @@ export const AuthProvider = ({ children }) => {
         };
     }, [logout]);
 
-
-    // Este useEffect carrega o 'user' no arranque inicial da app
     useEffect(() => {
         if (authToken) {
             try {
                 const decodedUser = jwtDecode(authToken);
                 setUser(decodedUser);
-                // Define o cabeçalho padrão (redundante por causa do intercetor, mas seguro)
                 axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + authToken;
             } catch (error) {
                 console.error("Token de autenticação inválido.");
                 logout(); 
             }
         }
-        setLoading(false); // Diz à app para renderizar
+        setLoading(false);
     }, [authToken, logout]);
 
     return (
-        // --- CORREÇÃO 1: Adicionar 'loading' ao 'value' ---
         <AuthContext.Provider value={{ user, authToken, login, logout, loading }}>
-            {/* --- CORREÇÃO 2: Só renderiza o site quando o 'loading' inicial terminar --- */}
             {!loading && children}
         </AuthContext.Provider>
     );

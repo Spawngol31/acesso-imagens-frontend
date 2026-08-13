@@ -15,17 +15,17 @@ const DashboardLayout = () => {
                         <img src="/images/icon_homepage.png" alt="Acesso Imagens Logo" />
                     </Link>
                     <nav className="dashboard-main-nav">
-                        <NavLink to="/dashboard/albuns">Meus álbuns</NavLink>
-                        <NavLink to="/dashboard/vendas">Minhas vendas</NavLink>
-                        <NavLink to="/dashboard/saques">Meus saques</NavLink>
-                        <NavLink to="/dashboard/cupons">Meus cupons</NavLink>
+                        <NavLink to="/dashboard/albuns">Álbuns</NavLink>
+                        <NavLink to="/dashboard/vendas">Vendas</NavLink>
+                        <NavLink to="/dashboard/saques">Saques</NavLink>
+                        <NavLink to="/dashboard/cupons">Cupons</NavLink>
                         <NavLink to="/dashboard/carrinhos-ativos" className={({ isActive }) => isActive ? 'active' : ''}>
-                            Carrinhos em Aberto
+                            Carrinhos em aberto
                         </NavLink>
                         <NavLink to="/dashboard/propostas" className={({ isActive }) => isActive ? 'active' : ''}>
                             Negociações
                         </NavLink>
-                        <NavLink to="/dashboard/watermark-tool">Ferramentas</NavLink>
+                        <NavLink to="/dashboard/watermark-tool">Ferramenta</NavLink>
                     </nav>
                     <div className="dashboard-user-actions">
                         <button onClick={logout} className='logout-button'>Sair</button>

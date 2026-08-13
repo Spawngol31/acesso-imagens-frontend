@@ -126,7 +126,7 @@ function DashboardCarrinhosPage() {
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
             <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🛒 Carrinhos em Aberto</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🛒 Carrinhos em aberto</h2>
                 <p style={{ color: '#666', marginTop: '5px', fontSize: '14px' }}>
                     Veja as fotos que os clientes já escolheram, mas ainda não finalizaram a compra.
                 </p>

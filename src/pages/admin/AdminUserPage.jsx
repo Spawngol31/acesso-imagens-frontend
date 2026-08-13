@@ -340,7 +340,7 @@ function AdminUserPage() {
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
             <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '10px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>👥 Gerir Usuários</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>👥 Gerir usuários</h2>
             </div>
 
             <div style={{ backgroundColor: '#fbf0fa', padding: '20px', borderRadius: '10px', marginBottom: '25px', border: '1px solid #e1bce0', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>

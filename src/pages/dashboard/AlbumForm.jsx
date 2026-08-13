@@ -118,7 +118,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
 
             {/* --- SESSÃO DE DESCONTOS COM NOVO VISUAL --- */}
             <div style={{ marginTop: '5px', padding: '15px', border: '1px solid #e1bce0', borderRadius: '8px', backgroundColor: '#fdfbfe' }}>
-                <h3 style={{ margin: '0 0 5px 0', fontSize: '14px', color: corPrincipal }}>🏷️ Descontos por Quantidade (Opcional)</h3>
+                <h3 style={{ margin: '0 0 5px 0', fontSize: '14px', color: corPrincipal }}>🏷️ Descontos por quantidade (opcional)</h3>
                 <p style={{ fontSize: '12px', color: '#666', marginBottom: '15px' }}>
                     Incentive os clientes a comprarem mais fotos deste álbum. Deixe em branco se não quiser dar desconto.
                 </p>
@@ -150,7 +150,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                             htmlFor="album-cover-upload" 
                             style={{ padding: '8px 15px', backgroundColor: '#fbf0fa', color: corPrincipal, border: `1px solid ${corPrincipal}`, borderRadius: '20px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block', textAlign: 'center', transition: 'all 0.2s' }}
                         >
-                            📁 Escolher Imagem...
+                            📁 Escolher imagem...
                         </label>
                         
                         <div style={{ fontSize: '12px', color: '#555' }}>
@@ -166,7 +166,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             
             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginTop: '20px', fontSize: '14px', fontWeight: 'bold', color: '#444' }}>
                 <input name="is_publico" type="checkbox" checked={albumData.is_publico} onChange={handleChange} style={{ width: '18px', height: '18px', accentColor: corPrincipal }} />
-                🌍 Tornar este Álbum Público (Visível para os clientes)
+                🌍 Tornar este álbum público (visível para os clientes)
             </label>
             
             {/* BOTÕES DE AÇÃO */}
@@ -175,7 +175,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                     Cancelar
                 </button>
                 <button type="submit" className='create-button' style={{ flex: 1, padding: '12px' }}>
-                    {isEditing ? '💾 Salvar Alterações' : '🚀 Criar Álbum'}
+                    {isEditing ? '💾 Salvar alterações' : '🚀 Criar Álbum'}
                 </button>
             </div>
         </form>

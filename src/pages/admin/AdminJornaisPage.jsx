@@ -146,7 +146,7 @@ function AdminJornaisPage() {
                 <button onClick={() => {
                     setFormData({ id: null, nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true });
                     setIsModalOpen(true);
-                }} className='create_buttom'>+ Adicionar Jornal Parceiro</button>
+                }} className='create_buttom'>+ Adicionar jornal parceiro</button>
             </div>
 
             {loading ? <p>Carregando parceiros...</p> : (

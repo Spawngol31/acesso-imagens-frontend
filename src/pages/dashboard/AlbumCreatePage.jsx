@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 function AlbumCreatePage() {
     const navigate = useNavigate();
 
-    // Removemos o parâmetro capaFile daqui
     const handleCreateAlbum = async (albumData) => {
         const formData = new FormData();
 
@@ -18,7 +17,6 @@ function AlbumCreatePage() {
         });
 
         try {
-            // Agora envia os dados puros, sem o campo de arquivo 'capa'
             const response = await axiosInstance.post('/dashboard/albuns/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -43,7 +41,6 @@ function AlbumCreatePage() {
             </div>
 
             <div className="table-wrapper" style={{ padding: '2rem' }}>
-                {/* O AlbumForm agora lida apenas com os campos de texto/dados */}
                 <AlbumForm 
                     onSubmit={handleCreateAlbum}
                     onCancel={() => navigate('/dashboard/albuns')}

@@ -81,7 +81,7 @@ function AdminStatsPage() {
             
             {/* TÍTULO E FILTRO (FLEXBOX PARA FICAREM LADO A LADO) */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px', flexWrap: 'wrap', gap: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>📊 Visão Geral do Sistema</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>📊 Visão geral do sistema</h2>
                 
                 {/* 🚀 NOVO: O Dropdown de Filtro */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -92,10 +92,10 @@ function AdminStatsPage() {
                         style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ced4da', outline: 'none', color: corPrincipal, fontWeight: 'bold', backgroundColor: '#fdfbfe', cursor: 'pointer' }}
                     >
                         <option value="diario">Hoje (Diário)</option>
-                        <option value="semanal">Esta Semana</option>
-                        <option value="mensal">Este Mês</option>
-                        <option value="anual">Este Ano</option>
-                        <option value="todos">Todo o Histórico</option>
+                        <option value="semanal">Esta semana</option>
+                        <option value="mensal">Este mês</option>
+                        <option value="anual">Este ano</option>
+                        <option value="todos">Todo o histórico</option>
                     </select>
                 </div>
             </div>
