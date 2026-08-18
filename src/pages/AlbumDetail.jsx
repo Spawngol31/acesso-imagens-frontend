@@ -360,7 +360,13 @@ function AlbumDetail() {
         <p><strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}</p>
         
         <div style={{ display: 'flex', gap: '10px', marginTop: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">🤝 Proposta</button>
+            {/* O botão de compartilhar voltou aqui! */}
+            <button onClick={handleShareClick} className="button-outline">
+                🔗 Compartilhar álbum
+            </button>
+            <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">
+                🤝 Proposta
+            </button>
         </div>
       </header>
       <main>
