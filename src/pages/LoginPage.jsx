@@ -135,8 +135,8 @@ function LoginPage() {
                             theme="filled_black" /* <-- MUDAMOS PARA O TEMA ESCURO OFICIAL */
                             size="large"
                             text="continue_with"
-                            shape="pill" 
-                            width="340"
+                            shape="rectangular" 
+                            width="280"
                         />
                     </div>
 
