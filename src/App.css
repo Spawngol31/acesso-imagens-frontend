@@ -2413,7 +2413,7 @@ img {
     padding: 0 12px; /* Padding padrão do Google */
     height: 40px; /* Altura padrão do Google (large) */
     width: 100%;
-    max-width: 260px; /* Mesma largura máxima que demos ao Google */
+    max-width: 340px; /* Mesma largura máxima que demos ao Google */
     border: 1px solid #dadce0; /* Borda cinza clara idêntica ao Google */
     border-radius: 20px; /* Borda levemente arredondada (não 'pill') idêntica ao Google padrão */
     cursor: pointer;

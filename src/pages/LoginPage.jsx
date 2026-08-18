@@ -136,7 +136,7 @@ function LoginPage() {
                             size="large"
                             text="continue_with"
                             shape="pill" 
-                            width="260"
+                            width="340"
                         />
                     </div>
 
