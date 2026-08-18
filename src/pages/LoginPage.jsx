@@ -132,10 +132,10 @@ function LoginPage() {
                         <GoogleLogin
                             onSuccess={handleGoogleSuccess}
                             onError={() => setError('Falha na comunicação com o Google.')}
-                            theme="outline"
+                            theme="filled_black" /* <-- MUDAMOS PARA O TEMA ESCURO OFICIAL */
                             size="large"
                             text="continue_with"
-                            shape="pill" /* <-- Voltamos para o formato retangular padrão (cantos levemente arredondados) */
+                            shape="pill" 
                             width="260"
                         />
                     </div>

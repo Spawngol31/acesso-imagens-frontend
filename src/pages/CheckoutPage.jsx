@@ -62,9 +62,17 @@ function CheckoutPage() {
     // -----------------------------------------------------
 
     const initialization = { amount: total, preferenceId: preferenceId };
+    
+    // Deteta automaticamente se o utilizador prefere o Modo Escuro
+    const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
     const customization = {
         paymentMethods: { bankTransfer: 'all', creditCard: 'all', debitCard: 'all', ticket: 'all' },
-        visual: { style: { theme: 'default' } },
+        visual: { 
+            style: { 
+                theme: isDarkMode ? 'dark' : 'default' // Muda o tema do Mercado Pago dinamicamente!
+            } 
+        },
     };
 
     const onSubmit = async ({ selectedPaymentMethod, formData }) => {

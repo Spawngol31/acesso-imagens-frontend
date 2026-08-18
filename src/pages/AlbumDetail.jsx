@@ -360,39 +360,36 @@ function AlbumDetail() {
         <p><strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}</p>
         
         <div style={{ display: 'flex', gap: '10px', marginTop: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">🤝 Fazer uma Proposta / Negociar</button>
+            <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">🤝 Proposta</button>
         </div>
       </header>
       <main>
         
         {/* 🔥 NOVO: BANNER DE DESCONTOS PROGRESSIVOS AUTOMÁTICO 🔥 */}
         {(album.qtd_desconto_1 > 0 || album.qtd_desconto_2 > 0 || album.qtd_desconto_3 > 0) && (
-            <div style={{ 
-                backgroundColor: '#f2e6f2', 
-                borderLeft: '6px solid #bd01b0', 
-                padding: '20px', 
-                marginBottom: '2rem',
-                borderRadius: '4px',
-                boxShadow: '0 2px 8px rgba(250, 173, 20, 0.15)'
-            }}>
-                <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px', fontSize: '1.2rem' }}>
-                    🏷️ Aproveite nossos descontos!
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="discount-promo-banner">
+                <div className="discount-promo-header">
+                    <span className="discount-icon">🏷️</span>
+                    <h3>Aproveite nossos descontos!</h3>
+                </div>
+                <div className="discount-promo-list">
                     {album.qtd_desconto_1 > 0 && album.pct_desconto_1 > 0 && (
-                        <p style={{ margin: 0, color: '#AD02AD', fontSize: '1.05rem' }}>
-                            Compre <strong>{album.qtd_desconto_1} </strong> e ganhe <strong>{parseFloat(album.pct_desconto_1)}% de desconto</strong>
-                        </p>
+                        <div className="discount-item">
+                            <span className="discount-check">✓</span>
+                            <p>Compre <strong>{album.qtd_desconto_1} fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_1)}% OFF</strong></p>
+                        </div>
                     )}
                     {album.qtd_desconto_2 > 0 && album.pct_desconto_2 > 0 && (
-                        <p style={{ margin: 0, color: '#AD02AD', fontSize: '1.05rem' }}>
-                            Compre <strong>{album.qtd_desconto_2} </strong> e ganhe <strong>{parseFloat(album.pct_desconto_2)}% de desconto</strong>
-                        </p>
+                        <div className="discount-item">
+                            <span className="discount-check">✓</span>
+                            <p>Compre <strong>{album.qtd_desconto_2} fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_2)}% OFF</strong></p>
+                        </div>
                     )}
                     {album.qtd_desconto_3 > 0 && album.pct_desconto_3 > 0 && (
-                        <p style={{ margin: 0, color: '#AD02AD', fontSize: '1.05rem' }}>
-                            Compre <strong>{album.qtd_desconto_3} ou mais fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_3)}% de desconto</strong>
-                        </p>
+                        <div className="discount-item">
+                            <span className="discount-check">✓</span>
+                            <p>Compre <strong>{album.qtd_desconto_3} ou mais</strong> e ganhe <strong>{parseFloat(album.pct_desconto_3)}% OFF</strong></p>
+                        </div>
                     )}
                 </div>
             </div>

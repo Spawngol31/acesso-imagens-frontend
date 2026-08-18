@@ -30,6 +30,7 @@ import AdminJornaisPage from './pages/admin/AdminJornaisPage';
 import AdminStatsPage from './pages/admin/AdminStatsPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminFinanceiroPage from './pages/admin/AdminFinanceiroPage';
+import AdminAvaliacoesPage from './pages/admin/AdminAvaliacoesPage';
 import DashboardAlbunsPage from './pages/dashboard/DashboardAlbunsPage';
 import DashboardCarrinhosPage from './pages/dashboard/DashboardCarrinhosPage';
 import DashboardAlbumDetailPage from './pages/dashboard/DashboardAlbumDetailPage';
@@ -42,6 +43,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ContactPage from './pages/ContactPage';
 import WatermarkToolPage from './pages/dashboard/WatermarkToolPage';
+import ServicesPage from './pages/ServicesPage';
 import AboutPage from './pages/AboutPage';
 import NewsListPage from './pages/NewsListPage';
 import NewsDetailPage from './pages/NewsDetailPage';
@@ -69,6 +71,7 @@ function App() {
           <Route path="perfil" element={<DashboardPerfilPage />} />
           <Route path="contato" element={<ContactPage />} />
           <Route path="quem-somos" element={<AboutPage />} />
+          <Route path="solucoes" element={<ServicesPage />} />
           <Route path="noticias" element={<NewsListPage />} />
           <Route path="noticias/:slug" element={<NewsDetailPage />} />
           <Route path="/privacidade" element={<PoliticaPrivacidade />} />
@@ -108,9 +111,8 @@ function App() {
             <Route path="jornais" element={<AdminJornaisPage />} />
             <Route path="users/:id" element={<AdminUserDetailPage />} />
             <Route path="vendas" element={<AdminFinanceiroPage />} />
-            
-            {/* ROTA DO SAQUE DO ADMIN AQUI */}
             <Route path="saques" element={<AdminSaquesPage />} />
+            <Route path="avaliacoes" element={<AdminAvaliacoesPage />} />
           </Route>
         </Route>
       </Routes>

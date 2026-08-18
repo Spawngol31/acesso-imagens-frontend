@@ -69,7 +69,7 @@ function WatermarkToolPage() {
     };
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content" style={{ maxWidth: '820px', margin: '0 auto', paddingBottom: '40px' }}>
             
             {/* CABEÇALHO */}
             <div className="page-header" style={{ 
@@ -77,7 +77,7 @@ function WatermarkToolPage() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }}>
                 <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }}>
-                    ⚙️ Ferramenta de Marca d'água
+                    ⚙️  Aplicar marca d'água
                 </h2>
             </div>
 
@@ -149,7 +149,7 @@ function WatermarkToolPage() {
                                 transition: 'background-color 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
                             }}
                         >
-                            {isLoading ? '⏳ A aplicar marca d\'água...' : '✨ Gerar e Baixar Foto'}
+                            {isLoading ? '⏳ A aplicar marca d\'água...' : '✨ Gerar e baixar Foto'}
                         </button>
                     </div>
                 </form>

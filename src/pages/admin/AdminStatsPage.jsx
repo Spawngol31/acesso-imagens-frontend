@@ -126,7 +126,17 @@ function AdminStatsPage() {
                 <div style={sectionStyle}>
                     <h3 style={sectionTitleStyle}>🏆 Top 5 Fotógrafos {getLabelPeriodo()}</h3>
                     <div style={{ height: '300px' }}>
-                        <Bar data={topFotografosChartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
+                        <Bar 
+                            data={topFotografosChartData} 
+                            options={{ 
+                                maintainAspectRatio: false, 
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: { ticks: { color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#ccc' : '#666' } },
+                                    y: { ticks: { color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#ccc' : '#666' } }
+                                }
+                            }} 
+                        />
                     </div>
                 </div>
 

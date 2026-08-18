@@ -1,3 +1,5 @@
+// src/pages/admin/AdminSaquesPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
@@ -30,6 +32,20 @@ function AdminSaquesPage() {
     };
 
     useEffect(() => { fetchSaques(); }, [filtroStatus]);
+
+    // --- NOVA FUNÇÃO: COPIAR CHAVE PIX ---
+    const handleCopiarPix = (chavePix) => {
+        if (!chavePix) return;
+        navigator.clipboard.writeText(chavePix)
+            .then(() => {
+                toast.success("✅ Chave PIX copiada com sucesso!");
+            })
+            .catch((err) => {
+                console.error("Erro ao copiar o Pix: ", err);
+                toast.error("Erro ao copiar a chave PIX.");
+            });
+    };
+    // --------------------------------------
 
     // Ao clicar nos botões da tabela, apenas abrimos o modal com os dados
     const abrirModal = (id, acao) => {
@@ -64,6 +80,8 @@ function AdminSaquesPage() {
             toast.success(`Saque ${modalConfig.acao === 'aprovar' ? 'Aprovado' : 'Recusado'} com sucesso!`);
             setModalConfig({ isOpen: false, acao: null, saqueId: null }); 
             fetchSaques(); 
+
+            window.dispatchEvent(new Event('atualizar_saques_badge'));
         } catch (error) {
             toast.error(error.response?.data?.error || "Erro ao processar a solicitação.");
         } finally {
@@ -78,7 +96,7 @@ function AdminSaquesPage() {
     };
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 0' }}>
+        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
                 <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }}>🏦 Gestão de saques</h2>
                 
@@ -122,8 +140,32 @@ function AdminSaquesPage() {
                                             </td>
                                             <td style={{ padding: '12px', fontWeight: 'bold', color: '#28a745', fontSize: '16px' }}>R$ {parseFloat(saque.valor).toFixed(2)}</td>
                                             <td style={{ padding: '12px', color: '#333' }}>
-                                                <div style={{ backgroundColor: '#f4f4f4', padding: '6px 10px', borderRadius: '4px', display: 'inline-block', fontFamily: 'monospace' }}>
-                                                    {saque.chave_pix}
+                                                {/* --- BOTÃO DE COPIAR ADICIONADO AQUI --- */}
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div style={{ backgroundColor: '#f8f9fa', padding: '6px 10px', borderRadius: '4px', fontFamily: 'monospace', color: '#333' }}>
+                                                        {saque.chave_pix}
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => handleCopiarPix(saque.chave_pix)}
+                                                        title="Copiar Chave PIX"
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            fontSize: '18px',
+                                                            padding: '4px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: corPrincipal,
+                                                            transition: 'transform 0.2s',
+                                                            opacity: 0.8
+                                                        }}
+                                                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.opacity = '1'; }}
+                                                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.opacity = '0.8'; }}
+                                                    >
+                                                        📋
+                                                    </button>
                                                 </div>
                                             </td>
                                             <td style={{ padding: '12px' }}>
@@ -134,7 +176,7 @@ function AdminSaquesPage() {
                                             <td style={{ padding: '12px', textAlign: 'center' }}>
                                                 {saque.status === 'PENDENTE' ? (
                                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                                        <button onClick={() => abrirModal(saque.id, 'recusar')} style={{ padding: '6px 12px', backgroundColor: '#fff', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Recusar</button>
+                                                        <button onClick={() => abrirModal(saque.id, 'recusar')} style={{ padding: '6px 12px', backgroundColor: 'transparent', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Recusar</button>
                                                         <button onClick={() => abrirModal(saque.id, 'aprovar')} style={{ padding: '6px 12px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>✅ Confirmar PIX</button>
                                                     </div>
                                                 ) : (
@@ -160,7 +202,6 @@ function AdminSaquesPage() {
                         
                         <form onSubmit={confirmarAcao} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             
-                            {/* --- CAMPO DE ANEXO (CORRIGIDO COM BOTÃO PERSONALIZADO) --- */}
                             {modalConfig.acao === 'aprovar' && (
                                 <div style={{ backgroundColor: '#fbf0fa', padding: '20px', borderRadius: '8px', border: '2px dashed #e1bce0', textAlign: 'center' }}>
                                     
@@ -186,7 +227,6 @@ function AdminSaquesPage() {
                                 </div>
                             )}
 
-                            {/* --- CAMPO DE TEXTO --- */}
                             <div>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '5px' }}>
                                     {modalConfig.acao === 'aprovar' ? 'ID da Transação Bancária (Opcional)' : 'Motivo da Recusa (Obrigatório)'}
@@ -201,7 +241,6 @@ function AdminSaquesPage() {
                                 />
                             </div>
 
-                            {/* --- BOTÕES --- */}
                             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                                 <button type="button" onClick={() => setModalConfig({ isOpen: false, acao: null, saqueId: null })} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: 'transparent', cursor: 'pointer', fontWeight: 'bold', color: '#555' }}>
                                     Cancelar

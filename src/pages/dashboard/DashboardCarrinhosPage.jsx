@@ -179,13 +179,23 @@ function DashboardCarrinhosPage() {
 
                                 {/* Botão de contato / ação */}
                                 <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                                    <a 
-                                        href={`mailto:${cliente.email}?subject=As suas fotos da Acesso Imagens estão à espera!`} 
-                                        className="button-outline"
-                                        style={{ textDecoration: 'none', display: 'inline-block', padding: '8px 15px', borderRadius: '20px', fontSize: '13px' }}
-                                    >
-                                        ✉️ Enviar E-mail
-                                    </a>
+                                    {(() => {
+                                        const assunto = 'As suas fotos da Acesso Imagens estão à espera!';
+                                        const mensagem = `Olá ${cliente.nome},\n\nSuas fotos da Acesso Imagens estão esperando você no carrinho, caso esteja tendo alguma dificuldade, entre em contato com nossa equipe no (92) 9 84840065 ou entrando no site www.acessoimagens.com.br e clicando no botão do WhatsApp no canto inferior do site que você será redirecionado a nossa equipe.\n\nAbraço,\nEquipe Acesso Imagens`;
+                                        
+                                        // O encodeURIComponent garante que os espaços e quebras de linha funcionem no Outlook/Gmail
+                                        const mailtoLink = `mailto:${cliente.email}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
+                                        
+                                        return (
+                                            <a 
+                                                href={mailtoLink} 
+                                                className="button-outline"
+                                                style={{ textDecoration: 'none', display: 'inline-block', padding: '8px 15px', borderRadius: '20px', fontSize: '13px' }}
+                                            >
+                                                ✉️ Enviar E-mail
+                                            </a>
+                                        );
+                                    })()}
                                 </div>
 
                             </div>

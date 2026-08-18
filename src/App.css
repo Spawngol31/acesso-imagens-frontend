@@ -2430,3 +2430,1080 @@ img {
     border-color: #d2d2d2; /* Borda ligeiramente mais escura no hover */
     color: #333;
 }
+
+/* ==========================================================================
+   ESTILOS DAS ABAS FINANCEIRAS (MODO CLARO)
+   ========================================================================== */
+.finance-tabs-container {
+  display: flex;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 25px;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  border-radius: 35px;
+}
+
+.finance-tab {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background-color: #f8f9fa;
+  color: #666;
+  transition: all 0.2s;
+  flex: 1; /* Estica em telemóveis */
+}
+
+.finance-tab.active {
+  border-bottom: 3px solid #6c0464;
+  background-color: #fff;
+  color: #6c0464;
+}
+
+@media (min-width: 900px) {
+  .finance-tab {
+    flex: none; /* Tamanho normal em PCs */
+  }
+}
+.discount-promo-banner {
+    background: linear-gradient(135deg, #fdf4fd 0%, #f9e0f9 100%);
+    border: 1px solid #e1bce0;
+    border-left: 6px solid #bd01b0;
+    border-radius: 8px;
+    padding: 20px 25px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(108, 4, 100, 0.08);
+}
+
+.discount-promo-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.discount-promo-header h3 {
+    color: #6c0464;
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.discount-icon {
+    font-size: 1.5rem;
+}
+
+.discount-promo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.discount-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.6);
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid rgba(189, 1, 176, 0.1);
+}
+
+.discount-check {
+    color: #bd01b0;
+    font-weight: bold;
+}
+
+.discount-item p {
+    margin: 0;
+    color: #444;
+    font-size: 1.05rem;
+}
+
+.discount-item strong {
+    color: #bd01b0;
+    font-weight: 800;
+}
+
+/* ==========================================================================
+   🌙 MODO NOTURNO AUTOMÁTICO (DARK MODE)
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  
+  /* 1. Cores de Fundo Principais e Texto */
+  body, html, #root, .site-wrapper, .dashboard-wrapper, .dashboard-page-content {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+  }
+
+  /* 2. Cabeçalhos e Rodapés */
+  .main-header, .dashboard-header {
+    background-color: #1e1e1e !important;
+    border-bottom: 1px solid #333 !important;
+  }
+
+  /* 3. Cartões, Formulários e Modais (Fundos que eram brancos) */
+  .auth-card, .photo-card, .album-card, .purchase-card, 
+  .dashboard-media-card, .cart-summary, .search-form, 
+  .upload-form, .table-wrapper, .modal-content, 
+  .news-detail-container, .inline-edit-form, .bulk-edit-form {
+    background-color: #1e1e1e !important;
+    border: 1px solid #333 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+    color: #e0e0e0 !important;
+  }
+
+  /* 4. Textos que eram escuros demais (#333, #555) */
+  h1, h2, h3, h4, h5, .split-section-title, .hero-title, .album-card-info h3 {
+    color: #f5f5f5 !important;
+  }
+  
+  p, span, .news-content, .summary-row, .album-card-info p {
+    color: #bbb !important;
+  }
+
+  /* 5. Campos de Input e Selects */
+  input, select, textarea, .coupon-form input {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #444 !important;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-purple) !important;
+    box-shadow: 0 0 0 3px rgba(108, 4, 100, 0.4) !important;
+  }
+
+  /* 6. Tabelas do Painel Admin */
+  thead {
+    background-color: #2a0b28 !important; /* Roxo muito escuro */
+  }
+  
+  th, td {
+    border-bottom: 1px solid #333 !important;
+    color: #e0e0e0 !important;
+  }
+  
+  tbody tr:hover {
+    background-color: #1a1a1a !important;
+  }
+
+  /* 7. Cartão da Selfie na Home e Botões Google */
+  .selfie-card, .btn-facebook-mimic-google {
+    background-color: #1e1e1e !important;
+    border-color: #444 !important;
+    color: #e0e0e0 !important;
+  }
+  /* 10. Ajuste da Barra de Pesquisa da Home */
+  .search-bar-wrapper {
+    background-color: #2a2a2a !important;
+    border: 1px solid #444 !important;
+  }
+  
+  .search-bar-wrapper input {
+    background-color: transparent !important;
+    border: none !important;
+    color: #fff !important;
+  }
+  
+  .search-bar-wrapper input:focus {
+    box-shadow: none !important; /* Remove a sombra duplicada ao clicar */
+  }
+  .selfie-card:hover, .btn-facebook-mimic-google:hover {
+    background-color: #2a2a2a !important;
+  }
+
+  /* 8. Paginação */
+  .pagination-number {
+    color: #bbb !important;
+  }
+  .pagination-number:hover {
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+  }
+  .pagination-number.active {
+    background-color: #a40b99 !important;
+    color: white !important;
+  }
+  /* Clarear os links do menu para dar contraste */
+  .main-nav a, .main-header a {
+    color: #f5f5f5 !important; 
+    font-weight: 500 !important;
+  }
+  
+  .main-nav a:hover, .main-header a:hover {
+    color: #f794f7 !important; /* Fica um roxo clarinho/neon ao passar o rato */
+  }
+
+  /* Ajustar o Botão Sair (remove o fundo branco) */
+  .main-nav button, .logout-btn, .btn-logout, .main-header button {
+    background-color: transparent !important;
+    color: #f5f5f5 !important;
+    border: 1px solid #555 !important;
+  }
+  
+  .main-nav button:hover, .logout-btn:hover, .btn-logout:hover, .main-header button:hover {
+    background-color: #333 !important;
+    border-color: #f5f5f5 !important;
+  }
+
+  /* Trocar a Logo para a versão Branca automaticamente */
+  .logo img, .site-logo img, header .logo img, header a[href="/"] img {
+    /* ⚠️ ATENÇÃO: Substitua este caminho pelo local onde guardou a sua logo branca! */
+    content: url('/images/icon_home_dark.PNG') !important;
+  }
+  /* 11. Botões da Busca Facial e Uploads */
+  /* ==========================================================================
+     17. ÍCONE DO CARRINHO DE COMPRAS BRANCO
+     ========================================================================== */
+  header a[href*="carrinho"] img,
+  .cart-icon,
+  .header-cart img,
+  .main-nav img[alt*="carrinho"],
+  .main-nav img[alt*="cart"] {
+      filter: brightness(0) invert(1) !important;
+  }
+  /* Botão "Escolher Imagem" (Substitui o fundo branco por um fundo escuro elegante) */
+  label.custom-file-upload, 
+  .file-upload-label,
+  .upload-form label,
+  .auth-card label,
+  .page-container label[for*="file"],
+  .page-container label[for*="imagem"] {
+    background-color: #2a2a2a !important;
+    color: #f794f7 !important; /* Roxo claro/neon para destacar no escuro */
+    border: 1px solid #f794f7 !important;
+  }
+
+  label.custom-file-upload:hover, 
+  .file-upload-label:hover,
+  .auth-card label:hover {
+    background-color: rgba(247, 148, 247, 0.1) !important;
+    box-shadow: 0 0 10px rgba(247, 148, 247, 0.2) !important;
+  }
+
+  /* Botão "Procurar Fotos" quando está DESATIVADO (sem imagem escolhida) */
+  button:disabled,
+  input[type="submit"]:disabled {
+    border: 1px solid #444 !important;
+    color: #777 !important;
+    background-color: transparent !important;
+    cursor: not-allowed !important;
+  }
+
+  /* Botão "Procurar Fotos" quando está ATIVO (imagem já escolhida) */
+  button[type="submit"]:not(:disabled),
+  .button-primary {
+    background-color: #6c0464 !important;
+    color: #ffffff !important;
+    border: 1px solid #6c0464 !important;
+  }
+  
+  button[type="submit"]:not(:disabled):hover,
+  .button-primary:hover {
+    background-color: #8a0680 !important;
+    border-color: #8a0680 !important;
+  }
+  /* ==========================================================================
+     12. 🛡️ BLINDAGEM DO PAINEL ADMIN PARA MODO ESCURO
+     ========================================================================== */
+  
+  /* Fundos Brancos Principais (Cartões, Tabelas) */
+  .dashboard-page-content div[style*="background-color: rgb(255, 255, 255)"],
+  .dashboard-page-content div[style*="background-color: white"],
+  .dashboard-page-content div[style*="background-color: rgb(248, 249, 250)"],
+  .dashboard-page-content div[style*="background-color: rgb(253, 251, 254)"] {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+      color: #e0e0e0 !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+  }
+
+  /* Fundos Roxos Claros (Caixas de Filtro e Avisos RÁPIDOS) */
+  .dashboard-page-content div[style*="background-color: rgb(251, 240, 250)"] {
+      background-color: #2a0b28 !important;
+      border-color: #6c0464 !important;
+      color: #f5f5f5 !important;
+  }
+
+  /* Modais de Confirmação (Película de Fundo e Cartão) */
+  div[style*="z-index: 1000"],
+  div[style*="z-index: 9999"] {
+      background-color: rgba(0, 0, 0, 0.8) !important; /* Fundo mais escuro no modal */
+  }
+  div[style*="z-index: 1000"] > div,
+  div[style*="z-index: 9999"] > div {
+      background-color: #1e1e1e !important;
+      border-color: #444 !important;
+      color: #e0e0e0 !important;
+  }
+
+  /* Títulos em Roxo Escuro passam para Roxo Brilhante (Neon) para dar leitura */
+  .dashboard-page-content h2, 
+  .dashboard-page-content h3, 
+  .dashboard-page-content h4, 
+  .dashboard-page-content h5,
+  .dashboard-page-content td[style*="rgb(108, 4, 100)"],
+  .dashboard-page-content span[style*="rgb(108, 4, 100)"],
+  .dashboard-page-content label[style*="rgb(108, 4, 100)"],
+  div[style*="z-index"] h3 {
+      color: #f794f7 !important;
+      border-bottom-color: #444 !important;
+  }
+
+  /* Cartões com a Borda Superior Roxa (Na Página de Estatísticas) */
+  .dashboard-page-content div[style*="border-top: 4px"] {
+      border-top-color: #a40b99 !important;
+  }
+
+  /* Textos secundários (Pretos e Cinzas passam para Cinza Claro) */
+  .dashboard-page-content p, 
+  .dashboard-page-content span, 
+  .dashboard-page-content label, 
+  .dashboard-page-content td,
+  div[style*="z-index"] p,
+  div[style*="z-index"] label {
+      color: #ccc !important;
+  }
+
+  /* Formulários do Admin (Inputs, Selects, Textareas) */
+  .dashboard-page-content input, 
+  .dashboard-page-content select, 
+  .dashboard-page-content textarea,
+  div[style*="z-index"] input,
+  div[style*="z-index"] select,
+  div[style*="z-index"] textarea {
+      background-color: #2a2a2a !important;
+      border: 1px solid #555 !important;
+      color: #fff !important;
+  }
+
+  /* Tabelas do Admin (Jornais, Saques, Usuários) */
+  .dashboard-page-content table {
+      background-color: transparent !important;
+  }
+  .dashboard-page-content thead tr {
+      background-color: #2a0b28 !important; /* Roxo escuro elegante no topo da tabela */
+  }
+  .dashboard-page-content tbody tr {
+      border-bottom: 1px solid #333 !important;
+  }
+  .dashboard-page-content tbody tr:hover {
+      background-color: #2a2a2a !important;
+  }
+
+  /* Badges de Status Inteligentes (Tons pasteis adaptados para fundo preto) */
+  span[style*="rgb(212, 237, 218)"], div[style*="background-color: rgb(212, 237, 218)"] {
+      background-color: rgba(40, 167, 69, 0.2) !important;
+      color: #4caf50 !important;
+      border: 1px solid rgba(40, 167, 69, 0.4) !important;
+  }
+  span[style*="rgb(248, 215, 218)"], div[style*="background-color: rgb(248, 215, 218)"] {
+      background-color: rgba(220, 53, 69, 0.2) !important;
+      color: #ff6b6b !important;
+      border: 1px solid rgba(220, 53, 69, 0.4) !important;
+  }
+  span[style*="rgb(255, 243, 205)"], div[style*="background-color: rgb(255, 243, 205)"] {
+      background-color: rgba(255, 193, 7, 0.2) !important;
+      color: #ffd166 !important;
+      border: 1px solid rgba(255, 193, 7, 0.4) !important;
+  }
+  span[style*="rgb(233, 236, 239)"] {
+      background-color: #333 !important;
+      color: #ddd !important;
+      border: 1px solid #555 !important;
+  }
+
+  /* Abas do Menu Financeiro (Vendas / Histórico) */
+  .dashboard-page-content button[style*="border-bottom: 3px solid transparent"],
+  .dashboard-page-content button[style*="border-bottom: 3px solid rgba(0, 0, 0, 0)"] {
+      background-color: transparent !important;
+      color: #888 !important;
+  }
+  .dashboard-page-content button[style*="solid rgb(108, 4, 100)"] {
+      background-color: #2a0b28 !important;
+      color: #f794f7 !important;
+  }
+  /* ==========================================================================
+     13. AJUSTES DO MENU DE NAVEGAÇÃO DO ADMIN (CABEÇALHO)
+     ========================================================================== */
+  
+  /* Links inativos (Cinza claro para leitura) */
+  header a, 
+  .dashboard-header a, 
+  nav a {
+      color: #cccccc !important;
+      transition: color 0.2s ease-in-out;
+  }
+
+  /* Links ao passar o rato (Hover) */
+  header a:hover, 
+  .dashboard-header a:hover, 
+  nav a:hover {
+      color: #f794f7 !important; /* Roxo neon brilhante */
+  }
+
+  /* Link ATIVO (A página onde o utilizador está) */
+  header a.active, 
+  .dashboard-header a.active, 
+  nav a.active {
+      color: #f794f7 !important;
+      border-bottom-color: #f794f7 !important; /* Clareia também a linhazinha por baixo */
+  }
+
+  /* Botão "Sair" do painel Admin */
+  header button, 
+  .dashboard-header button, 
+  nav button {
+      color: #f794f7 !important;
+      border-color: #f794f7 !important;
+      background-color: transparent !important;
+  }
+
+  /* Botão "Sair" ao passar o rato */
+  header button:hover, 
+  .dashboard-header button:hover, 
+  nav button:hover {
+      background-color: rgba(247, 148, 247, 0.15) !important;
+      color: #ffffff !important;
+  }
+  /* 14. Abas do Financeiro no Modo Escuro */
+  .finance-tabs-container {
+      background-color: #1e1e1e !important;
+      border-bottom-color: #333 !important;
+      border-radius: 35px !important;
+  }
+  
+  .finance-tab {
+      background-color: #1e1e1e !important;
+      color: #888 !important;
+  }
+  
+  .finance-tab.active {
+      background-color: #2a0b28 !important;
+      color: #f794f7 !important;
+      border-bottom-color: #f794f7 !important;
+  }
+  /* ==========================================================================
+     15. BOTÕES DE AÇÃO DO PAINEL (Pesquisar, Baixar Planilha, Adicionar)
+     ========================================================================== */
+  .create-button, .create_buttom {
+      background-color: transparent !important;
+      color: #f794f7 !important; /* Roxo brilhante (neon) */
+      border: 1px solid #f794f7 !important; 
+  }
+
+  .create-button:hover, .create_buttom:hover {
+      background-color: rgba(247, 148, 247, 0.15) !important; /* Fundo roxo transparente ao passar o rato */
+      color: #ffffff !important; /* Texto fica branco */
+      box-shadow: 0 0 10px rgba(247, 148, 247, 0.3) !important; /* Brilho em volta */
+  }
+  /* ==========================================================================
+     16. BOTÕES ARREDONDADOS DAS TABELAS (Editar e Apagar)
+     ========================================================================== */
+  
+  /* Botão de Editar */
+  .edit-button-pill {
+      background-color: transparent !important;
+      color: #f794f7 !important; /* Roxo brilhante */
+      border: 1px solid #f794f7 !important;
+  }
+  
+  .edit-button-pill:hover {
+      background-color: rgba(247, 148, 247, 0.15) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 8px rgba(247, 148, 247, 0.3) !important;
+  }
+
+  /* Botão de Apagar / Excluir */
+  .delete-button-pill {
+      background-color: transparent !important;
+      color: #ff6b6b !important; /* Vermelho claro (alerta) */
+      border: 1px solid #ff6b6b !important;
+  }
+  
+  .delete-button-pill:hover {
+      background-color: rgba(220, 53, 69, 0.2) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 8px rgba(220, 53, 69, 0.3) !important;
+      border-color: #ff6b6b !important;
+  }
+  /* 18. Botão de Comprovativo no Modo Escuro */
+  a[href*="comprovante"] {
+      background-color: rgba(247, 148, 247, 0.15) !important;
+      color: #f794f7 !important;
+      border: 1px solid #f794f7 !important;
+  }
+  a[href*="comprovante"]:hover {
+      background-color: rgba(247, 148, 247, 0.3) !important;
+      color: #ffffff !important;
+  }
+  /* ==========================================================================
+     19. PÁGINA DE CARRINHOS EM ABERTO NO MODO ESCURO
+     ========================================================================== */
+  
+  /* Fundo das caixas individuais de cada foto dentro do carrinho */
+  .dashboard-page-content div[style*="background-color: rgb(249, 249, 249)"],
+  .dashboard-page-content div[style*="background-color: #f9f9f9"] {
+      background-color: #2a2a2a !important;
+      border: 1px solid #444 !important;
+  }
+
+  /* Textos descritivos das fotos dentro do carrinho */
+  .dashboard-page-content div[style*="background-color: rgb(249, 249, 249)"] p,
+  .dashboard-page-content div[style*="background-color: #f9f9f9"] p {
+      color: #ccc !important;
+  }
+
+  /* Estado vazio (quando não há carrinhos) */
+  .dashboard-page-content div[style*="background-color: rgb(253, 251, 254)"] {
+      background-color: #1e1e1e !important;
+      border-color: #444 !important;
+  }
+  /* ==========================================================================
+     20. BOTÕES OUTLINE (Enviar E-mail e Voltar) NO MODO ESCURO
+     ========================================================================== */
+  .button-outline {
+      background-color: transparent !important;
+      color: #f794f7 !important; /* Roxo brilhante (neon) */
+      border: 1px solid #f794f7 !important;
+  }
+
+  .button-outline:hover {
+      background-color: rgba(247, 148, 247, 0.15) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 8px rgba(247, 148, 247, 0.3) !important;
+  }
+  /* ==========================================================================
+     21. FERRAMENTA DE MARCA D'ÁGUA NO MODO ESCURO
+     ========================================================================== */
+  
+  /* Área de Upload (A caixa tracejada) */
+  .dashboard-page-content label[for="watermark-upload"] {
+      background-color: #2a0b28 !important; /* Fundo roxo muito escuro elegante */
+      border-color: #f794f7 !important; /* Borda roxa brilhante */
+  }
+
+  .dashboard-page-content label[for="watermark-upload"]:hover {
+      background-color: rgba(247, 148, 247, 0.1) !important;
+  }
+
+  /* Área de Pré-visualização da Imagem (Fundo e Moldura) */
+  .dashboard-page-content div[style*="background-color: rgb(250, 250, 250)"],
+  .dashboard-page-content div[style*="background-color: #fafafa"],
+  .dashboard-page-content div[style*="background-color: rgb(234, 234, 234)"],
+  .dashboard-page-content div[style*="background-color: #eaeaea"] {
+      background-color: #2a2a2a !important;
+      border-color: #444 !important;
+  }
+
+  /* Botão "Trocar Imagem" (que tinha o fundo branco forçado) */
+  .dashboard-page-content button[style*="background-color: rgb(255, 255, 255)"],
+  .dashboard-page-content button[style*="background-color: #fff"] {
+      background-color: #1e1e1e !important;
+      color: #f794f7 !important;
+      border-color: #f794f7 !important;
+  }
+
+  .dashboard-page-content button[style*="background-color: rgb(255, 255, 255)"]:hover,
+  .dashboard-page-content button[style*="background-color: #fff"]:hover {
+      background-color: rgba(247, 148, 247, 0.15) !important;
+      color: #ffffff !important;
+  }
+  /* ==========================================================================
+     22. LINKS E TÍTULOS DENTRO DAS TABELAS (Modo Escuro)
+     ========================================================================== */
+  
+  .dashboard-page-content table tbody tr td a {
+      color: #f794f7 !important; /* Roxo claro brilhante (neon) */
+      text-decoration: none !important;
+      transition: all 0.2s ease-in-out;
+  }
+
+  .dashboard-page-content table tbody tr td a:hover {
+      color: #ffffff !important; /* Fica branco ao passar o rato */
+      text-shadow: 0 0 8px rgba(247, 148, 247, 0.4) !important; /* Efeito de brilho */
+  }
+  /* ==========================================================================
+     23. LINKS DE ID DA FOTO NA TABELA DE VENDAS
+     ========================================================================== */
+  
+  .dashboard-page-content table tbody tr td button[title="Ver detalhes da foto"] {
+      color: #f794f7 !important; /* Roxo claro brilhante (neon) */
+      transition: all 0.2s ease-in-out;
+  }
+
+  .dashboard-page-content table tbody tr td button[title="Ver detalhes da foto"]:hover {
+      color: #ffffff !important; /* Fica branco ao passar o rato */
+      text-shadow: 0 0 8px rgba(247, 148, 247, 0.4) !important; /* Efeito de brilho */
+  }
+  /* ==========================================================================
+     24. CARTÕES DE PROPOSTAS E NEGOCIAÇÕES (CLIENTE E ADMIN)
+     ========================================================================== */
+  
+  /* Escurece todos os cartões que têm fundo branco direto no código */
+  div[style*="background-color: rgb(255, 255, 255)"],
+  div[style*="background-color: #fff"],
+  div[style*="background-color: #ffffff"] {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+      color: #e0e0e0 !important;
+  }
+
+  /* Garante que os textos descritivos não fiquem pretos no fundo escuro */
+  div[style*="background-color: rgb(255, 255, 255)"] p,
+  div[style*="background-color: #fff"] p,
+  div[style*="background-color: rgb(255, 255, 255)"] span,
+  div[style*="background-color: #fff"] span {
+      color: #cccccc !important;
+  }
+
+  /* Caixas de destaque de valor (O rosa clarinho passa para roxo escuro) */
+  div[style*="background-color: rgb(251, 240, 250)"],
+  div[style*="background-color: #fbf0fa"] {
+      background-color: #2a0b28 !important;
+      border-color: #6c0464 !important;
+  }
+  
+  /* Destaca o valor oferecido em Néon */
+  div[style*="background-color: #fbf0fa"] span,
+  div[style*="background-color: rgb(251, 240, 250)"] span {
+      color: #f794f7 !important;
+  }
+  /* ==========================================================================
+     25. MENSAGEM DE NEGOCIAÇÃO APROVADA (Modo Escuro)
+     ========================================================================== */
+  
+  /* Caixa de fundo da mensagem de aprovação (era azul claro, passa a verde escuro) */
+  div[style*="background-color: rgb(226, 243, 245)"],
+  div[style*="background-color: #e2f3f5"] {
+      background-color: rgba(40, 167, 69, 0.15) !important;
+      border-color: rgba(40, 167, 69, 0.3) !important;
+  }
+
+  /* Textos dentro da caixa de aprovação */
+  div[style*="background-color: rgb(226, 243, 245)"] h4,
+  div[style*="background-color: #e2f3f5"] h4,
+  div[style*="background-color: rgb(226, 243, 245)"] p,
+  div[style*="background-color: #e2f3f5"] p {
+      color: #d4edda !important; /* Verde muito claro para excelente leitura */
+  }
+
+  /* Botão 'Ir para o Álbum' (Recupera a visibilidade e ganha destaque) */
+  div[style*="background-color: rgb(226, 243, 245)"] a.create-button,
+  div[style*="background-color: #e2f3f5"] a.create-button {
+      background-color: #6c0464 !important;
+      color: #ffffff !important;
+      border-color: #6c0464 !important;
+  }
+
+  div[style*="background-color: rgb(226, 243, 245)"] a.create-button:hover,
+  div[style*="background-color: #e2f3f5"] a.create-button:hover {
+      background-color: #99058d !important;
+      box-shadow: 0 0 10px rgba(40, 167, 69, 0.4) !important;
+  }
+  /* ==========================================================================
+     26. PÁGINA DE SOLUÇÕES (PÚBLICA) NO MODO ESCURO
+     ========================================================================== */
+  
+  /* Navegação das Abas (Atletas / Clubes) */
+  .services-tabs-container {
+      background-color: #1e1e1e !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+  }
+  .services-tab {
+      color: #888 !important;
+  }
+  .services-tab.active {
+      background-color: #6c0464 !important;
+      color: #fff !important;
+  }
+
+  /* Cartões de Serviços (Os que estão totalmente brancos na imagem) */
+  .service-card {
+      background-color: #1e1e1e !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+      border-color: #333 !important;
+  }
+  .service-card h3 {
+      color: #f794f7 !important;
+  }
+  .service-card p.service-subtitle,
+  .service-card ul {
+      color: #cccccc !important;
+  }
+
+  /* Títulos e textos soltos na página (Para não desaparecerem no escuro) */
+  .services-page h2,
+  .services-page h4 {
+      color: #f794f7 !important;
+  }
+  .services-page p[style*="color: rgb(102, 102, 102)"],
+  .services-page p[style*="color: #666"],
+  .services-page p[style*="color: rgb(85, 85, 85)"],
+  .services-page p[style*="color: #555"] {
+      color: #cccccc !important;
+  }
+
+  /* O enorme bloco branco no final da página (Rodapé CTA) */
+  .services-page div[style*="background-color: rgb(252, 252, 252)"],
+  .services-page div[style*="background-color: #fcfcfc"] {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+  }
+  .services-page div[style*="background-color: rgb(252, 252, 252)"] h3,
+  .services-page div[style*="background-color: #fcfcfc"] h3 {
+      color: #f794f7 !important;
+  }
+
+  /* Textos das listas com 'check' no rodapé */
+  .check-list li {
+      color: #cccccc !important;
+  }
+  .check-list li strong[style*="color"] {
+      color: #f794f7 !important; /* Passa o roxo escuro para roxo néon */
+  }
+
+  /* Bloco cinza claro "Do Desenho para as Ruas" (Aba Clubes) */
+  .services-page div[style*="background-color: rgb(248, 249, 250)"],
+  .services-page div[style*="background-color: #f8f9fa"] {
+      background-color: #2a2a2a !important;
+      border-color: #444 !important;
+  }
+  .services-page div[style*="background-color: rgb(248, 249, 250)"] h4,
+  .services-page div[style*="background-color: #f8f9fa"] h4 {
+      color: #f794f7 !important;
+  }
+  /* ==========================================================================
+     27. BOTÃO DO FACEBOOK (MIMETIZANDO O GOOGLE FILLED_BLACK)
+     ========================================================================== */
+  .btn-facebook-mimic-google {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 10px !important;
+      width: 260px !important; /* Mesma largura exata do Google */
+      height: 40px !important; /* Mesma altura exata do Google */
+      background-color: #232324 !important; /* Fundo idêntico ao tema filled_black */
+      color: #e3e3e3 !important; /* Cor do texto do Google */
+      border: none !important; /* Removemos a borda para igualar */
+      border-radius: 20px !important; /* Formato 'Pill' (comprimido) */
+      font-family: 'Roboto', Arial, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      transition: background-color 0.2s !important;
+      box-sizing: border-box !important;
+  }
+
+  .btn-facebook-mimic-google:hover {
+      background-color: #464444 !important; /* Efeito subtil ao passar o rato */
+  }
+  /* ==========================================================================
+     28. LINKS DA PÁGINA DE LOGIN E REGISTO (Modo Escuro)
+     ========================================================================== */
+  .auth-switch-link a,
+  .forgot-password-link a,
+  .back-to-home-link {
+      color: #f794f7 !important; /* Roxo claro brilhante (neon) */
+      transition: all 0.2s ease-in-out !important;
+  }
+
+  .auth-switch-link a:hover,
+  .forgot-password-link a:hover,
+  .back-to-home-link:hover {
+      color: #ffffff !important; /* Fica branco ao passar o rato */
+      text-shadow: 0 0 8px rgba(247, 148, 247, 0.4) !important; /* Efeito de brilho */
+  }
+  /* ==========================================================================
+     29. FUNDO DAS IMAGENS DOS ÁLBUNS NA PÁGINA INICIAL (Modo Escuro)
+     ========================================================================== */
+  
+  .album-card div[style*="background-color: #fdfbfe"],
+  .album-card div[style*="background-color: rgb(253, 251, 254)"] {
+      background-color: #1a1a1a !important; /* Cinza muito escuro para mesclar com o cartão */
+  }
+  /* ==========================================================================
+     30. CARTÕES DE COLABORADORES (Página Quem Somos) NO MODO ESCURO
+     ========================================================================== */
+  
+  .collaborator-card {
+      background-color: #1e1e1e !important; /* Fundo cinza escuro elegante */
+      border: 1px solid #333 !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; /* Sombra mais densa para destacar do fundo */
+  }
+
+  /* Nome do Colaborador */
+  .collaborator-card h3 {
+      color: #f794f7 !important; /* Roxo claro brilhante (neon) */
+  }
+
+  /* Função/Especialidade */
+  .collaborator-card .collaborator-role {
+      color: #cccccc !important; /* Cinza claro para leitura perfeita */
+  }
+
+  /* Link da Rede Social (@instagram) */
+  .collaborator-card .collaborator-social {
+      color: #f794f7 !important;
+      transition: all 0.2s ease-in-out !important;
+  }
+
+  .collaborator-card .collaborator-social:hover {
+      color: #ffffff !important;
+      text-shadow: 0 0 8px rgba(247, 148, 247, 0.4) !important;
+  }
+  /* ==========================================================================
+     31. PÁGINAS DE POLÍTICA DE PRIVACIDADE E TERMOS (Modo Escuro)
+     ========================================================================== */
+  
+  /* Fundo geral da página (remove o cinza claro original) */
+  div[style*="min-height: 100vh"] {
+      background-color: transparent !important;
+  }
+
+  /* Cartão central da Política (usa o max-width como alvo) */
+  div[style*="max-width: 800px"] {
+      background-color: #1e1e1e !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+      border: 1px solid #333 !important;
+  }
+
+  /* Títulos da Política */
+  div[style*="max-width: 800px"] h1,
+  div[style*="max-width: 800px"] h2 {
+      color: #f794f7 !important; /* Roxo claro (neon) */
+  }
+
+  /* Textos da Política */
+  div[style*="max-width: 800px"] div,
+  div[style*="max-width: 800px"] p,
+  div[style*="max-width: 800px"] li {
+      color: #cccccc !important; /* Cinza claro para leitura perfeita */
+  }
+  /* ==========================================================================
+     32. TELA DE SUCESSO DO CHECKOUT (Modo Escuro)
+     ========================================================================== */
+  
+  /* Bloco do QR Code PIX */
+  .pix-container {
+      background: #1e1e1e !important;
+      border-color: #333 !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  }
+  
+  .pix-container h3 {
+      color: #f794f7 !important;
+  }
+
+  /* Caixa de texto com o código copia e cola */
+  .pix-container textarea {
+      background-color: #2a2a2a !important;
+      color: #cccccc !important;
+      border-color: #444 !important;
+  }
+
+  /* Bloco verde de 'Pagamento Aprovado' (Cartão de Crédito) */
+  .checkout-card div[style*="background: #e8f5e9"],
+  .checkout-card div[style*="background: rgb(232, 245, 233)"] {
+      background: rgba(40, 167, 69, 0.15) !important;
+  }
+
+  .checkout-card div[style*="background: #e8f5e9"] h3,
+  .checkout-card div[style*="background: rgb(232, 245, 233)"] h3 {
+      color: #d4edda !important;
+  }
+  /* ==========================================================================
+     33. PÁGINA DETALHES DO ÁLBUM (Modo Escuro)
+     ========================================================================== */
+  
+  /* 1. Cabeçalho do Álbum e Caixa de Busca Facial (Originalmente Brancos) */
+  .page-header-detail[style*="background-color: #fff"],
+  .page-header-detail[style*="background-color: rgb(255, 255, 255)"],
+  .page-container > div[style*="background-color: #fff"],
+  .page-container > div[style*="background-color: rgb(255, 255, 255)"] {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+  }
+
+  /* Textos do Cabeçalho e da Busca Facial */
+  .page-header-detail h1,
+  .page-container > div[style*="background-color: #fff"] h3,
+  .page-container > div[style*="background-color: rgb(255, 255, 255)"] h3 {
+      color: #f794f7 !important; /* Roxo neon */
+  }
+  .page-header-detail p,
+  .page-container > div[style*="background-color: #fff"] p,
+  .page-container > div[style*="background-color: rgb(255, 255, 255)"] p {
+      color: #cccccc !important;
+  }
+  .page-header-detail strong {
+      color: #e3e3e3 !important;
+  }
+
+  /* 2. Banner de Descontos Progressivos (Originalmente Roxo Claro) */
+  .page-container > div[style*="background-color: #f2e6f2"],
+  .page-container > div[style*="background-color: rgb(242, 230, 242)"] {
+      background-color: #2a1b2a !important; /* Roxo muito escuro/fundo noturno */
+      border-left-color: #f794f7 !important; /* Linha lateral neon */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  }
+  .page-container > div[style*="background-color: #f2e6f2"] h3,
+  .page-container > div[style*="background-color: rgb(242, 230, 242)"] h3 {
+      color: #f794f7 !important;
+  }
+  .page-container > div[style*="background-color: #f2e6f2"] p,
+  .page-container > div[style*="background-color: rgb(242, 230, 242)"] p {
+      color: #cccccc !important;
+  }
+  .page-container > div[style*="background-color: #f2e6f2"] p strong,
+  .page-container > div[style*="background-color: rgb(242, 230, 242)"] p strong {
+      color: #f794f7 !important; /* O valor do desconto em neon */
+  }
+
+  /* 3. Modal "Fazer uma Proposta" (Garante que abre escuro) */
+  div[style*="z-index: 9999"] > div[style*="background-color: #fff"],
+  div[style*="z-index: 9999"] > div[style*="background-color: rgb(255, 255, 255)"] {
+      background-color: #1e1e1e !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.8) !important;
+  }
+  div[style*="z-index: 9999"] h3 { color: #f794f7 !important; }
+  div[style*="z-index: 9999"] p,
+  div[style*="z-index: 9999"] label { color: #cccccc !important; }
+  div[style*="z-index: 9999"] input {
+      background-color: #2a2a2a !important;
+      color: #fff !important;
+      border-color: #444 !important;
+  }
+  .discount-promo-banner {
+      background: linear-gradient(135deg, #2a1b2a 0%, #1e111e 100%) !important;
+      border-color: #4a2a4a !important;
+      border-left-color: #f794f7 !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .discount-promo-header h3 {
+      color: #f794f7 !important;
+  }
+
+  .discount-item {
+      background-color: rgba(0, 0, 0, 0.3) !important;
+      border-color: rgba(247, 148, 247, 0.2) !important;
+  }
+
+  .discount-check {
+      color: #f794f7 !important;
+  }
+
+  .discount-item p {
+      color: #cccccc !important;
+  }
+
+  .discount-item strong {
+      color: #f794f7 !important;
+  }
+  /* ==========================================================================
+     36. PÁGINA MINHAS COMPRAS (Modo Escuro)
+     ========================================================================== */
+  
+  /* 1. Destaca o texto "Selecionar Todas as Fotos" */
+  label[for="selectAll"] {
+      color: #f794f7 !important; /* Roxo neon brilhante */
+      letter-spacing: 0.5px !important;
+  }
+
+  /* 2. Muda a cor das caixinhas (Checkboxes) quando marcadas */
+  input[type="checkbox"] {
+      accent-color: #f794f7 !important;
+      transform: scale(1.1); /* Aumenta ligeiramente para ser mais fácil de clicar */
+  }
+
+  /* 3. Destaca os Botões "Baixar Original" e "E-mail" */
+  .download-button {
+      background-color: none !important; /* Fundo sólido neon em vez de transparente */
+      color: #f794f7 !important; /* Texto escuro para contraste máximo */
+      border: 1px solid #f794f7 !important;
+      font-weight: 800 !important;
+      box-shadow: 0 4px 10px rgba(247, 148, 247, 0.3) !important;
+      transition: all 0.2s ease-in-out !important;
+  }
+
+  /* Efeito de brilho ao passar o rato no botão */
+  .download-button:hover {
+      background-color: #ffffff27 !important;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.6) !important;
+      transform: translateY(-2px) !important;
+      color: #fff !important;
+  }
+
+  /* 4. Borda do cartão quando uma foto é selecionada */
+  .purchase-card[style*="border: 2px solid #6c0464"],
+  .purchase-card[style*="border: 2px solid rgb(108, 4, 100)"] {
+      border-color: #f794f7 !important;
+      box-shadow: 0 0 15px rgba(247, 148, 247, 0.3) !important;
+  }
+  /* ==========================================================================
+     37. PÁGINA MINHAS PROPOSTAS (Modo Escuro)
+     ========================================================================== */
+  
+  /* 1. Estado Vazio (Quando ainda não existem propostas) */
+  .page-container div[style*="background-color: #fdfbfe"],
+  .page-container div[style*="background-color: rgb(253, 251, 254)"] {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+  }
+  
+  /* 2. Cartões Principais das Propostas */
+  .page-container div[style*="box-shadow: 0 4px 10px rgba(0,0,0,0.05)"] {
+      background-color: #1e1e1e !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+  }
+
+  /* Textos dentro do Cartão */
+  .page-container div[style*="box-shadow: 0 4px 10px rgba(0,0,0,0.05)"] h3 {
+      color: #f794f7 !important; /* Título do álbum em roxo neon */
+  }
+  .page-container div[style*="box-shadow: 0 4px 10px rgba(0,0,0,0.05)"] p {
+      color: #cccccc !important;
+  }
+  .page-container div[style*="box-shadow: 0 4px 10px rgba(0,0,0,0.05)"] p strong {
+      color: #e3e3e3 !important;
+  }
+
+  /* 3. Destaque da "Nova Oferta do Fotógrafo" (Originalmente azul escuro) */
+  .page-container p[style*="color: #004085"],
+  .page-container p[style*="color: rgb(0, 64, 133)"] {
+      color: #66b0ff !important; /* Azul claro brilhante para contraste no escuro */
+  }
+
+  /* 4. Caixa Inferior de Ações (Aceitar/Recusar Contraproposta) */
+  .page-container div[style*="background-color: #f8f9fa"],
+  .page-container div[style*="background-color: rgb(248, 249, 250)"] {
+      background-color: #2a2a2a !important;
+  }
+  
+  /* Botão de Recusar (Remove o fundo branco para ficar apenas o contorno vermelho) */
+  .page-container button[style*="background-color: #fff"],
+  .page-container button[style*="background-color: rgb(255, 255, 255)"] {
+      background-color: transparent !important;
+  }
+
+  /* 5. Caixa de Mensagem de Sucesso (Proposta Aprovada) */
+  .page-container div[style*="background-color: #e2f3f5"],
+  .page-container div[style*="background-color: rgb(226, 243, 245)"] {
+      background-color: rgba(23, 162, 184, 0.15) !important;
+      border-color: rgba(23, 162, 184, 0.3) !important;
+  }
+  .page-container div[style*="background-color: #e2f3f5"] h4,
+  .page-container div[style*="background-color: rgb(226, 243, 245)"] h4 {
+      color: #4dd4e8 !important; /* Ciano brilhante */
+  }
+  .page-container div[style*="background-color: #e2f3f5"] p,
+  .page-container div[style*="background-color: rgb(226, 243, 245)"] p {
+      color: #d1ecf1 !important;
+  }
+}

@@ -23,6 +23,7 @@ function Layout() {
                         <NavLink to="/busca">Procurar fotos</NavLink>
                         <NavLink to="/eventos">Álbuns</NavLink>
                         <NavLink to="/noticias">Notícias</NavLink>
+                        <NavLink to="/solucoes">Serviços</NavLink>
 
                         {/* 2. ÁREA DE UTILIZADOR E CARRINHO */}
                         <div className="nav-user-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>

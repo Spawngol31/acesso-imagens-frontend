@@ -82,7 +82,7 @@ function FotografoSaquesPage() {
                     {/* --- CAIXA DE SALDO BLOQUEADA --- */}
                     <div style={{ flex: '1 1 200px' }}>
                         <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>Valor do saque (R$)</label>
-                        <div style={{ backgroundColor: '#e9ecef', color: saldoPendente > 0 ? '#28a745' : '#666', width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', fontWeight: 'bold', fontSize: '16px' }}>
+                        <div style={{ backgroundColor: '#2a2a2a', color: saldoPendente > 0 ? '#4caf50' : '#888', width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #444', boxSizing: 'border-box', fontWeight: 'bold', fontSize: '16px' }}>
                             R$ {parseFloat(saldoPendente).toFixed(2)}
                         </div>
                     </div>
@@ -135,9 +135,9 @@ function FotografoSaquesPage() {
                                                         href={saque.comprovante} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer" 
-                                                        style={{ display: 'inline-block', marginBottom: '5px', color: '#007bff', textDecoration: 'none', fontWeight: 'bold', backgroundColor: '#e9f2ff', padding: '4px 8px', borderRadius: '4px' }}
+                                                        style={{ display: 'inline-block', marginBottom: '5px', color: '#f794f7', textDecoration: 'none', fontWeight: 'bold', backgroundColor: 'rgba(247, 148, 247, 0.15)', padding: '6px 12px', borderRadius: '6px', border: '1px solid #f794f7' }}
                                                     >
-                                                        📎 Ver Comprovativo
+                                                        📎 Ver Comprovante
                                                     </a>
                                                 )}
                                                 <div style={{ marginTop: saque.comprovante ? '5px' : '0' }}>

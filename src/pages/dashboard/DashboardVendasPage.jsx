@@ -124,13 +124,6 @@ function DashboardVendasPage() {
     // --- ESTILOS ---
     const inputStyle = { width: '100%', padding: '10px 12px', border: '1px solid #ced4da', borderRadius: '6px', boxSizing: 'border-box', fontSize: '14px', outline: 'none', marginBottom: '15px', backgroundColor: '#fff', color: '#414141' };
     
-    const tabBtnStyle = (isActive) => ({
-        padding: '12px 24px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', border: 'none',
-        borderBottom: isActive ? `3px solid ${corPrincipal}` : '3px solid transparent',
-        backgroundColor: isActive ? '#fff' : '#f8f9fa', color: isActive ? corPrincipal : '#666',
-        transition: 'all 0.2s', flex: isMobile ? 1 : 'none'
-    });
-
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
@@ -140,9 +133,14 @@ function DashboardVendasPage() {
             </div>
 
             {/* NAVEGAÇÃO DE ABAS */}
-            <div style={{ display: 'flex', borderBottom: '1px solid #dee2e6', marginBottom: '25px', backgroundColor: '#f8f9fa', borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
-                <button style={tabBtnStyle(activeTab === 'vendas')} onClick={() => setActiveTab('vendas')}>📈 Minhas vendas</button>
-                <button style={tabBtnStyle(activeTab === 'historico')} onClick={() => setActiveTab('historico')}>🧾 Meus recebimentos</button>
+            {/* NAVEGAÇÃO DE ABAS */}
+            <div className="finance-tabs-container">
+                <button className={`finance-tab ${activeTab === 'vendas' ? 'active' : ''}`} onClick={() => setActiveTab('vendas')}>
+                    📈 Minhas vendas
+                </button>
+                <button className={`finance-tab ${activeTab === 'historico' ? 'active' : ''}`} onClick={() => setActiveTab('historico')}>
+                    🧾 Meus recebimentos
+                </button>
             </div>
 
             {/* ==================== ABA 1: MINHAS VENDAS E FILTROS ==================== */}

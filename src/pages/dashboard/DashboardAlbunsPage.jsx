@@ -12,9 +12,11 @@ function DashboardAlbunsPage() {
     // Modais diferentes para funções diferentes
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // NOVO: Modal de Exclusão
     
     const [editingAlbum, setEditingAlbum] = useState(null);
     const [albumParaMudar, setAlbumParaMudar] = useState(null);
+    const [albumParaExcluir, setAlbumParaExcluir] = useState(null); // NOVO: Álbum a ser excluído
 
     const corPrincipal = '#6c0464';
 
@@ -63,7 +65,7 @@ function DashboardAlbunsPage() {
         }
     };
     
-    // --- LÓGICA DO MODAL DE CONFIRMAÇÃO ---
+    // --- LÓGICA DO MODAL DE ARQUIVAR/DESARQUIVAR ---
     const handleToggleArchiveClick = (album) => {
         setAlbumParaMudar(album);
         setIsConfirmModalOpen(true);
@@ -89,6 +91,30 @@ function DashboardAlbunsPage() {
         }
     };
 
+    // --- NOVA LÓGICA DO MODAL DE EXCLUSÃO ---
+    const handleDeleteClick = (album) => {
+        setAlbumParaExcluir(album);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmarExclusao = async () => {
+        if (!albumParaExcluir) return;
+
+        try {
+            // Rota padrão DELETE do Django REST Framework para o viewset
+            await axiosInstance.delete(`/dashboard/albuns/${albumParaExcluir.id}/`);
+            toast.success("Álbum excluído definitivamente com sucesso!");
+            fetchAlbuns();
+        } catch (error) {
+            console.error("Erro ao excluir álbum:", error);
+            toast.error("Erro ao excluir o álbum. Pode já ter vendas atreladas a ele.");
+        } finally {
+            setIsDeleteModalOpen(false);
+            setAlbumParaExcluir(null);
+        }
+    };
+    // ----------------------------------------
+
     const btnAcaoStyle = {
         padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', 
         cursor: 'pointer', border: 'none', transition: 'all 0.2s', textDecoration: 'none',
@@ -99,17 +125,10 @@ function DashboardAlbunsPage() {
 
     const albunsProcessados = albuns
     .filter(album => {
-        // Se a barra estiver vazia, mostra todos
         if (!termoPesquisa) return true;
-        // Filtra comparando o título digitado (ignorando maiúsculas/minúsculas)
         return album.titulo.toLowerCase().includes(termoPesquisa.toLowerCase());
     })
     .sort((a, b) => {
-        // Opção A: Se você tiver um campo de data de criação exato vindo da API
-        // return new Date(b.data_criacao) - new Date(a.data_criacao);
-        
-        // Opção B: Ordenar pelo ID costuma ser a forma mais segura de trazer os mais recentes primeiro,
-        // já que os IDs maiores são sempre os criados por último.
         return b.id - a.id; 
     });
 
@@ -150,7 +169,7 @@ function DashboardAlbunsPage() {
 
             <div style={{ backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                 <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '600px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '700px' }}>
                         <thead>
                             <tr style={{ backgroundColor: '#ebddea', color: corPrincipal, textAlign: 'left' }}>
                                 <th style={{ padding: '15px 10px' }}>TÍTULO</th>
@@ -190,6 +209,15 @@ function DashboardAlbunsPage() {
                                         >
                                             {album.is_arquivado ? 'Desarquivar' : 'Arquivar'}
                                         </button>
+                                        
+                                        {/* NOVO BOTÃO DE EXCLUIR */}
+                                        <button 
+                                            onClick={() => handleDeleteClick(album)} 
+                                            style={{ ...btnAcaoStyle, backgroundColor: '#343a40', color: 'white' }}
+                                            title="Excluir Álbum Definitivamente"
+                                        >
+                                            Excluir
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -211,7 +239,7 @@ function DashboardAlbunsPage() {
                 </div>
             )}
 
-            {/* MODAL DE CONFIRMAÇÃO (O NOVO!) */}
+            {/* MODAL DE CONFIRMAÇÃO DE ARQUIVAR */}
             {isConfirmModalOpen && albumParaMudar && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
                     <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', maxWidth: '450px', width: '90%', textAlign: 'center' }}>
@@ -224,7 +252,7 @@ function DashboardAlbunsPage() {
                                 : "Tem certeza que deseja arquivar este álbum? Ele será removido da loja."}
                         </p>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
-                            <button onClick={() => setIsConfirmModalOpen(false)} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #ccc', cursor: 'pointer' }}>Cancelar</button>
+                            <button onClick={() => setIsConfirmModalOpen(false)} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #ccc', cursor: 'pointer', backgroundColor: '#fff', color: '#333' }}>Cancelar</button>
                             <button onClick={confirmarAcao} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: albumParaMudar.is_arquivado ? '#28a745' : '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
                                 Confirmar
                             </button>
@@ -232,6 +260,30 @@ function DashboardAlbunsPage() {
                     </div>
                 </div>
             )}
+
+            {/* NOVO: MODAL DE EXCLUSÃO DEFINITIVA */}
+            {isDeleteModalOpen && albumParaExcluir && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(3px)' }}>
+                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+                        <h3 style={{ color: '#dc3545', marginTop: 0, fontSize: '1.5rem' }}>
+                            ⚠️ Excluir Álbum?
+                        </h3>
+                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                            Tem certeza que deseja excluir o álbum <strong>{albumParaExcluir.titulo}</strong>?
+                        </p>
+                        <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>
+                            Atenção: Esta ação é permanente e apagará todas as mídias dentro dele.
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                            <button onClick={() => setIsDeleteModalOpen(false)} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #ccc', cursor: 'pointer', backgroundColor: '#fff', color: '#333', fontWeight: 'bold' }}>Cancelar</button>
+                            <button onClick={confirmarExclusao} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
+                                Sim, Excluir Definitivamente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
         </div>
     );
 }

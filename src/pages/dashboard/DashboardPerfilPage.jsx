@@ -127,7 +127,7 @@ function DashboardPerfilPage() {
     if (loading) return <div className="dashboard-page-content"><p>A carregar o seu perfil...</p></div>;
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content" style={{ maxWidth: '820px', margin: '0 auto', paddingBottom: '40px' }}>
             
             <div className="page-header" style={{ marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
                 <h2 style={{ paddingBottom: 10, margin: 0, fontSize: '26px', color: corPrincipal }} >👤 Meu perfil</h2>

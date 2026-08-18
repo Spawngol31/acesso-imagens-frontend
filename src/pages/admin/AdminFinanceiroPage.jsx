@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 
 function AdminFinanceiroPage() {
     // --- ESTADOS GERAIS ---
-    const [activeTab, setActiveTab] = useState('pendentes'); // 'pendentes' ou 'historico'
+    const [activeTab, setActiveTab] = useState('pendentes'); 
     const [loading, setLoading] = useState(false);
     const [larguraJanela, setLarguraJanela] = useState(window.innerWidth);
     const isMobile = larguraJanela < 900;
@@ -19,10 +19,13 @@ function AdminFinanceiroPage() {
     const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status: '', search: '', fotografo_id: '' });
     const [vendasBuscadas, setVendasBuscadas] = useState(false);
 
+    // 🔥 NOVO: Estado para guardar as datas exatas apuradas para o Recibo
+    const [periodoPagamento, setPeriodoPagamento] = useState({ inicio: '', fim: '' });
+
     // --- ESTADOS DA ABA DE HISTÓRICO ---
     const [historicoRecibos, setHistoricoRecibos] = useState([]);
     const [filtrosHistorico, setFiltrosHistorico] = useState({ data_inicio: '', data_fim: '', fotografo_id: '' });
-    const [historicoBuscado, setHistoricoBuscado] = useState(false); // Diz se o usuário já clicou em filtrar
+    const [historicoBuscado, setHistoricoBuscado] = useState(false); 
 
     useEffect(() => {
         const handleResize = () => setLarguraJanela(window.innerWidth);
@@ -30,14 +33,12 @@ function AdminFinanceiroPage() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Atualiza os dados sempre que a aba muda
     useEffect(() => {
         if (activeTab === 'pendentes') {
             buscarDadosVendas();
         } 
     }, [activeTab]);
 
-    // ================= LÓGICA DA ABA: VENDAS PENDENTES =================
     const buscarDadosVendas = async (foiClicado = false) => {
         setLoading(true);
         if (foiClicado === true) setVendasBuscadas(true);
@@ -73,10 +74,7 @@ function AdminFinanceiroPage() {
         try {
             toast.info("A gerar planilha, aguarde...");
             const params = new URLSearchParams(filtros).toString();
-            
-            const response = await axiosInstance.get(`/admin/exportar-pagamentos/?${params}`, {
-                responseType: 'blob' 
-            });
+            const response = await axiosInstance.get(`/admin/exportar-pagamentos/?${params}`, { responseType: 'blob' });
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
@@ -89,18 +87,35 @@ function AdminFinanceiroPage() {
             link.setAttribute('download', nomeArquivo);
             document.body.appendChild(link);
             link.click();
-            
             link.parentNode.removeChild(link);
             window.URL.revokeObjectURL(url);
-            
         } catch (error) {
             console.error("Erro ao baixar planilha:", error);
             toast.error("Erro ao transferir a planilha. Verifique a sua conexão.");
         }
     };
 
+    // 🔥 MÁGICA DOS RECIBOS: Calcula automaticamente a primeira e última data das vendas pendentes
     const handlePagarFotografoClick = () => {
         if (!filtros.fotografo_id) return;
+
+        const vendasPendentes = dados.filter(v => !v.pago_ao_fotografo && v.status === 'PAGO');
+        
+        let dataInicioCalc = filtros.data_inicio;
+        let dataFimCalc = filtros.data_fim || new Date().toISOString().split('T')[0]; // Se não tiver fim, assume HOJE
+
+        // Se o admin não filtrou a data de início, o sistema procura a data mais antiga na tabela!
+        if (vendasPendentes.length > 0 && !filtros.data_inicio) {
+            const datasEmMs = vendasPendentes.map(v => {
+                const [datePart] = v.data.split(' '); // Separa "DD/MM/YYYY" de "HH:MM"
+                const [dia, mes, ano] = datePart.split('/');
+                return new Date(`${ano}-${mes}-${dia}T12:00:00`).getTime();
+            });
+            const dataMaisAntiga = new Date(Math.min(...datasEmMs));
+            dataInicioCalc = dataMaisAntiga.toISOString().split('T')[0];
+        }
+
+        setPeriodoPagamento({ inicio: dataInicioCalc, fim: dataFimCalc });
         setIsPaymentModalOpen(true);
     };
 
@@ -108,8 +123,8 @@ function AdminFinanceiroPage() {
         try {
             const payload = {
                 fotografo_id: filtros.fotografo_id,
-                data_inicio: filtros.data_inicio,
-                data_fim: filtros.data_fim,
+                data_inicio: periodoPagamento.inicio, // Usa as datas calculadas inteligentemente
+                data_fim: periodoPagamento.fim,
                 valor_pago: resumo.total_pagar
             };
             await axiosInstance.post('/admin/registrar-pagamento-fotografo/', payload);
@@ -125,7 +140,6 @@ function AdminFinanceiroPage() {
         }
     };
 
-    // ================= LÓGICA DA ABA: HISTÓRICO (OTIMIZADO) =================
     const buscarHistorico = async () => {
         setLoading(true);
         setHistoricoBuscado(true);
@@ -196,33 +210,23 @@ function AdminFinanceiroPage() {
         setTimeout(() => { janela.print(); }, 250);
     };
 
-    // --- ESTILOS REUTILIZÁVEIS ---
     const corPrincipal = '#6c0464';
     const inputStyle = { width: '100%', padding: '10px 12px', border: '1px solid #ced4da', borderRadius: '6px', boxSizing: 'border-box', fontSize: '14px', outline: 'none', marginBottom: '15px', color: '#495057', backgroundColor: '#fff' };
     
-    const tabBtnStyle = (isActive) => ({
-        padding: '12px 24px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', border: 'none',
-        borderBottom: isActive ? `3px solid ${corPrincipal}` : '3px solid transparent',
-        backgroundColor: isActive ? '#fff' : '#f8f9fa',
-        color: isActive ? corPrincipal : '#666',
-        transition: 'all 0.2s', flex: isMobile ? 1 : 'none'
-    });
-
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
-            <div style={{ display: 'flex', borderBottom: '1px solid #dee2e6', marginBottom: '25px', backgroundColor: '#f8f9fa', borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
-                <button style={tabBtnStyle(activeTab === 'pendentes')} onClick={() => setActiveTab('pendentes')}>
+            <div className="finance-tabs-container">
+                <button className={`finance-tab ${activeTab === 'pendentes' ? 'active' : ''}`} onClick={() => setActiveTab('pendentes')}>
                     ⏳ Caixa Pendente (Vendas)
                 </button>
-                <button style={tabBtnStyle(activeTab === 'historico')} onClick={() => setActiveTab('historico')}>
+                <button className={`finance-tab ${activeTab === 'historico' ? 'active' : ''}`} onClick={() => setActiveTab('historico')}>
                     🧾 Histórico de Recibos
                 </button>
             </div>
 
             {activeTab === 'pendentes' && (
                 <>
-                    {/* ... (Seu código da aba pendentes não mudou nada, foi mantido igual) ... */}
                     <div style={{ backgroundColor: '#fbf0fa', border: `1px solid #e1bce0`, color: corPrincipal, padding: '16px 20px', borderRadius: '8px', marginBottom: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', boxShadow: '0 2px 4px rgba(108, 4, 100, 0.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <span style={{ marginRight: '12px', fontSize: '1.2rem' }}>💰</span>
@@ -293,7 +297,6 @@ function AdminFinanceiroPage() {
                             {isMobile && <button onClick={baixarPlanilha} className='create-button' style={{marginTop: '20px', width: '100%'}}>Baixar Planilha (Excel)</button>}
                         </div>
 
-                        {/* FILTROS DA ABA VENDAS */}
                         <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
                             <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>🔍︎ FILTROS</h3>
                             <div style={{ marginTop: '25px' }}>
@@ -323,11 +326,9 @@ function AdminFinanceiroPage() {
                 </>
             )}
 
-            {/* ABA 2: HISTÓRICO DE RECIBOS (COM FILTROS ADICIONADOS) */}
             {activeTab === 'historico' && (
                 <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
                     
-                    {/* TABELA DE RECIBOS */}
                     <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
                         <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🧾 Registos de Pagamentos Anteriores</h3>
                         
@@ -379,7 +380,6 @@ function AdminFinanceiroPage() {
                         )}
                     </div>
 
-                    {/* CAIXA DE FILTROS DO HISTÓRICO */}
                     <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
                         <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>🔍︎ FILTRAR RECIBOS</h3>
                         <div style={{ marginTop: '25px' }}>
@@ -392,7 +392,6 @@ function AdminFinanceiroPage() {
                             <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Fotógrafo</label>
                             <select name="fotografo_id" value={filtrosHistorico.fotografo_id} onChange={handleChangeHistorico} style={inputStyle}>
                                 <option value="">Todos os fotógrafos</option>
-                                {/* Reutilizamos a mesma lista de fotógrafos que a API envia na primeira aba */}
                                 {listaFotografos.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
                             </select>
                             
@@ -405,15 +404,25 @@ function AdminFinanceiroPage() {
                 </div>
             )}
 
-            {/* MODAL DE CONFIRMAÇÃO DE PAGAMENTO (MANTIDO) */}
+            {/* MODAL DE CONFIRMAÇÃO DE PAGAMENTO COM DATAS APURADAS */}
             {isPaymentModalOpen && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
                     <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
                         <h3 style={{ color: '#28a745', marginTop: 0 }}>Registrar Pagamento?</h3>
+                        
+                        <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', margin: '20px 0', border: '1px solid #eee' }}>
+                            <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#666' }}>Período Apurado Automaticamente:</p>
+                            <p style={{ margin: 0, fontWeight: 'bold', color: '#333' }}>
+                                {periodoPagamento.inicio ? periodoPagamento.inicio.split('-').reverse().join('/') : 'Início das vendas'} 
+                                &nbsp; até &nbsp; 
+                                {periodoPagamento.fim ? periodoPagamento.fim.split('-').reverse().join('/') : 'Hoje'}
+                            </p>
+                        </div>
+
                         <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
                             Tem a certeza que deseja registrar o pagamento de <strong>R$ {parseFloat(resumo.total_pagar).toFixed(2)}</strong> para este fotógrafo?
                         </p>
-                        <p style={{ color: '#dc3545', fontSize: '14px', lineHeight: '1.5', fontWeight: 'bold' }}>Isso irá zerar o saldo pendente dele na plataforma até a data de hoje.</p>
+                        <p style={{ color: '#dc3545', fontSize: '14px', lineHeight: '1.5', fontWeight: 'bold' }}>Isso irá zerar o saldo pendente dele na plataforma.</p>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
                             <button onClick={() => setIsPaymentModalOpen(false)} className='create_button' style={{ padding: '10px 20px'}}>Cancelar</button>
                             <button onClick={confirmarPagamento} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#28a745', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>Sim, Registrar Pagamento</button>
