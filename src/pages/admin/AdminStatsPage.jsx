@@ -1,5 +1,3 @@
-// src/pages/admin/AdminStatsPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { Bar } from 'react-chartjs-2';
@@ -22,21 +20,73 @@ ChartJS.register(
   Legend
 );
 
+// --- 🚀 NOVO COMPONENTE: RANKING GERAL PARA ADMIN ---
+const RankingAlbunsAdmin = () => {
+    const [ranking, setRanking] = useState([]);
+    
+    useEffect(() => {
+        const fetchRanking = async () => {
+            try {
+                // No backend configuramos para puxar o top 10 geral
+                const response = await axiosInstance.get('/admin/ranking-albuns/');
+                setRanking(response.data);
+            } catch (error) {
+                console.error("Erro ao buscar ranking:", error);
+            }
+        };
+        fetchRanking();
+    }, []);
+
+    if (ranking.length === 0) return null;
+
+    return (
+        <div style={sectionStyle}>
+            <h3 style={sectionTitleStyle}>Top 10 Álbuns Mais Rentáveis (Geral)</h3>
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                    <thead>
+                        <tr style={{ backgroundColor: '#f8f9fa', color: '#6c0464', textAlign: 'left' }}>
+                            <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>POSIÇÃO</th>
+                            <th style={{ padding: '12px 10px' }}>ÁLBUM</th>
+                            <th style={{ padding: '12px 10px' }}>FOTÓGRAFO(A)</th>
+                            <th style={{ padding: '12px 10px' }}>FOTOS VENDIDAS</th>
+                            <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>TOTAL ARRECADADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {ranking.map((album, index) => {
+                            /*const medalhas = ['🥇', '🥈', '🥉'];*/
+                            const medalha = /*index < 3 ? medalhas[index] : */`${index + 1}º`;
+                            return (
+                                <tr key={album.album_id} style={{ borderBottom: '1px solid #eee' }}>
+                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', fontSize: '18px' }}>{medalha}</td>
+                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#333' }}>{album.album_titulo}</td>
+                                    <td style={{ padding: '14px 10px', color: '#555' }}>{album.fotografo_nome}</td>
+                                    <td style={{ padding: '14px 10px', color: '#555' }}>{album.qtd_vendida} mídias</td>
+                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {parseFloat(album.total_arrecadado).toFixed(2)}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+// ---------------------------------------------------
+
 function AdminStatsPage() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     
-    // 🚀 NOVO: Estado para controlar o período do filtro
     const [periodo, setPeriodo] = useState('mensal');
 
     const corPrincipal = '#6c0464';
 
-    // O useEffect agora recarrega os dados toda a vez que o "periodo" muda!
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                // 🚀 NOVO: Enviamos o filtro para o Django através da URL
                 const response = await axiosInstance.get(`/admin/stats/?periodo=${periodo}`);
                 setStats(response.data);
             } catch (error) {
@@ -62,7 +112,6 @@ function AdminStatsPage() {
         ],
     };
 
-    // 🚀 NOVO: Função para deixar os títulos dos cartões dinâmicos
     const getLabelPeriodo = () => {
         switch(periodo) {
             case 'diario': return '(Hoje)';
@@ -79,11 +128,9 @@ function AdminStatsPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
-            {/* TÍTULO E FILTRO (FLEXBOX PARA FICAREM LADO A LADO) */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px', flexWrap: 'wrap', gap: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>📊 Visão geral do sistema</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Visão geral do sistema</h2>
                 
-                {/* 🚀 NOVO: O Dropdown de Filtro */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Filtrar por:</label>
                     <select 
@@ -111,7 +158,6 @@ function AdminStatsPage() {
                 </div>
                 <div style={cardStyle}>
                     <p style={cardLabelStyle}>Utilizadores totais</p>
-                    {/* Utilizadores não costumam ser filtrados por tempo, mantemos o total absoluto */}
                     <h2 style={cardValueStyle}>{stats.geral.utilizadores_total}</h2>
                 </div>
                 <div style={cardStyle}>
@@ -120,11 +166,10 @@ function AdminStatsPage() {
                 </div>
             </div>
 
-            {/* ÁREA DOS GRÁFICOS (Continua igual, mas repare que agora os dados vão respeitar o filtro) */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
                 
                 <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>🏆 Top 5 Fotógrafos {getLabelPeriodo()}</h3>
+                    <h3 style={sectionTitleStyle}>Top 5 Fotógrafos {getLabelPeriodo()}</h3>
                     <div style={{ height: '300px' }}>
                         <Bar 
                             data={topFotografosChartData} 
@@ -141,7 +186,7 @@ function AdminStatsPage() {
                 </div>
 
                 <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>📸 Top 5 Fotos Mais Vendidas {getLabelPeriodo()}</h3>
+                    <h3 style={sectionTitleStyle}>Top 5 Fotos Mais Vendidas {getLabelPeriodo()}</h3>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                             <thead>
@@ -174,6 +219,9 @@ function AdminStatsPage() {
                         </table>
                     </div>
                 </div>
+
+                {/* 🚀 O RANKING DE ÁLBUNS APARECE AQUI NO FINAL */}
+                <RankingAlbunsAdmin />
 
             </div>
         </div>
@@ -210,7 +258,7 @@ const cardValueStyle = {
 
 const sectionStyle = {
     backgroundColor: '#fff',
-    padding: '20px', // Aumentei um pouco o padding para ficar mais elegante
+    padding: '20px', 
     borderRadius: '10px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
 };

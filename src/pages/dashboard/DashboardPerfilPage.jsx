@@ -130,7 +130,7 @@ function DashboardPerfilPage() {
         <div className="dashboard-page-content" style={{ maxWidth: '820px', margin: '0 auto', paddingBottom: '40px' }}>
             
             <div className="page-header" style={{ marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ paddingBottom: 10, margin: 0, fontSize: '26px', color: corPrincipal }} >👤 Meu perfil</h2>
+                <h2 style={{ paddingBottom: 10, margin: 0, fontSize: '26px', color: corPrincipal }} >Meu perfil</h2>
                 
             </div>
 
@@ -139,7 +139,7 @@ function DashboardPerfilPage() {
                     
                     {/* --- DADOS BÁSICOS --- */}
                     <h3 style={{ color: corPrincipal, marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-                        🪪 Informações básicas
+                        Informações básicas
                     </h3>
 
                     <label style={labelStyle}>Nome Completo</label>
@@ -152,7 +152,7 @@ function DashboardPerfilPage() {
                     {papeisEquipe.includes(formData.papel) && (
                         <>
                             <h3 style={{ color: corPrincipal, marginTop: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-                                📸 Dados profissionais
+                                Dados profissionais
                             </h3>
 
                             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
@@ -189,7 +189,7 @@ function DashboardPerfilPage() {
                             </div>
 
                             <h3 style={{ color: corPrincipal, marginTop: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-                                💸 Dados de recebimento
+                                Dados de recebimento
                             </h3>
                             <p style={{ color: '#666', fontSize: '13px', marginBottom: '20px' }}>Utilizados para o pagamento das suas comissões.</p>
 
@@ -215,7 +215,7 @@ function DashboardPerfilPage() {
 
                     {/* --- SEGURANÇA / SENHA --- */}
                     <h3 style={{ color: corPrincipal, marginTop: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-                        🔐 Segurança (opcional)
+                        Segurança (opcional)
                     </h3>
                     <p style={{ color: '#666', fontSize: '13px', marginBottom: '20px' }}>Preencha apenas se quiser alterar a sua senha de acesso.</p>
 
@@ -280,7 +280,7 @@ function DashboardPerfilPage() {
                                 opacity: saving ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 6px rgba(108, 4, 100, 0.2)'
                             }}
                         >
-                            {saving ? 'A salvar alterações...' : '💾 Salvar alterações'}
+                            {saving ? 'A salvar alterações...' : 'Salvar alterações'}
                         </button>
                     </div>
 

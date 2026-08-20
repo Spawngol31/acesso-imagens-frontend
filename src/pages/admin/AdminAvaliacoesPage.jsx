@@ -97,7 +97,7 @@ function AdminAvaliacoesPage() {
     return (
         <div className="dashboard-page-content">
             <div className="page-header">
-                <h2>⭐ Avaliações do google</h2>
+                <h2>Avaliações do google</h2>
                 <button className="create-button" onClick={() => openModal()}>
                     + Nova Avaliação
                 </button>

@@ -37,7 +37,7 @@ function AlbumCreatePage() {
                 marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
             }}>
-                <h2 style={{ margin: 0, fontSize: '28px' }}>🖼️ Criação de álbuns</h2>
+                <h2 style={{ margin: 0, fontSize: '28px' }}>Criação de álbuns</h2>
             </div>
 
             <div className="table-wrapper" style={{ padding: '2rem' }}>

@@ -108,7 +108,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                     
                     {formData.papel === 'CLIENTE' && formData.perfil_cliente && (
                         <div style={{marginTop: '10px', padding: '20px', backgroundColor: '#fdfbfe', borderRadius: '10px', border: '1px solid #e1bce0'}}>
-                            <h4 style={{margin: '0 0 15px 0', color: '#6c0464'}}>💳 Perfil de Cliente</h4>
+                            <h4 style={{margin: '0 0 15px 0', color: '#6c0464'}}>Perfil de Cliente</h4>
                             <div style={gridDuplo}>
                                 <div>
                                     <label style={labelStyle}>CPF</label>
@@ -128,7 +128,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
 
                     {isColaborador && formData.perfil_fotografo && (
                         <div style={{marginTop: '10px', padding: '20px', backgroundColor: '#fdfbfe', borderRadius: '10px', border: '1px solid #e1bce0'}}>
-                            <h4 style={{margin: '0 0 15px 0', color: '#6c0464'}}>💼 Perfil de Colaborador</h4>
+                            <h4 style={{margin: '0 0 15px 0', color: '#6c0464'}}>Perfil de Colaborador</h4>
                             
                             <div style={{ marginBottom: '20px', padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', backgroundColor: '#ffffff' }}>
                                 <label style={{ ...labelStyle, marginBottom: '12px' }}>Atualizar Foto de Perfil</label>
@@ -340,7 +340,7 @@ function AdminUserPage() {
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
             <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '10px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>👥 Gerir usuários</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Gerir usuários</h2>
             </div>
 
             <div style={{ backgroundColor: '#fbf0fa', padding: '20px', borderRadius: '10px', marginBottom: '25px', border: '1px solid #e1bce0', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -380,14 +380,14 @@ function AdminUserPage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', flex: '1 1 auto', justifyContent: 'flex-end' }}>
-                    <button onClick={fetchUsers} className='create-button'>🔍 Filtrar</button>
+                    <button onClick={fetchUsers} className='create-button'>Filtrar</button>
                     <button onClick={handleLimparFiltros} className='create-button'>Limpar</button>
                 </div>
             </div>
 
             {!hasActiveFilters && !loading && (
-                <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#e2f3f5', color: '#0c5460', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', border: '1px solid #bee5eb' }}>
-                    ⚡ MODO RÁPIDO: A mostrar apenas os 50 cadastros mais recentes. Use os filtros acima para pesquisar contas antigas.
+                <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#e2f3f5', color: '#18aac4', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', border: '1px solid #bee5eb' }}>
+                    MODO RÁPIDO: A mostrar apenas os 50 cadastros mais recentes. Use os filtros acima para pesquisar contas antigas.
                 </div>
             )}
 

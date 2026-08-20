@@ -218,10 +218,10 @@ function AdminFinanceiroPage() {
             
             <div className="finance-tabs-container">
                 <button className={`finance-tab ${activeTab === 'pendentes' ? 'active' : ''}`} onClick={() => setActiveTab('pendentes')}>
-                    ⏳ Caixa Pendente (Vendas)
+                    Caixa Pendente (Vendas)
                 </button>
                 <button className={`finance-tab ${activeTab === 'historico' ? 'active' : ''}`} onClick={() => setActiveTab('historico')}>
-                    🧾 Histórico de Recibos
+                    Histórico de Recibos
                 </button>
             </div>
 
@@ -229,12 +229,12 @@ function AdminFinanceiroPage() {
                 <>
                     <div style={{ backgroundColor: '#fbf0fa', border: `1px solid #e1bce0`, color: corPrincipal, padding: '16px 20px', borderRadius: '8px', marginBottom: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', boxShadow: '0 2px 4px rgba(108, 4, 100, 0.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <span style={{ marginRight: '12px', fontSize: '1.2rem' }}>💰</span>
+                            
                             <span>RESUMO: Vendas Pagas (R$ {parseFloat(resumo.total_vendas).toFixed(2)}) | LÍQUIDO A REPASSAR: R$ {parseFloat(resumo.total_pagar).toFixed(2)}</span>
                         </div>
                         {filtros.fotografo_id && resumo.total_pagar > 0 && (
                             <button onClick={handlePagarFotografoClick} style={{ padding: '10px 16px', backgroundColor: '#6c0464', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(40,167,69,0.3)' }}>
-                                💸 Registrar Pagamento (Zerar Saldo)
+                                Registrar Pagamento (Zerar Saldo)
                             </button>
                         )}
                     </div>
@@ -251,7 +251,7 @@ function AdminFinanceiroPage() {
 
                             {!vendasBuscadas ? (
                                 <div style={{ padding: '40px 20px', textAlign: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ced4da' }}>
-                                    <span style={{ fontSize: '2rem' }}>⚡</span>
+                                    
                                     <h4 style={{ color: '#555', marginTop: '10px' }}>Modo Rápido Ativado</h4>
                                     <p style={{ color: '#888' }}>Utilize os filtros e clique em Pesquisar para carregar as vendas de forma rápida.</p>
                                 </div>
@@ -298,7 +298,7 @@ function AdminFinanceiroPage() {
                         </div>
 
                         <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
-                            <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>🔍︎ FILTROS</h3>
+                            <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>FILTROS</h3>
                             <div style={{ marginTop: '25px' }}>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Inicial</label>
                                 <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} style={inputStyle} />
@@ -330,11 +330,11 @@ function AdminFinanceiroPage() {
                 <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
                     
                     <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
-                        <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🧾 Registos de Pagamentos Anteriores</h3>
+                        <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Registos de Pagamentos Anteriores</h3>
                         
                         {!historicoBuscado ? (
                             <div style={{ padding: '40px 20px', textAlign: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ced4da' }}>
-                                <span style={{ fontSize: '2rem' }}>⚡</span>
+                                
                                 <h4 style={{ color: '#555', marginTop: '10px' }}>Modo Rápido Ativado</h4>
                                 <p style={{ color: '#888' }}>Utilize os filtros ao lado para pesquisar recibos antigos de forma rápida.</p>
                             </div>
@@ -368,7 +368,7 @@ function AdminFinanceiroPage() {
                                                         onClick={() => imprimirRecibo(recibo)}
                                                         style={{ padding: '6px 12px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
                                                     >
-                                                        🖨️ Ver Recibo
+                                                        Ver Recibo
                                                     </button>
                                                 </td>
                                             </tr>
@@ -381,7 +381,7 @@ function AdminFinanceiroPage() {
                     </div>
 
                     <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
-                        <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>🔍︎ FILTRAR RECIBOS</h3>
+                        <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>FILTRAR RECIBOS</h3>
                         <div style={{ marginTop: '25px' }}>
                             <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Inicial</label>
                             <input type="date" name="data_inicio" value={filtrosHistorico.data_inicio} onChange={handleChangeHistorico} style={inputStyle} />

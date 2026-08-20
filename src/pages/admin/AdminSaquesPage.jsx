@@ -38,7 +38,7 @@ function AdminSaquesPage() {
         if (!chavePix) return;
         navigator.clipboard.writeText(chavePix)
             .then(() => {
-                toast.success("✅ Chave PIX copiada com sucesso!");
+                toast.success("Chave PIX copiada com sucesso!");
             })
             .catch((err) => {
                 console.error("Erro ao copiar o Pix: ", err);
@@ -97,16 +97,16 @@ function AdminSaquesPage() {
 
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }}>🏦 Gestão de saques</h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
+                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal, minWidth: '200px' }}>Gestão de saques</h2>
                 
                 <select 
                     value={filtroStatus} 
                     onChange={(e) => setFiltroStatus(e.target.value)}
-                    style={{ backgroundColor: '#fff', color:'#666', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', outline: 'none' }}
+                    style={{ backgroundColor: '#fff', color:'#666', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', outline: 'none', flex: '1 1 auto', maxWidth: '300px' }}
                 >
                     <option value="">Todos os Status</option>
-                    <option value="PENDENTE">Apenas pendentes (fila de pagamento)</option>
+                    <option value="PENDENTE">Pendentes</option>
                     <option value="PAGO">Já pagos</option>
                     <option value="RECUSADA">Recusados</option>
                 </select>
@@ -197,7 +197,7 @@ function AdminSaquesPage() {
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(3px)' }}>
                     <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
                         <h3 style={{ color: modalConfig.acao === 'aprovar' ? '#28a745' : '#dc3545', margin: '0 0 20px 0' }}>
-                            {modalConfig.acao === 'aprovar' ? '✅ Confirmar Pagamento' : '❌ Recusar Saque'}
+                            {modalConfig.acao === 'aprovar' ? 'Confirmar Pagamento' : 'Recusar Saque'}
                         </h3>
                         
                         <form onSubmit={confirmarAcao} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -218,7 +218,7 @@ function AdminSaquesPage() {
                                     <div style={{ marginTop: '10px', fontSize: '12px', color: '#555' }}>
                                         {comprovante ? (
                                             <span style={{ color: '#28a745', fontWeight: 'bold' }}>
-                                                ✅ Selecionado: {comprovante.name}
+                                                Selecionado: {comprovante.name}
                                             </span>
                                         ) : (
                                             "Nenhum ficheiro selecionado (Imagem ou PDF)"

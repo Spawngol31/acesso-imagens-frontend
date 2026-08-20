@@ -67,7 +67,7 @@ function FotografoSaquesPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '40px' }}>
             <h2 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '25px' }}>
-                💸 Meus saques
+                Meus saques
             </h2>
 
             {/* FORMULÁRIO DE SOLICITAÇÃO */}
@@ -137,7 +137,7 @@ function FotografoSaquesPage() {
                                                         rel="noopener noreferrer" 
                                                         style={{ display: 'inline-block', marginBottom: '5px', color: '#f794f7', textDecoration: 'none', fontWeight: 'bold', backgroundColor: 'rgba(247, 148, 247, 0.15)', padding: '6px 12px', borderRadius: '6px', border: '1px solid #f794f7' }}
                                                     >
-                                                        📎 Ver Comprovante
+                                                        Ver Comprovante
                                                     </a>
                                                 )}
                                                 <div style={{ marginTop: saque.comprovante ? '5px' : '0' }}>

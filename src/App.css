@@ -3507,9 +3507,113 @@ img {
       color: #d1ecf1 !important;
   }
   /* Proteção para o Iframe do Google Login */
-.auth-form ~ div iframe {
+  .auth-form ~ div iframe {
     max-width: none !important;
     background-color: transparent !important;
     color-scheme: normal !important;
-}
+  }
+  /* ==========================================================================
+     PÁGINA DE UPLOAD (Modo Escuro)
+     ========================================================================== */
+  
+  /* 1. A Grande Barra Branca (Seletor de Álbum) */
+  .album-selector-wrapper {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+      color: #e3e3e3 !important;
+  }
+  .album-selector-wrapper select {
+      background-color: #2a2a2a !important;
+      color: #e3e3e3 !important;
+      border-color: #444 !important;
+  }
+
+  /* 2. Caixa "Qual o destino destas fotos?" (Fundo Cinza Claro) */
+  .upload-form div[style*="background-color: #f8f9fa"],
+  .upload-form div[style*="background-color: rgb(248, 249, 250)"] {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+  }
+  .upload-form div[style*="background-color: #f8f9fa"] label,
+  .upload-form div[style*="background-color: rgb(248, 249, 250)"] label {
+      color: #e3e3e3 !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+  }
+  .upload-form select[style*="background-color: #ffffff"],
+  .upload-form select[style*="background-color: rgb(255, 255, 255)"] {
+      background-color: #2a2a2a !important;
+      color: #e3e3e3 !important;
+      border-color: #444 !important;
+  }
+
+  /* 3. Caixa "Distribuir via FTP" (Fundo Rosa Claro) */
+  .upload-form div[style*="background-color: #fbf0fa"],
+  .upload-form div[style*="background-color: rgb(251, 240, 250)"] {
+      background-color: #1e1e1e !important;
+      border-color: #333 !important;
+  }
+  .upload-form div[style*="background-color: #fbf0fa"] h4,
+  .upload-form div[style*="background-color: rgb(251, 240, 250)"] h4 {
+      color: #f794f7 !important; /* Título em roxo neon */
+  }
+  .upload-form div[style*="background-color: #fbf0fa"] p,
+  .upload-form div[style*="background-color: rgb(251, 240, 250)"] p,
+  .upload-form div[style*="background-color: #fbf0fa"] label,
+  .upload-form div[style*="background-color: rgb(251, 240, 250)"] label {
+      color: #ccc !important;
+  }
+
+  /* 4. Caixa de Aviso "Radar do Servidor" (Fundo Azul Claro) */
+  .dashboard-page-content div[style*="background-color: #e6f7ff"],
+  .dashboard-page-content div[style*="background-color: rgb(230, 247, 255)"] {
+      background-color: rgba(0, 80, 179, 0.2) !important;
+      border-color: rgba(145, 213, 255, 0.3) !important;
+      color: #91d5ff !important;
+  }
+  /* ==========================================================================
+     MODAIS - DETALHES DO ÁLBUM (Modo Escuro)
+     ========================================================================== */
+  
+  /* 1. Caixa "Para onde quer enviar essas fotos?" (Fundo Azul Claro original: #f0f4f8) */
+  div[style*="background-color: #f0f4f8"],
+  div[style*="background-color: rgb(240, 244, 248)"] {
+      background-color: #1e1e1e !important;
+      border-color: #444 !important;
+  }
+  div[style*="background-color: #f0f4f8"] label,
+  div[style*="background-color: rgb(240, 244, 248)"] label {
+      color: #e3e3e3 !important;
+      border: none !important;
+  }
+
+  /* 2. Caixa "Envio via FTP" (Fundo Rosa Claro original: #fbf0fa) */
+  div[style*="background-color: #fbf0fa"],
+  div[style*="background-color: rgb(251, 240, 250)"] {
+      background-color: #1e1e1e !important;
+      border-color: #444 !important;
+  }
+  div[style*="background-color: #fbf0fa"] h4,
+  div[style*="background-color: rgb(251, 240, 250)"] h4 {
+      color: #f794f7 !important; /* Roxo neon */
+  }
+  div[style*="background-color: #fbf0fa"] p,
+  div[style*="background-color: rgb(251, 240, 250)"] p,
+  div[style*="background-color: #fbf0fa"] label,
+  div[style*="background-color: rgb(251, 240, 250)"] label {
+      color: #ccc !important;
+  }
+
+  /* 3. Caixa de "Vídeos selecionados" (Fundo Cinza Claro original: #f8f9fa) */
+  div[style*="background-color: #f8f9fa"],
+  div[style*="background-color: rgb(248, 249, 250)"] {
+      background-color: #1e1e1e !important;
+      border-color: #444 !important;
+  }
+  div[style*="background-color: #f8f9fa"] h4,
+  div[style*="background-color: rgb(248, 249, 250)"] h4 {
+      color: #e3e3e3 !important;
+  }
 }

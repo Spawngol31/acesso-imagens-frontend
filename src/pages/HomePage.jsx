@@ -183,7 +183,11 @@ function HomePage() {
                     <div className="home-hero-search-container">
                         
                         <form onSubmit={handleSearchSubmit} className="search-bar-wrapper" style={{ width: '100%' }}>
-                            <span style={{ color: '#b0b0b0', fontSize: '1.2rem', marginRight: '10px' }}>🔍</span>
+                            <span style={{ color: '#b0b0b0', fontSize: '1.2rem', marginRight: '10px' }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                </svg>
+                            </span>
                             <input 
                                 type="text" 
                                 placeholder="Pesquise por álbuns..." 
@@ -202,9 +206,9 @@ function HomePage() {
                         </div>
 
                         <div onClick={() => navigate('/busca')} className="selfie-card" style={{ width: '100%', margin: 0 }}>
-                            <div className="selfie-icon">🤳🏻</div>
+                            
                             <div className="selfie-text-container" style={{ flex: 1 }}>
-                                <h3>Encontre suas fotos com uma selfie</h3>
+                                <h3 style={{textAlign: 'center'}}>Encontre suas fotos com uma selfie</h3>
                             </div>
                             <div style={{ color: '#313b53', fontSize: '1.5rem', marginLeft: '10px' }}>
                                 &rarr;
@@ -257,7 +261,7 @@ function HomePage() {
                 
                 {/* COLUNA 1: ÚLTIMOS ÁLBUNS */}
                 <section className="split-section">
-                    <h2 className="split-section-title">🎞️ Últimos álbuns</h2>
+                    <h2 className="split-section-title">Últimos álbuns</h2>
                     
                     {loading ? <p style={{textAlign: 'center'}}>A carregar...</p> : (
                         <div 
@@ -278,14 +282,14 @@ function HomePage() {
                                     <div style={{ display: 'flex', transition: 'transform 0.5s ease-in-out', transform: `translateX(-${currentAlbumIndex * 100}%)` }}>
                                         {latestAlbuns.map(album => (
                                             <div key={album.id} style={{ minWidth: '100%', boxSizing: 'border-box', padding: '10px' }}>
-                                                <div className="album-card" style={{ minHeight: '600px', height: '100%', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                                <div className="album-card" style={{ minHeight: '630px', height: '100%', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                                     <div style={{ width: '100%', height: '350px', flexShrink: 0, backgroundImage: `url(${album.capa_url || album.capa})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundColor: '#fdfbfe' }}></div>
                                                     
                                                     <div style={{ padding: '25px 20px 30px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', flex: 1, boxSizing: 'border-box' }}>
                                                         <h3 style={{ color: corPrincipal, margin: '0 0 10px 0', fontSize: '1.4rem', lineHeight: '1.3' }}>{album.titulo}</h3>
                                                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', color: '#888', fontSize: '0.85rem', marginBottom: '12px' }}>
-                                                            {album.data_evento && (<span>📅 {new Date(album.data_evento).toLocaleDateString()}</span>)}
-                                                            {album.fotografo && (<span>📸 {album.fotografo}</span>)}
+                                                            {album.data_evento && (<span>{new Date(album.data_evento).toLocaleDateString()}</span>)}
+                                                            {album.fotografo && (<span>{album.fotografo}</span>)}
                                                         </div>
                                                         {album.descricao && (
                                                             <p style={{ color: '#555', fontSize: '0.95rem', lineHeight: '1.5', margin: '0 0 15px 0', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -317,7 +321,7 @@ function HomePage() {
 
                 {/* COLUNA 2: ÚLTIMAS NOTÍCIAS */}
                 <section className="split-section">
-                    <h2 className="split-section-title">📰 Últimas Notícias</h2>
+                    <h2 className="split-section-title">Últimas Notícias</h2>
                     
                     <div 
                         style={{ width: '100%', maxWidth: '500px', margin: '0 auto', overflow: 'hidden', position: 'relative', paddingBottom: '20px' }}

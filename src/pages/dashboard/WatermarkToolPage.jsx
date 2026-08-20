@@ -77,7 +77,7 @@ function WatermarkToolPage() {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }}>
                 <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }}>
-                    ⚙️  Aplicar marca d'água
+                    Aplicar marca d'água
                 </h2>
             </div>
 
@@ -100,7 +100,7 @@ function WatermarkToolPage() {
                             backgroundColor: '#fdfbfe', cursor: 'pointer', transition: 'background-color 0.2s',
                             textAlign: 'center'
                         }}>
-                            <span style={{ fontSize: '48px', marginBottom: '15px' }}>📸</span>
+                            
                             <span style={{ color: corPrincipal, fontWeight: 'bold', fontSize: '18px', marginBottom: '8px' }}>
                                 Clique para escolher a foto
                             </span>
@@ -149,7 +149,7 @@ function WatermarkToolPage() {
                                 transition: 'background-color 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
                             }}
                         >
-                            {isLoading ? '⏳ A aplicar marca d\'água...' : '✨ Gerar e baixar Foto'}
+                            {isLoading ? 'A aplicar marca d\'água...' : 'Gerar e baixar Foto'}
                         </button>
                     </div>
                 </form>

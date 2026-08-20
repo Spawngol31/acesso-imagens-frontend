@@ -65,7 +65,7 @@ function AdminUserDetailPage() {
                 
                 {/* CARTÃO 1: INFORMAÇÕES GERAIS */}
                 <div style={cardStyle}>
-                    <h3 style={sectionTitleStyle}>👤 Informações da Conta</h3>
+                    <h3 style={sectionTitleStyle}>Informações da Conta</h3>
                     <div style={infoGridStyle}>
                         <div>
                             <span style={labelStyle}>ID do Sistema</span>
@@ -79,7 +79,7 @@ function AdminUserDetailPage() {
                         </div>
                         <div style={{ gridColumn: '1 / -1' }}>
                             <span style={labelStyle}>E-mail de Acesso</span>
-                            <p style={valueStyle}>📧 {user.email}</p>
+                            <p style={valueStyle}>{user.email}</p>
                         </div>
                     </div>
                 </div>
@@ -88,7 +88,7 @@ function AdminUserDetailPage() {
                 {(isEquipa || user.papel === 'CLIENTE') && (
                     <div style={cardStyle}>
                         <h3 style={sectionTitleStyle}>
-                            {isEquipa ? '💼 Perfil Profissional' : '🛒 Dados do Cliente'}
+                            {isEquipa ? 'Perfil Profissional' : 'Dados do Cliente'}
                         </h3>
                         <div style={infoGridStyle}>
                             <div>
@@ -120,7 +120,7 @@ function AdminUserDetailPage() {
                             
                             <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #eee', paddingTop: '15px', marginTop: '5px' }}>
                                 <span style={labelStyle}>Endereço Completo</span>
-                                <p style={valueStyle}>📍 {perfil.endereco ? `${perfil.endereco} - CEP: ${perfil.cep}` : 'Não informado'}</p>
+                                <p style={valueStyle}>{perfil.endereco ? `${perfil.endereco} - CEP: ${perfil.cep}` : 'Não informado'}</p>
                             </div>
                         </div>
                     </div>
@@ -129,7 +129,7 @@ function AdminUserDetailPage() {
                 {/* CARTÃO 3: DADOS BANCÁRIOS (APENAS PARA EQUIPA) */}
                 {isEquipa && (
                     <div style={{ ...cardStyle, gridColumn: '1 / -1', backgroundColor: '#fdfbfe', borderColor: '#e1bce0' }}>
-                        <h3 style={sectionTitleStyle}>🏦 Dados Bancários para Pagamento</h3>
+                        <h3 style={sectionTitleStyle}>Dados Bancários para Pagamento</h3>
                         <div style={infoGridStyle}>
                             <div>
                                 <span style={labelStyle}>Banco</span>

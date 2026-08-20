@@ -113,10 +113,10 @@ function MinhasPropostasPage() {
     };
 
     const getStatusInfo = (status) => {
-        if (status === 'ACEITA' || status === 'CONTRAPROPOSTA_ACEITA') return { bg: '#d4edda', color: '#155724', texto: 'Aprovada!', icone: '✅' };
-        if (status === 'RECUSADA' || status === 'CONTRAPROPOSTA_RECUSADA') return { bg: '#f8d7da', color: '#721c24', texto: 'Recusada', icone: '❌' };
-        if (status === 'CONTRAPROPOSTA') return { bg: '#cce5ff', color: '#004085', texto: 'Nova Oferta Recebida', icone: '🔄' };
-        return { bg: '#fff3cd', color: '#856404', texto: 'Em Análise', icone: '⏳' };
+        if (status === 'ACEITA' || status === 'CONTRAPROPOSTA_ACEITA') return { bg: '#d4edda', color: '#155724', texto: 'Aprovada!' };
+        if (status === 'RECUSADA' || status === 'CONTRAPROPOSTA_RECUSADA') return { bg: '#f8d7da', color: '#721c24', texto: 'Recusada' };
+        if (status === 'CONTRAPROPOSTA') return { bg: '#cce5ff', color: '#004085', texto: 'Nova Oferta Recebida' };
+        return { bg: '#fff3cd', color: '#856404', texto: 'Em Análise' };
     };
 
     // --- LÓGICA MATEMÁTICA DA PAGINAÇÃO ---
@@ -133,7 +133,7 @@ function MinhasPropostasPage() {
 
     return (
         <div className="page-container" style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '40px' }}>
-            <h1 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🤝 Minhas Propostas</h1>
+            <h1 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Minhas Propostas</h1>
 
             {loading ? <p>A carregar as suas propostas...</p> : propostas.length === 0 ? (
                 <div style={{ backgroundColor: '#fdfbfe', padding: '40px', borderRadius: '10px', textAlign: 'center', border: '1px dashed #e1bce0' }}>
@@ -150,7 +150,7 @@ function MinhasPropostasPage() {
                                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
                                         
                                         <div style={{ flex: '1 1 250px' }}>
-                                            <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>📸 Álbum: {proposta.album_titulo}</h3>
+                                            <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>Álbum: {proposta.album_titulo}</h3>
                                             <p style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#555' }}>
                                                 <strong>Quantidade:</strong> {proposta.quantidade_fotos} Foto(s) e {proposta.quantidade_videos} Vídeo(s)
                                             </p>
@@ -175,7 +175,7 @@ function MinhasPropostasPage() {
                                     {proposta.status === 'CONTRAPROPOSTA' && (
                                         <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                                             <button onClick={() => responderContraproposta(proposta.id, 'recusar')} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #dc3545', backgroundColor: '#fff', color: '#dc3545', fontWeight: 'bold', cursor: 'pointer' }}>Recusar Nova Oferta</button>
-                                            <button onClick={() => responderContraproposta(proposta.id, 'aceitar')} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', backgroundColor: '#28a745', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>✅ Aceitar Nova Oferta</button>
+                                            <button onClick={() => responderContraproposta(proposta.id, 'aceitar')} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', backgroundColor: '#28a745', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Aceitar Nova Oferta</button>
                                         </div>
                                     )}
 
@@ -183,7 +183,7 @@ function MinhasPropostasPage() {
                                     {(proposta.status === 'ACEITA' || proposta.status === 'CONTRAPROPOSTA_ACEITA') && (
                                         <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#e2f3f5', borderRadius: '8px', border: '1px solid #bee5eb', display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <div style={{ flex: '1 1 300px' }}>
-                                                <h4 style={{ margin: '0 0 5px 0', color: '#0c5460', fontSize: '16px' }}>🎉 Negociação Aprovada!</h4>
+                                                <h4 style={{ margin: '0 0 5px 0', color: '#0c5460', fontSize: '16px' }}>Negociação Aprovada!</h4>
                                                 <p style={{ margin: 0, fontSize: '14px', color: '#0c5460' }}>
                                                     Para garantir este preço, coloque exatamente as quantidades combinadas no seu carrinho. O sistema aplicará o desconto automaticamente!
                                                 </p>

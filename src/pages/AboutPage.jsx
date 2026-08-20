@@ -42,7 +42,7 @@ function AboutPage() {
 
     return (
         <div className="page-container">
-            <h1 style={{ color: '#6c0464' }}>👥 Quem somos</h1>
+            <h1 style={{ color: '#6c0464' }}>Quem somos</h1>
             
             <div className="about-section">
                 <h2>Nossa história</h2>

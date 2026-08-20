@@ -355,17 +355,17 @@ function AlbumDetail() {
                 borderRadius: '8px', padding: '20px', marginBottom: '2rem',
                 boxShadow: '0 4px 10px rgba(108, 4, 100, 0.05)'
             }}>
-        <h1>📸 {album.titulo}</h1>
+        <h1>{album.titulo}</h1>
         <p>{album.descricao}</p>
         <p><strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}</p>
         
         <div style={{ display: 'flex', gap: '10px', marginTop: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
             {/* O botão de compartilhar voltou aqui! */}
             <button onClick={handleShareClick} className="button-outline">
-                🔗 Compartilhar álbum
+                Compartilhar álbum
             </button>
             <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">
-                🤝 Proposta
+                Proposta
             </button>
         </div>
       </header>
@@ -375,7 +375,7 @@ function AlbumDetail() {
         {(album.qtd_desconto_1 > 0 || album.qtd_desconto_2 > 0 || album.qtd_desconto_3 > 0) && (
             <div className="discount-promo-banner">
                 <div className="discount-promo-header">
-                    <span className="discount-icon">🏷️</span>
+                    
                     <h3>Aproveite nossos descontos!</h3>
                 </div>
                 <div className="discount-promo-list">
@@ -409,7 +409,7 @@ function AlbumDetail() {
                 boxShadow: '0 4px 10px rgba(108, 4, 100, 0.05)'
             }}>
                 <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '10px', fontSize: '1.2rem' }}>
-                    🤳 Procurar minhas fotos neste álbum
+                    Procurar minhas fotos neste álbum
                 </h3>
                 <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', marginTop: 0 }}>
                     Envie uma selfie e o nosso sistema encontrara sua foto.
@@ -417,7 +417,7 @@ function AlbumDetail() {
                 <form onSubmit={handleFaceSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
                     
                     <label htmlFor="album-face-upload" className="button-outline" style={{ cursor: 'pointer', margin: 0, padding: '0.6rem 1.2rem' }}>
-                        {referenceImage ? 'Trocar Imagem' : '📸 Escolher Selfie'}
+                        {referenceImage ? 'Trocar Imagem' : 'Escolher Selfie'}
                     </label>
                     <input id="album-face-upload" type="file" accept="image/*" onChange={handleFaceFileChange} style={{ display: 'none' }} />
 
@@ -427,7 +427,7 @@ function AlbumDetail() {
 
                     {referenceImage && (
                         <button type="submit" className="create-button" disabled={isSearchingFaces} style={{ padding: '0.6rem 1.2rem', margin: 0 }}>
-                            {isSearchingFaces ? 'A procurar...' : '🔍 Filtrar Fotos'}
+                            {isSearchingFaces ? 'A procurar...' : 'Filtrar Fotos'}
                         </button>
                     )}
 
@@ -442,7 +442,7 @@ function AlbumDetail() {
 
         <div className="section-header">
           <h2>
-             📷 {faceSearchResults !== null ? `Resultados da Busca (${basePhotoList.length})` : `Fotos (${basePhotoList.length})`}
+             {faceSearchResults !== null ? `Resultados da Busca (${basePhotoList.length})` : `Fotos (${basePhotoList.length})`}
           </h2>
           <Link to="/eventos" className="button-outline">Voltar</Link>
         </div>
@@ -489,7 +489,7 @@ function AlbumDetail() {
         {faceSearchResults === null && baseVideoList.length > 0 && (
           <>
             <div className="section-header" style={{marginTop: '3rem'}}>
-              <h2>🎥 Vídeos ({baseVideoList.length})</h2>
+              <h2>Vídeos ({baseVideoList.length})</h2>
             </div>
             
             <div className="photo-grid">
@@ -520,7 +520,7 @@ function AlbumDetail() {
       {isPropostaModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
               <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-                  <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px' }}>🤝 Fazer uma Proposta</h3>
+                  <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px' }}>Fazer uma Proposta</h3>
                   <p style={{ color: '#555', fontSize: '14px', marginBottom: '20px' }}>
                       Quer comprar um pacote de fotos? Diga ao fotógrafo quantas fotos quer e qual valor deseja pagar.
                   </p>

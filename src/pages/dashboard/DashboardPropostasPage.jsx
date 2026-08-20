@@ -130,7 +130,7 @@ function DashboardPropostasPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '40px' }}>
             <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🤝 Negociações e propostas</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Negociações e propostas</h2>
             </div>
 
             {loading ? <p>A carregar propostas...</p> : propostas.length === 0 ? (
@@ -144,8 +144,8 @@ function DashboardPropostasPage() {
                             <div key={proposta.id} style={{ backgroundColor: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #f0f0f0', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
                                 
                                 <div style={{ flex: '1 1 300px' }}>
-                                    <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>👤 {proposta.cliente_nome}</h3>
-                                    <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '13px' }}>✉️ {proposta.cliente_email}</p>
+                                    <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>{proposta.cliente_nome}</h3>
+                                    <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '13px' }}>{proposta.cliente_email}</p>
                                     <p style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#555' }}><strong>Álbum:</strong> {proposta.album_titulo}</p>
                                     <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>
                                         <strong>Pedido:</strong> {proposta.quantidade_fotos} Foto(s) e {proposta.quantidade_videos} Vídeo(s)

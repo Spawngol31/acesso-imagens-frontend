@@ -1,9 +1,62 @@
-// src/pages/dashboard/DashboardVendasPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
+
+// --- 🚀 NOVO COMPONENTE: RANKING DO FOTÓGRAFO ---
+const RankingAlbunsFotografo = () => {
+    const [ranking, setRanking] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRanking = async () => {
+            try {
+                const response = await axiosInstance.get('/dashboard/ranking-albuns/');
+                setRanking(response.data);
+            } catch (error) {
+                console.error("Erro ao buscar ranking:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRanking();
+    }, []);
+
+    if (loading || ranking.length === 0) return null;
+
+    return (
+        <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '20px', borderTop: '4px solid #6c0464' }}>
+            <h3 style={{ marginTop: 0, color: '#6c0464', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Top 5 álbuns mais vendidos</h3>
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                    <thead>
+                        <tr style={{ backgroundColor: '#f8f9fa', color: '#6c0464', textAlign: 'left' }}>
+                            <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>POSIÇÃO</th>
+                            <th style={{ padding: '12px 10px' }}>ÁLBUM</th>
+                            <th style={{ padding: '12px 10px' }}>FOTOS VENDIDAS</th>
+                            <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>TOTAL ARRECADADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {ranking.map((album, index) => {
+                            /* const medalhas = ['🥇', '🥈', '🥉'];*/
+                            const medalha = /*index < 3 ? medalhas[index] : */ `${index + 1}º`;
+                            return (
+                                <tr key={album.album_id} style={{ borderBottom: '1px solid #eee' }}>
+                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', fontSize: '18px' }}>{medalha}</td>
+                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#333' }}>{album.album_titulo}</td>
+                                    <td style={{ padding: '14px 10px', color: '#555' }}>{album.qtd_vendida} mídias</td>
+                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {parseFloat(album.total_arrecadado).toFixed(2)}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+// ------------------------------------------------
 
 function DashboardVendasPage() {
     const [activeTab, setActiveTab] = useState('vendas'); 
@@ -11,16 +64,10 @@ function DashboardVendasPage() {
     const [larguraJanela, setLarguraJanela] = useState(window.innerWidth);
     const isMobile = larguraJanela < 900;
 
-    // --- ESTADOS DA ABA: MINHAS VENDAS ---
     const [dados, setDados] = useState([]);
-    
-    // 🚀 NOVO ESTADO: Controla qual venda está aberta no Modal
     const [vendaSelecionada, setVendaSelecionada] = useState(null); 
-    
     const [resumo, setResumo] = useState({ saldo_pendente: 0, total_ja_recebido: 0 });
     const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status_repasse: '' });
-
-    // --- ESTADOS DA ABA: MEUS RECIBOS ---
     const [historicoRecibos, setHistoricoRecibos] = useState([]);
 
     const corPrincipal = '#6c0464';
@@ -31,7 +78,6 @@ function DashboardVendasPage() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Muda a busca dependendo da aba que o fotógrafo clicou
     useEffect(() => {
         if (activeTab === 'vendas') {
             buscarVendas();
@@ -74,7 +120,6 @@ function DashboardVendasPage() {
 
     const handleChange = (e) => setFiltros({ ...filtros, [e.target.name]: e.target.value });
 
-    // --- FUNÇÃO PARA GERAR O PDF/IMPRESSÃO DO RECIBO ---
     const imprimirRecibo = (recibo) => {
         const janela = window.open('', '', 'width=800,height=600');
         janela.document.write(`
@@ -121,29 +166,24 @@ function DashboardVendasPage() {
         setTimeout(() => janela.print(), 250);
     };
 
-    // --- ESTILOS ---
     const inputStyle = { width: '100%', padding: '10px 12px', border: '1px solid #ced4da', borderRadius: '6px', boxSizing: 'border-box', fontSize: '14px', outline: 'none', marginBottom: '15px', backgroundColor: '#fff', color: '#414141' };
     
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
-            {/* TÍTULO */}
             <div className="page-header" style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >💰 Meu financeiro</h2>
+                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >Meu financeiro</h2>
             </div>
 
-            {/* NAVEGAÇÃO DE ABAS */}
-            {/* NAVEGAÇÃO DE ABAS */}
             <div className="finance-tabs-container">
                 <button className={`finance-tab ${activeTab === 'vendas' ? 'active' : ''}`} onClick={() => setActiveTab('vendas')}>
-                    📈 Minhas vendas
+                    Minhas vendas
                 </button>
                 <button className={`finance-tab ${activeTab === 'historico' ? 'active' : ''}`} onClick={() => setActiveTab('historico')}>
-                    🧾 Meus recebimentos
+                    Meus recebimentos
                 </button>
             </div>
 
-            {/* ==================== ABA 1: MINHAS VENDAS E FILTROS ==================== */}
             {activeTab === 'vendas' && (
                 <>
                     <div style={{ backgroundColor: '#fff', borderLeft: `5px solid #28a745`, padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '1rem' }}>
@@ -152,13 +192,15 @@ function DashboardVendasPage() {
                             <h2 style={{ margin: '10px 0 0 0', color: '#28a745', fontSize: '32px' }}>R$ {parseFloat(resumo.saldo_pendente).toFixed(2)}</h2>
                         </div>
                         <Link to="/dashboard/saques" className="create-button" >
-                            💲 Solicitar saque
+                            Solicitar saque
                         </Link>
                     </div>
 
+                    {/* 🚀 O RANKING APARECE AQUI */}
+                    <RankingAlbunsFotografo />
+
                     <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
                         
-                        {/* TABELA DE VENDAS */}
                         <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
                             <h3 style={{ marginTop: 0, color: corPrincipal, marginBottom: '20px' }}>Lista de vendas confirmadas</h3>
 
@@ -178,19 +220,9 @@ function DashboardVendasPage() {
                                             {dados.map((venda, index) => (
                                                 <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                                                     <td style={{ padding: '14px 10px', fontWeight: '500' }}>
-                                                        {/* 🚀 BOTÃO QUE ABRE O MODAL COM A FOTO */}
                                                         <button 
                                                             onClick={() => setVendaSelecionada(venda)}
-                                                            style={{ 
-                                                                background: 'none', 
-                                                                border: 'none', 
-                                                                color: corPrincipal, 
-                                                                fontWeight: 'bold', 
-                                                                textDecoration: 'underline', 
-                                                                cursor: 'pointer',
-                                                                padding: 0,
-                                                                fontSize: '14px'
-                                                            }}
+                                                            style={{ background: 'none', border: 'none', color: corPrincipal, fontWeight: 'bold', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: '14px' }}
                                                             title="Ver detalhes da foto"
                                                         >
                                                             #{venda.foto_id}
@@ -213,9 +245,8 @@ function DashboardVendasPage() {
                             )}
                         </div>
 
-                        {/* FILTROS */}
                         <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
-                            <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>🔍︎ FILTROS</h3>
+                            <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>FILTROS</h3>
                             <div style={{ marginTop: '25px' }}>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Inicial</label>
                                 <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} style={inputStyle} />
@@ -240,10 +271,9 @@ function DashboardVendasPage() {
                 </>
             )}
 
-            {/* ==================== ABA 2: HISTÓRICO DE RECIBOS ==================== */}
             {activeTab === 'historico' && (
                 <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box' }}>
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>🧾 Meus recibos da plataforma</h3>
+                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Meus recibos da plataforma</h3>
                     
                     {loading ? <p style={{ color: '#666' }}>A carregar recibos...</p> : (
                         <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
@@ -268,7 +298,7 @@ function DashboardVendasPage() {
                                             <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {recibo.valor_pago.toFixed(2)}</td>
                                             <td style={{ padding: '14px 10px', textAlign: 'center' }}>
                                                 <button onClick={() => imprimirRecibo(recibo)} style={{ padding: '6px 12px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                                                    🖨️ Ver / Imprimir
+                                                    Ver / Imprimir
                                                 </button>
                                             </td>
                                         </tr>
@@ -281,7 +311,6 @@ function DashboardVendasPage() {
                 </div>
             )}
 
-            {/* 🚀 MODAL DE DETALHES DA FOTO VENDIDA */}
             {vendaSelecionada && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
                     <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '450px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -325,7 +354,6 @@ function DashboardVendasPage() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }

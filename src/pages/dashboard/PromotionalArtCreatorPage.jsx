@@ -183,7 +183,7 @@ function PromotionalArtCreatorPage() {
                 marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
             }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🎨 Criar arte de divulgação</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Criar arte de divulgação</h2>
                 <Link to={`/dashboard/albuns/${id}`} className="button-outline" style={{ textDecoration: 'none' }}>
                     Voltar para o Álbuns
                 </Link>

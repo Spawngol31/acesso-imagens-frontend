@@ -139,7 +139,7 @@ function DashboardAlbunsPage() {
                 marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
             }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>📸 Meus álbuns</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Meus álbuns</h2>
                 
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                     <Link to="/dashboard/upload" className='create-button'>Upar mídias</Link>
@@ -151,7 +151,7 @@ function DashboardAlbunsPage() {
                 <div style={{ flex: 1, maxWidth: '400px' }}>
                     <input 
                         type="text" 
-                        placeholder="🔍 Pesquisar álbum por título..." 
+                        placeholder="Pesquisar álbum por título..." 
                         value={termoPesquisa}
                         onChange={(e) => setTermoPesquisa(e.target.value)}
                         style={{ 

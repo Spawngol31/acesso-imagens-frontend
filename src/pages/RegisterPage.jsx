@@ -71,7 +71,7 @@ function RegisterPage() {
                 <Link to="/" className="back-to-home-link">
                     ‹ Voltar à página inicial
                 </Link>
-                <h2>✍🏼 Criar Conta</h2>
+                <h2>Criar Conta</h2>
                 <form onSubmit={handleSubmit} className="auth-form">
                     
                     <input name="nome_completo" type="text" placeholder="Nome Completo" value={formData.nome_completo} onChange={handleChange} required />

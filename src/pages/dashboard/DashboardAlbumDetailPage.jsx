@@ -132,7 +132,7 @@ function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalT
                 <p>R$ {parseFloat(video.preco).toFixed(2)}</p>
                 <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
                     <button onClick={() => { setActionModalMedia(video); setActionModalType('video'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
-                        ⚙️ Opções
+                        Opções
                     </button>
                 </div>
             </div>
@@ -526,21 +526,21 @@ function DashboardAlbumDetailPage() {
             
             <div className="page-header" style={{ display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', marginBottom: '30px' }}>
                 <div>
-                    <h1 style={{ fontSize: '28px', color: corPrincipal, margin: '0 0 10px 0' }}>🖼️ {album.titulo}</h1>
+                    <h1 style={{ textAlign: 'center', fontSize: '28px', color: corPrincipal, margin: '0 0 10px 0' }}>{album.titulo}</h1>
                     <p style={{ color: '#555', margin: 0 }}>{album.descricao}</p>
                 </div>
                 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-                    <Link to="/dashboard/albuns" className="button-outline" style={{ textDecoration: 'none' }}>⬅️ Voltar</Link>
-                    <button onClick={() => setActiveGlobalModal('uploadFotos')} className="create-button">➕ Adicionar Fotos</button>
-                    <button onClick={() => setActiveGlobalModal('uploadVideos')} className="create-button">➕ Adicionar Vídeos</button>
-                    <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">💲 Editar Preço (Fotos)</button>
-                    <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">💲 Editar Preço (Vídeos)</button>
-                    <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="create-button" style={{ backgroundColor: '#17a2b8', borderColor: '#17a2b8', textDecoration: 'none' }}>🔗 Click & Share</Link>
+                    <Link to="/dashboard/albuns" className="button-outline" style={{ textDecoration: 'none' }}>Voltar</Link>
+                    <button onClick={() => setActiveGlobalModal('uploadFotos')} className="create-button">Adicionar Fotos</button>
+                    <button onClick={() => setActiveGlobalModal('uploadVideos')} className="create-button">Adicionar Vídeos</button>
+                    <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">Editar Preço (Fotos)</button>
+                    <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">Editar Preço (Vídeos)</button>
+                    <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="create-button" style={{ backgroundColor: '#17a2b8', borderColor: '#17a2b8', textDecoration: 'none' }}>Click & Share</Link>
                 </div>
             </div>           
             
-            <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px' }}>📷 Galeria de Fotos ({basePhotoList.length})</h3>
+            <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px' }}>Galeria de Fotos ({basePhotoList.length})</h3>
             <div className="media-grid">
                 {currentPhotos.map(foto => (
                     <div key={foto.id} className={`dashboard-media-card ${foto.is_arquivado ? 'archived' : ''}`}>
@@ -552,7 +552,7 @@ function DashboardAlbumDetailPage() {
                             {foto.is_arquivado && <span className="status-archived-small">Arquivado</span>}
                             <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
                                 <button onClick={() => { setActionModalMedia(foto); setActionModalType('foto'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
-                                    ⚙️ Opções
+                                    Opções
                                 </button>
                             </div>
                         </div>
@@ -570,7 +570,7 @@ function DashboardAlbumDetailPage() {
                 onPageChange={handlePhotoPageChange} 
             />
 
-            <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px', marginTop: '40px' }}>🎬 Galeria de Vídeos ({baseVideoList.length})</h3>
+            <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px', marginTop: '40px' }}>Galeria de Vídeos ({baseVideoList.length})</h3>
             <div className="media-grid" style={{paddingBottom: '2rem'}}>
                 {currentVideos.map(video => (
                     <DashboardVideoPreviewCard 
@@ -605,7 +605,7 @@ function DashboardAlbumDetailPage() {
                             
                             {meusJornais.length > 0 && (
                                 <div style={{ backgroundColor: '#f0f4f8', padding: '15px', borderRadius: '8px', border: '1px solid #d1e3ea' }}>
-                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', marginBottom: '8px', display: 'block' }}>📍 Qual o destino destas fotos?</label>
+                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', marginBottom: '8px', display: 'block' }}>Para onde quer enviar essas fotos?</label>
                                     <select 
                                         value={uploadDestino} 
                                         onChange={(e) => {
@@ -614,9 +614,9 @@ function DashboardAlbumDetailPage() {
                                         }} 
                                         style={inputStyle}
                                     >
-                                        <option value="site">🛒 Salvar APENAS na minha Loja (Site)</option>
-                                        <option value="ambos">🔄 Salvar na Loja + Enviar para Jornais (FTP)</option>
-                                        <option value="ftp">🚀 Enviar APENAS para Jornais (Não salvar no Site)</option>
+                                        <option value="site">Salvar APENAS na minha Loja (Site)</option>
+                                        <option value="ambos">Salvar na Loja + Enviar para Jornais (FTP)</option>
+                                        <option value="ftp">Enviar APENAS para Jornais (Não salvar no Site)</option>
                                     </select>
                                 </div>
                             )}
@@ -624,7 +624,7 @@ function DashboardAlbumDetailPage() {
                             <div style={{ padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', textAlign: 'center', backgroundColor: '#fdfbfe' }}>
                                 <label htmlFor="photo-upload" className="create-button" style={{ display: 'inline-block', cursor: 'pointer' }}>Selecionar Ficheiros...</label>
                                 <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos} style={{ display: 'none' }} />
-                                {fotoFiles.length > 0 && <p style={{ color: '#28a745', fontWeight: 'bold', margin: '10px 0 0 0', fontSize: '13px' }}>✅ {fotoFiles.length} foto(s) selecionada(s)</p>}
+                                {fotoFiles.length > 0 && <p style={{ color: '#28a745', fontWeight: 'bold', margin: '10px 0 0 0', fontSize: '13px' }}>{fotoFiles.length} foto(s) selecionada(s)</p>}
                             </div>
                             
                             {uploadDestino !== 'ftp' && (
@@ -642,28 +642,28 @@ function DashboardAlbumDetailPage() {
                             
                             {uploadDestino !== 'site' && meusJornais.length > 0 && (
                                 <div style={{ padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #e1bce0' }}>
-                                    <h4 style={{ margin: 0, color: corPrincipal, marginBottom: '10px' }}>🚀 Envio via FTP (Imprensa)</h4>
+                                    <h4 style={{ margin: 0, color: corPrincipal, marginBottom: '10px' }}>Envio via FTP (Imprensa)</h4>
                                     <p style={{ fontSize: '12px', color: '#666', marginTop: 0 }}>Selecione os jornais para onde deseja enviar estas fotos:</p>
                                     
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         {meusJornais.map(jornal => (
                                             <label key={jornal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#333' }}>
                                                 <input type="checkbox" checked={selectedJornais.includes(jornal.id)} onChange={() => toggleJornal(jornal.id)} disabled={isUploadingFotos} style={{ width: '18px', height: '18px' }} />
-                                                📰 {jornal.nome_jornal}
+                                                {jornal.nome_jornal}
                                             </label>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {isUploadingFotos && <div style={{ padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold', textAlign: 'center' }}>⏳ {uploadStatusMsg}</div>}
+                            {isUploadingFotos && <div style={{ padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold', textAlign: 'center' }}>{uploadStatusMsg}</div>}
 
                             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                                 <button type="button" onClick={() => setActiveGlobalModal(null)} className='create-button' style={{ flex: 1, padding: '12px'}}>
                                     Voltar
                                 </button>
                                 <button type="submit" className="create-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ flex: 1, opacity: isUploadingFotos ? 0.6 : 1, padding: '12px', fontSize: '14px' }}>
-                                    {isUploadingFotos ? '🔒 A enviar...' : `Enviar Fotos`}
+                                    {isUploadingFotos ? 'A enviar...' : `Enviar Fotos`}
                                 </button>
                             </div>
                         </form>
@@ -700,7 +700,7 @@ function DashboardAlbumDetailPage() {
                             )}
                             {isUploadingVideos && <p style={{ fontWeight: 'bold', color: corPrincipal, textAlign: 'center' }}>⏳ Enviando vídeo {uploadProgressVideos} de {stagedVideos.length}...</p>}
                             <button onClick={handleVideoSubmit} className="create-button" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ opacity: isUploadingVideos ? 0.6 : 1, width: '100%', padding: '15px', fontSize: '16px' }}>
-                                {isUploadingVideos ? '🔒 A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
+                                {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
                             </button>
                         </div>
                     </div>
@@ -711,7 +711,7 @@ function DashboardAlbumDetailPage() {
                 <div style={globalModalOverlay}>
                     <div style={globalModalContent}>
                         <div style={globalModalHeader}>
-                            <h3 style={{ color: corPrincipal, margin: 0 }}>💲 Preço de Todas as Fotos</h3>
+                            <h3 style={{ color: corPrincipal, margin: 0 }}>Preço de Todas as Fotos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✖</button>
                         </div>
                         <form onSubmit={handleBulkUpdatePhotos} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -727,7 +727,7 @@ function DashboardAlbumDetailPage() {
                 <div style={globalModalOverlay}>
                     <div style={globalModalContent}>
                         <div style={globalModalHeader}>
-                            <h3 style={{ color: corPrincipal, margin: 0 }}>💲 Preço de Todos os Vídeos</h3>
+                            <h3 style={{ color: corPrincipal, margin: 0 }}>Preço de Todos os Vídeos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✖</button>
                         </div>
                         <form onSubmit={handleBulkUpdateVideos} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -743,7 +743,7 @@ function DashboardAlbumDetailPage() {
                 <div style={globalModalOverlay}>
                     <div style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '12px', maxWidth: '350px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
                         <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '20px', borderBottom: '2px solid #fbf0fa', paddingBottom: '10px' }}>
-                            ⚙️ Opções da {actionModalType === 'foto' ? 'Foto' : 'Vídeo'}
+                            Opções da {actionModalType === 'foto' ? 'Foto' : 'Vídeo'}
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {actionModalType === 'foto' && (

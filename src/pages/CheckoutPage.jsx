@@ -106,7 +106,7 @@ function CheckoutPage() {
         
         navigator.clipboard.writeText(codigoPix)
             .then(() => {
-                toast.success("✅ Código Pix copiado com sucesso! Abra o app do seu banco para pagar.");
+                toast.success("Código Pix copiado com sucesso! Abra o app do seu banco para pagar.");
             })
             .catch((err) => {
                 console.error("Erro ao copiar o Pix: ", err);
@@ -184,8 +184,8 @@ function CheckoutPage() {
     return (
         <div className="checkout-page-container">
             <div className="checkout-card">
-                <h2 className="checkout-title">💳 Finalizar Compra</h2>
-                <p className="checkout-total">💰 Valor Total: <strong>R$ {total.toFixed(2)}</strong></p>
+                <h2 className="checkout-title">Finalizar Compra</h2>
+                <p className="checkout-total">Valor Total: <strong>R$ {total.toFixed(2)}</strong></p>
                 {isLoading && !preferenceId && <p style={{textAlign: 'center'}}>A preparar o pagamento...</p>}
                 {error && <p className="error-message">{error}</p>}
                 {preferenceId && !error && (

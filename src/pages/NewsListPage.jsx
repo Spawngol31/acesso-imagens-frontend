@@ -50,7 +50,7 @@ function NewsListPage() {
 
   return (
     <div className="page-container">
-      <h1>📰 Notícias</h1>
+      <h1>Notícias</h1>
       
       {loading ? (
         <p style={{textAlign: 'center', marginTop: '2rem'}}>A carregar notícias...</p>

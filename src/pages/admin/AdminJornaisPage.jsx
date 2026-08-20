@@ -142,7 +142,7 @@ function AdminJornaisPage() {
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0 }}>📰 Distribuição via FTP (Jornais)</h2>
+                <h2 style={{ color: corPrincipal, margin: 0 }}>Distribuição via FTP (Jornais)</h2>
                 <button onClick={() => {
                     setFormData({ id: null, nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true });
                     setIsModalOpen(true);
@@ -172,7 +172,7 @@ function AdminJornaisPage() {
                                     style={{ padding: '5px 10px', borderRadius: '4px', fontSize: '12px', border: '1px solid #ccc', backgroundColor: '#f8f9fa', cursor: 'pointer', color: '#333', whiteSpace: 'nowrap' }}
                                     title="Editar Jornal"
                                 >
-                                    ✏️ Editar
+                                    Editar
                                 </button>
 
                                 <button 
@@ -188,7 +188,7 @@ function AdminJornaisPage() {
                                     style={{ padding: '5px 10px', borderRadius: '4px', fontSize: '12px', whiteSpace: 'nowrap' }}
                                     title="Excluir Jornal"
                                 >
-                                    🗑️ Excluir
+                                    Excluir
                                 </button>
                             </div>
                         </div>

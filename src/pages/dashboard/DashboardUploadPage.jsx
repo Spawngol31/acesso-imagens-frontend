@@ -204,7 +204,7 @@ function DashboardUploadPage() {
                 marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
             }}>
-                <h2 style={{ margin: 0, fontSize: '24px' }}>📤 Upload de mídias</h2>
+                <h2 style={{ margin: 0, fontSize: '24px' }}>Upload de mídias</h2>
             </div>
 
             {tamanhoFila > 0 && (
@@ -249,8 +249,8 @@ function DashboardUploadPage() {
                             marginBottom: '20px', padding: '15px', borderRadius: '8px', 
                             backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' 
                         }}>
-                            <label style={{ display: 'block', fontWeight: '600', fontSize: '13px', color: '#333', marginBottom: '8px' }}>
-                                📍 Qual o destino destas fotos?
+                            <label style={{ border: 'none', display: 'block', fontWeight: '600', fontSize: '13px', color: '#333', marginBottom: '8px' }}>
+                                Para onde quer mandar essas fotos?
                             </label>
                             <select
                                 value={uploadDestino}

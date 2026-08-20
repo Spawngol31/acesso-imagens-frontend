@@ -115,7 +115,7 @@ function MinhasComprasPage() {
             // Faremos esta rota no Django a seguir!
             const response = await axiosInstance.post('/enviar-fotos-email/', { foto_ids: selecionadas });
             
-            toast.success(`📸 Fotos enviadas com sucesso para:\n${response.data.email_destino}`, {
+            toast.success(`Fotos enviadas com sucesso para:\n${response.data.email_destino}`, {
                 position: "top-center", autoClose: 5000, theme: "colored"
             });
             setSelecionadas([]); // Limpa a seleção após sucesso
@@ -167,7 +167,7 @@ function MinhasComprasPage() {
         setSendingEmail(fotoId);
         try {
             const response = await axiosInstance.post(`/download-foto/${fotoId}/enviar-email/`);
-            toast.success(`📸 Link da foto enviado para:\n${response.data.email_destino}`, {
+            toast.success(`Link da foto enviado para:\n${response.data.email_destino}`, {
                 position: "top-center", autoClose: 5000, theme: "colored"
             });
         } catch (error) {
@@ -183,7 +183,7 @@ function MinhasComprasPage() {
 
     return (
         <div className="page-container" style={{ position: 'relative', paddingBottom: selecionadas.length > 0 ? '100px' : '40px' }}>
-            <h1>💰 Minhas compras</h1>
+            <h1>Minhas compras</h1>
             <p style={{ textAlign: 'center', marginBottom: '30px' }}>
                 Aqui estão todas as fotos que comprou. O link para download é válido por 60 dias após a data da compra.
             </p>
@@ -243,7 +243,7 @@ function MinhasComprasPage() {
                                         
                                         {expirado ? (
                                             <p style={{ color: 'red', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '10px' }}>
-                                                ⚠️ Prazo de download expirado (60 dias)
+                                                Prazo de download expirado (60 dias)
                                             </p>
                                         ) : isInAppBrowser ? (
                                             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>

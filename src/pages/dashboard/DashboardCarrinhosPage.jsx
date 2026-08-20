@@ -126,7 +126,7 @@ function DashboardCarrinhosPage() {
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             
             <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>🛒 Carrinhos em aberto</h2>
+                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Carrinhos em aberto</h2>
                 <p style={{ color: '#666', marginTop: '5px', fontSize: '14px' }}>
                     Veja as fotos que os clientes já escolheram, mas ainda não finalizaram a compra.
                 </p>
@@ -148,8 +148,8 @@ function DashboardCarrinhosPage() {
                                 {/* Cabeçalho do Cliente */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '15px', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
                                     <div>
-                                        <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>👤 {cliente.nome}</h3>
-                                        <p style={{ margin: 0, color: '#666', fontSize: '13px' }}>✉️ {cliente.email}</p>
+                                        <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>{cliente.nome}</h3>
+                                        <p style={{ margin: 0, color: '#666', fontSize: '13px' }}>{cliente.email}</p>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <span style={{ display: 'block', fontSize: '12px', color: '#888', textTransform: 'uppercase', fontWeight: 'bold' }}>Valor no Carrinho</span>

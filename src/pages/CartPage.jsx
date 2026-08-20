@@ -59,7 +59,7 @@ function CartPage() {
                 quantidade_videos: propostaForm.qtdVideos,
                 valor_oferecido: propostaForm.valor
             });
-            toast.success("🤝 Proposta enviada com sucesso! Acompanhe em 'Minhas Propostas'.");
+            toast.success("Proposta enviada com sucesso! Acompanhe em 'Minhas Propostas'.");
             setIsPropostaModalOpen(false);
         } catch (error) {
             toast.error(error.response?.data?.error || "Erro ao enviar proposta.");
@@ -106,7 +106,7 @@ function CartPage() {
 
     return (
         <div className='page-container'>
-            <h1>🛒 Meu carrinho</h1>
+            <h1>Meu carrinho</h1>
             
             <div className="cart-layout">
                 {/* Lado Esquerdo: Lista de Fotos Agrupadas */}
@@ -127,7 +127,7 @@ function CartPage() {
                                         className="button-outline"
                                         style={{ padding: '6px 15px', fontSize: '13px' }}
                                     >
-                                        🤝 Fazer Proposta
+                                        Fazer Proposta
                                     </button>
                                 )}
                             </div>
