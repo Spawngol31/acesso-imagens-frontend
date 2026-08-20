@@ -282,7 +282,7 @@ function HomePage() {
                                     <div style={{ display: 'flex', transition: 'transform 0.5s ease-in-out', transform: `translateX(-${currentAlbumIndex * 100}%)` }}>
                                         {latestAlbuns.map(album => (
                                             <div key={album.id} style={{ minWidth: '100%', boxSizing: 'border-box', padding: '10px' }}>
-                                                <div className="album-card" style={{ minHeight: '630px', height: '100%', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                                <div className="album-card" style={{ minHeight: '620px', height: '100%', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                                     <div style={{ width: '100%', height: '350px', flexShrink: 0, backgroundImage: `url(${album.capa_url || album.capa})`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundColor: '#fdfbfe' }}></div>
                                                     
                                                     <div style={{ padding: '25px 20px 30px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', flex: 1, boxSizing: 'border-box' }}>
