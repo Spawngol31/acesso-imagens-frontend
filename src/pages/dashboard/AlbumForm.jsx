@@ -148,9 +148,9 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                         
                         <label 
                             htmlFor="album-cover-upload" 
-                            style={{ padding: '8px 15px', backgroundColor: '#fbf0fa', color: corPrincipal, border: `1px solid ${corPrincipal}`, borderRadius: '20px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block', textAlign: 'center', transition: 'all 0.2s' }}
+                            style={{ padding: '8px 15px', backgroundColor: 'transparent', color: corPrincipal, border: `1px solid ${corPrincipal}`, borderRadius: '20px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block', textAlign: 'center', transition: 'all 0.2s' }}
                         >
-                            📁 Escolher imagem...
+                            Escolher imagem...
                         </label>
                         
                         <div style={{ fontSize: '12px', color: '#555' }}>

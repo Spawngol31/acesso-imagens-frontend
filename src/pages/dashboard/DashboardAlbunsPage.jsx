@@ -1,3 +1,5 @@
+// src/pages/dashboard/DashboardAlbunsPage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
@@ -9,14 +11,13 @@ function DashboardAlbunsPage() {
     const [termoPesquisa, setTermoPesquisa] = useState('');
     const [loading, setLoading] = useState(true);
     
-    // Modais diferentes para funções diferentes
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // NOVO: Modal de Exclusão
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); 
     
     const [editingAlbum, setEditingAlbum] = useState(null);
     const [albumParaMudar, setAlbumParaMudar] = useState(null);
-    const [albumParaExcluir, setAlbumParaExcluir] = useState(null); // NOVO: Álbum a ser excluído
+    const [albumParaExcluir, setAlbumParaExcluir] = useState(null); 
 
     const corPrincipal = '#6c0464';
 
@@ -65,7 +66,6 @@ function DashboardAlbunsPage() {
         }
     };
     
-    // --- LÓGICA DO MODAL DE ARQUIVAR/DESARQUIVAR ---
     const handleToggleArchiveClick = (album) => {
         setAlbumParaMudar(album);
         setIsConfirmModalOpen(true);
@@ -91,7 +91,6 @@ function DashboardAlbunsPage() {
         }
     };
 
-    // --- NOVA LÓGICA DO MODAL DE EXCLUSÃO ---
     const handleDeleteClick = (album) => {
         setAlbumParaExcluir(album);
         setIsDeleteModalOpen(true);
@@ -101,7 +100,6 @@ function DashboardAlbunsPage() {
         if (!albumParaExcluir) return;
 
         try {
-            // Rota padrão DELETE do Django REST Framework para o viewset
             await axiosInstance.delete(`/dashboard/albuns/${albumParaExcluir.id}/`);
             toast.success("Álbum excluído definitivamente com sucesso!");
             fetchAlbuns();
@@ -113,7 +111,6 @@ function DashboardAlbunsPage() {
             setAlbumParaExcluir(null);
         }
     };
-    // ----------------------------------------
 
     const btnAcaoStyle = {
         padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', 
@@ -169,11 +166,13 @@ function DashboardAlbunsPage() {
 
             <div style={{ backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                 <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '700px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '950px' }}>
                         <thead>
                             <tr style={{ backgroundColor: '#ebddea', color: corPrincipal, textAlign: 'left' }}>
                                 <th style={{ padding: '15px 10px' }}>TÍTULO</th>
                                 <th style={{ padding: '15px 10px' }}>DATA DO EVENTO</th>
+                                <th style={{ padding: '15px 10px' }}>QTD VENDIDA</th>
+                                <th style={{ padding: '15px 10px' }}>ARRECADADO</th>
                                 <th className="hide-mobile" style={{ padding: '15px 10px' }}>STATUS</th>
                                 <th style={{ padding: '15px 10px', textAlign: 'center' }}>AÇÕES</th>
                             </tr>
@@ -189,6 +188,16 @@ function DashboardAlbunsPage() {
                                     <td style={{ padding: '15px 10px', color: '#555' }}>
                                         {new Date(album.data_evento).toLocaleDateString()}
                                     </td>
+                                    
+                                    {/* NOVAS COLUNAS */}
+                                    <td style={{ padding: '15px 10px', color: '#555', fontWeight: 'bold' }}>
+                                        {album.qtd_vendida || 0} mídias
+                                    </td>
+                                    <td style={{ padding: '15px 10px', color: '#28a745', fontWeight: 'bold' }}>
+                                        R$ {parseFloat(album.total_arrecadado || 0).toFixed(2)}
+                                    </td>
+                                    {/* ------------- */}
+
                                     <td className="hide-mobile" style={{ padding: '15px 10px' }}>
                                         {album.is_arquivado ? (
                                             <span style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Arquivado</span>
@@ -209,8 +218,6 @@ function DashboardAlbunsPage() {
                                         >
                                             {album.is_arquivado ? 'Desarquivar' : 'Arquivar'}
                                         </button>
-                                        
-                                        {/* NOVO BOTÃO DE EXCLUIR */}
                                         <button 
                                             onClick={() => handleDeleteClick(album)} 
                                             style={{ ...btnAcaoStyle, backgroundColor: '#343a40', color: 'white' }}

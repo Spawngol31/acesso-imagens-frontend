@@ -1,26 +1,80 @@
+// src/pages/dashboard/DashboardUploadPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { Bar } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
 } from 'chart.js';
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
 );
 
-// --- 🚀 NOVO COMPONENTE: RANKING GERAL PARA ADMIN ---
+// --- ESTILOS REUTILIZÁVEIS E RESPONSIVOS (Corrigidos) ---
+const cardStyle = {
+    backgroundColor: '#fff',
+    padding: '24px',
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    borderTop: '4px solid #6c0464',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    boxSizing: 'border-box', // Garante que o padding não estica o card
+    width: '100%'
+};
+
+const cardLabelStyle = {
+    fontSize: '13px',
+    color: '#6c757d',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+    margin: '0 0 8px 0',
+    letterSpacing: '0.5px'
+};
+
+const cardValueStyle = {
+    fontSize: '32px',
+    color: '#6c0464',
+    fontWeight: 'bold',
+    margin: 0,
+    wordBreak: 'break-word' // Evita que números muito grandes quebrem o card
+};
+
+const sectionStyle = {
+    backgroundColor: '#fff',
+    padding: '20px', 
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    boxSizing: 'border-box', // Garante que a secção respeita o tamanho da tela
+    width: '100%',
+    maxWidth: '100%',
+    overflowX: 'hidden' // Impede que elementos internos estraguem o layout
+};
+
+const sectionTitleStyle = {
+    color: '#6c0464',
+    fontSize: '18px',
+    borderBottom: '2px solid #fbf0fa',
+    paddingBottom: '15px',
+    marginTop: 0,
+    marginBottom: '20px'
+};
+
+
+// --- 🚀 COMPONENTE: RANKING GERAL PARA ADMIN ---
 const RankingAlbunsAdmin = () => {
     const [ranking, setRanking] = useState([]);
     
@@ -42,8 +96,11 @@ const RankingAlbunsAdmin = () => {
     return (
         <div style={sectionStyle}>
             <h3 style={sectionTitleStyle}>Top 10 Álbuns Mais Rentáveis (Geral)</h3>
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+            
+            {/* Wrapper com scroll horizontal para telemóveis */}
+            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                {/* Min-width garante que a tabela não se esmaga, forçando o scroll na div acima */}
+                <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', fontSize: '14px' }}>
                     <thead>
                         <tr style={{ backgroundColor: '#f8f9fa', color: '#6c0464', textAlign: 'left' }}>
                             <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>POSIÇÃO</th>
@@ -55,8 +112,7 @@ const RankingAlbunsAdmin = () => {
                     </thead>
                     <tbody>
                         {ranking.map((album, index) => {
-                            /*const medalhas = ['🥇', '🥈', '🥉'];*/
-                            const medalha = /*index < 3 ? medalhas[index] : */`${index + 1}º`;
+                            const medalha = `${index + 1}º`;
                             return (
                                 <tr key={album.album_id} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '14px 10px', fontWeight: 'bold', fontSize: '18px' }}>{medalha}</td>
@@ -126,7 +182,7 @@ function AdminStatsPage() {
     if (!stats) return <p style={{ padding: '20px', color: 'red' }}>Não foi possível carregar as estatísticas.</p>;
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '15px', paddingBottom: '40px', boxSizing: 'border-box' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px', flexWrap: 'wrap', gap: '15px' }}>
                 <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Visão geral do sistema</h2>
@@ -166,14 +222,16 @@ function AdminStatsPage() {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px', width: '100%' }}>
                 
                 <div style={sectionStyle}>
                     <h3 style={sectionTitleStyle}>Top 5 Fotógrafos {getLabelPeriodo()}</h3>
-                    <div style={{ height: '300px' }}>
+                    {/* A wrapper relativa é estritamente necessária para o Chart.js ser responsivo */}
+                    <div style={{ position: 'relative', height: '300px', width: '100%' }}>
                         <Bar 
                             data={topFotografosChartData} 
                             options={{ 
+                                responsive: true,
                                 maintainAspectRatio: false, 
                                 plugins: { legend: { display: false } },
                                 scales: {
@@ -187,8 +245,10 @@ function AdminStatsPage() {
 
                 <div style={sectionStyle}>
                     <h3 style={sectionTitleStyle}>Top 5 Fotos Mais Vendidas {getLabelPeriodo()}</h3>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                    
+                    {/* Wrapper com scroll horizontal para telemóveis */}
+                    <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                        <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '14px' }}>
                             <thead>
                                 <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
                                     <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>ID DA FOTO</th>
@@ -220,56 +280,12 @@ function AdminStatsPage() {
                     </div>
                 </div>
 
-                {/* 🚀 O RANKING DE ÁLBUNS APARECE AQUI NO FINAL */}
+                {/* RANKING DE ÁLBUNS */}
                 <RankingAlbunsAdmin />
 
             </div>
         </div>
     );
 }
-
-// --- ESTILOS REUTILIZÁVEIS ---
-const cardStyle = {
-    backgroundColor: '#fff',
-    padding: '24px',
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-    borderTop: '4px solid #6c0464',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center'
-};
-
-const cardLabelStyle = {
-    fontSize: '13px',
-    color: '#6c757d',
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    margin: '0 0 8px 0',
-    letterSpacing: '0.5px'
-};
-
-const cardValueStyle = {
-    fontSize: '32px',
-    color: '#6c0464',
-    fontWeight: 'bold',
-    margin: 0
-};
-
-const sectionStyle = {
-    backgroundColor: '#fff',
-    padding: '20px', 
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-};
-
-const sectionTitleStyle = {
-    color: '#6c0464',
-    fontSize: '18px',
-    borderBottom: '2px solid #fbf0fa',
-    paddingBottom: '15px',
-    marginTop: 0,
-    marginBottom: '20px'
-};
 
 export default AdminStatsPage;

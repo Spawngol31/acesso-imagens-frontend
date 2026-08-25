@@ -1,14 +1,49 @@
 // src/components/Layout.jsx
 
-import React from 'react';
-import { Outlet, Link, NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import axiosInstance from '../api/axiosInstance';
 
 function Layout() {
     const { user, logout } = useAuth();
     const { cart } = useCart();
     const cartItemCount = cart?.itens?.length || 0;
+    const location = useLocation();
+    const [hasPropostaUpdate, setHasPropostaUpdate] = useState(false);
+
+    useEffect(() => {
+        const verificarPropostasCliente = async () => {
+            // Só verifica se for um cliente logado
+            if (user && user.papel === 'CLIENTE') {
+                try {
+                    const response = await axiosInstance.get('/minhas-propostas/');
+                    const propostas = response.data;
+                    
+                    if (propostas.length > 0) {
+                        const ultima = propostas[0];
+                        const chave = `proposta_cliente_${ultima.id}_status`;
+                        const statusVisto = localStorage.getItem(chave);
+
+                        // Se ele estiver na página de propostas, memoriza o status atual e esconde a bolinha
+                        if (location.pathname === '/minhas-propostas') {
+                            localStorage.setItem(chave, ultima.status);
+                            setHasPropostaUpdate(false);
+                        } 
+                        // Se o status for diferente do que ele viu da última vez, e não for "PENDENTE" (pois pendente foi ele que acabou de criar)
+                        else if (statusVisto !== ultima.status && ultima.status !== 'PENDENTE') {
+                            setHasPropostaUpdate(true);
+                        }
+                    }
+                } catch (e) {}
+            }
+        };
+
+        verificarPropostasCliente();
+        const interval = setInterval(verificarPropostasCliente, 60000);
+        return () => clearInterval(interval);
+    }, [location.pathname, user]);
 
     return (
         <div className="site-wrapper">
@@ -30,10 +65,22 @@ function Layout() {
                             {user ? (
                                 <>
                                     {/* Links específicos por papel */}
-                                    {user.papel === 'ADMIN' && <NavLink to="/admin">Painel admin</NavLink>}
+                                    {user.papel === 'ADMIN' && <NavLink to="/admin">Painel</NavLink>}
                                     {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Painel</NavLink>}
                                     {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Compras</NavLink>}
-                                    {user.papel === 'CLIENTE' && <NavLink to="/minhas-propostas">Propostas</NavLink>}
+                                    {user.papel === 'CLIENTE' && (
+                                        <NavLink to="/minhas-propostas" onClick={() => setHasPropostaUpdate(false)} style={{ position: 'relative' }}>
+                                            Propostas
+                                            {hasPropostaUpdate && (
+                                                <span style={{
+                                                    position: 'absolute', top: '-5px', right: '-10px',
+                                                    width: '10px', height: '10px', backgroundColor: '#dc3545',
+                                                    borderRadius: '50%', border: '2px solid #333',
+                                                    boxShadow: '0 0 5px rgba(220, 53, 69, 0.8)', animation: 'pulse 2s infinite'
+                                                }}></span>
+                                            )}
+                                        </NavLink>
+                                    )}
 
                                     {/* O Perfil é igual para Fotógrafo e Cliente */}
                                     {(user.papel === 'FOTOGRAFO' || user.papel === 'CLIENTE') && (

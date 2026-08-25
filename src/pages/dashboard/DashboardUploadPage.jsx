@@ -1,6 +1,7 @@
 // src/pages/dashboard/DashboardUploadPage.jsx
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify'; 
 
@@ -8,13 +9,18 @@ function DashboardUploadPage() {
     const [albuns, setAlbuns] = useState([]);
     const [selectedAlbum, setSelectedAlbum] = useState('');
     
+    // 🚀 NOVO: Estado para guardar as categorias que já existem no álbum selecionado
+    const [existingCategories, setExistingCategories] = useState([]);
+
     const [fotoFiles, setFotoFiles] = useState([]);
     const [fotoPreco, setFotoPreco] = useState('15.00');
     const [fotoLegenda, setFotoLegenda] = useState('');
+    
+    const [fotoCategoria, setFotoCategoria] = useState(''); 
+    
     const [meusJornais, setMeusJornais] = useState([]); 
     const [selectedJornais, setSelectedJornais] = useState([]); 
     
-    // --- ESTADO NOVO DE DESTINO ---
     const [uploadDestino, setUploadDestino] = useState('site');
 
     const [isUploadingFotos, setIsUploadingFotos] = useState(false);
@@ -23,8 +29,17 @@ function DashboardUploadPage() {
     const [stagedVideos, setStagedVideos] = useState([]);
     const [isUploadingVideos, setIsUploadingVideos] = useState(false);
     const [uploadProgressVideos, setUploadProgressVideos] = useState(0);
+    
+    // 🚀 NOVO: Categoria global para vídeos nesta página também
+    const [videoCategoria, setVideoCategoria] = useState('');
 
     const [tamanhoFila, setTamanhoFila] = useState(0);
+
+    // 🚀 ESTILOS LIMPOS PADRONIZADOS
+    const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ced4da', backgroundColor: '#ffffff', color: '#333333', fontSize: '14px', outline: 'none', boxSizing: 'border-box' };
+    
+    // Mudamos o display para block para o span se comportar como uma label, mas imune ao CSS global!
+    const labelStyleClean = { display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '8px', border: 'none', outline: 'none', background: 'transparent', boxShadow: 'none', padding: 0 };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,6 +56,37 @@ function DashboardUploadPage() {
         };
         fetchData();
     }, []);
+
+    // 🚀 NOVO: Busca as categorias sempre que o fotógrafo escolhe um álbum no Passo 1
+    useEffect(() => {
+        const fetchAlbumCategories = async () => {
+            if (!selectedAlbum) {
+                setExistingCategories([]);
+                return;
+            }
+            try {
+                const response = await axiosInstance.get(`/albuns/${selectedAlbum}/?timestamp=${new Date().getTime()}`);
+                const albumData = response.data;
+                const todasCategorias = new Set();
+                
+                if (albumData.fotos) {
+                    albumData.fotos.forEach(f => {
+                        if (f.categoria && f.categoria.trim() !== '') todasCategorias.add(f.categoria.trim());
+                    });
+                }
+                if (albumData.videos) {
+                    albumData.videos.forEach(v => {
+                        if (v.categoria && v.categoria.trim() !== '') todasCategorias.add(v.categoria.trim());
+                    });
+                }
+                
+                setExistingCategories(Array.from(todasCategorias).sort());
+            } catch (error) {
+                console.error("Erro ao buscar categorias do álbum", error);
+            }
+        };
+        fetchAlbumCategories();
+    }, [selectedAlbum]);
 
     useEffect(() => {
         const verificarFila = async () => {
@@ -78,7 +124,6 @@ function DashboardUploadPage() {
             return;
         }
         
-        // Bloqueio de segurança se tentar enviar para FTP sem selecionar jornais
         if ((uploadDestino === 'ambos' || uploadDestino === 'ftp') && selectedJornais.length === 0) {
             toast.error("Selecione pelo menos um jornal parceiro na lista de FTP!");
             return;
@@ -99,15 +144,15 @@ function DashboardUploadPage() {
                 const formData = new FormData();
                 formData.append('album', selectedAlbum);
                 formData.append('imagem', file);
-                formData.append('destino_upload', uploadDestino); // Adicionando destino
+                formData.append('destino_upload', uploadDestino); 
                 
-                // Se não for exclusividade do FTP, envia os metadados do site
+                formData.append('categoria', fotoCategoria);
+                
                 if (uploadDestino !== 'ftp') {
                     formData.append('preco', fotoPreco);
                     formData.append('legenda', fotoLegenda);
                 }
 
-                // Se não for exclusividade do site, envia os jornais
                 if (uploadDestino !== 'site' && selectedJornais.length > 0) {
                     formData.append('jornais', selectedJornais.join(','));
                 }
@@ -140,7 +185,6 @@ function DashboardUploadPage() {
             toast.success(`${fotosEnviadasComSucesso} foto(s) enviadas com sucesso para a fila de processamento!`);
         }
 
-        // Limpeza dos formulários
         setFotoFiles([]);
         setUploadDestino('site');
         setSelectedJornais([]);
@@ -184,6 +228,10 @@ function DashboardUploadPage() {
             formData.append('titulo', video.titulo);
             formData.append('preco', video.preco);
             formData.append('arquivo_video', video.videoFile);
+            
+            // 🚀 Aplica a categoria a todos os vídeos enviados neste lote
+            formData.append('categoria', videoCategoria);
+            
             try {
                 await axiosInstance.post('/dashboard/videos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
             } catch (error) {
@@ -209,29 +257,18 @@ function DashboardUploadPage() {
 
             {tamanhoFila > 0 && (
                 <div style={{ 
-                    backgroundColor: '#e6f7ff', 
-                    border: '1px solid #91d5ff', 
-                    padding: '10px 15px', 
-                    borderRadius: '8px', 
-                    marginBottom: '20px',
-                    color: '#0050b3',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    fontWeight: 'bold'
+                    backgroundColor: '#e6f7ff', border: '1px solid #91d5ff', padding: '10px 15px', 
+                    borderRadius: '8px', marginBottom: '20px', color: '#0050b3',
+                    display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold'
                 }}>
-                    <span style={{ fontSize: '1.2rem' }}>⚙️</span>
-                    <span>
-                        Radar do Servidor: Estamos processando 
-                        <span style={{ color: '#cf1322', fontSize: '1.1em', margin: '0 5px' }}>{tamanhoFila}</span> 
-                        fotos neste momento.
-                    </span>
+                    
+                    <span>Radar do Servidor: Estamos processando <span style={{ color: '#cf1322', fontSize: '1.1em', margin: '0 5px' }}>{tamanhoFila}</span> fotos neste momento.</span>
                 </div>
             )}
             
             <div className="album-selector-wrapper">
-                <label htmlFor="album-select">1. Selecione o álbum de destino:</label>
-                <select id="album-select" value={selectedAlbum} onChange={(e) => setSelectedAlbum(e.target.value)}>
+                <span style={labelStyleClean}>1. Selecione o álbum de destino:</span>
+                <select id="album-select" value={selectedAlbum} onChange={(e) => setSelectedAlbum(e.target.value)} style={{...inputStyle, marginBottom: '20px'}}>
                     <option value="" disabled>-- Escolha um álbum --</option>
                     {albuns.map(album => (<option key={album.id} value={album.id}>{album.titulo}</option>))}
                 </select>
@@ -241,57 +278,91 @@ function DashboardUploadPage() {
                 <div className="upload-section">
                     
                     {/* FORMULÁRIO DE FOTOS */}
-                    <form onSubmit={handlePhotoSubmit} className="upload-form">
-                        <h3>2. Adicionar novas fotos</h3>
+                    <form onSubmit={handlePhotoSubmit} className="upload-form" style={{ marginBottom: '40px' }}>
+                        <h3 style={{ marginBottom: '20px' }}>2. Adicionar novas fotos</h3>
 
-                        {/* --- NOVO SELETOR DE DESTINO PADRONIZADO --- */}
-                        <div style={{ 
-                            marginBottom: '20px', padding: '15px', borderRadius: '8px', 
-                            backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' 
-                        }}>
-                            <label style={{ border: 'none', display: 'block', fontWeight: '600', fontSize: '13px', color: '#333', marginBottom: '8px' }}>
-                                Para onde quer mandar essas fotos?
-                            </label>
-                            <select
-                                value={uploadDestino}
-                                onChange={(e) => {
-                                    setUploadDestino(e.target.value);
-                                    if(e.target.value === 'site') setSelectedJornais([]);
-                                }}
-                                style={{
-                                    width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ced4da',
-                                    backgroundColor: '#ffffff', color: '#333333', fontSize: '14px', outline: 'none', cursor: 'pointer'
-                                }}
-                                disabled={isUploadingFotos}
-                            >
-                                <option value="site">🛒 Salvar APENAS na minha Loja (Site)</option>
-                                <option value="ambos">✨ Duplo Envio: Salvar na Loja + Enviar para Jornais</option>
-                                <option value="ftp">🚀 Enviar APENAS para os Jornais (FTP)</option>
-                            </select>
-                        </div>
-                        {/* ------------------------------------------- */}
-
-                        <label htmlFor="photo-upload" className="custom-file-upload">Escolher ficheiros</label>
-                        <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos}/>
-                        {fotoFiles.length > 0 && <span className='file-name'>{fotoFiles.length} foto(s) selecionada(s)</span>}
-                        
-                        {/* Os campos Legenda e Preço só aparecem se o destino NÃO FOR EXCLUSIVO para FTP */}
-                        {uploadDestino !== 'ftp' && (
-                            <>
-                                <input type="text" placeholder="Legenda (será aplicada a todas)" onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos}/>
-                                <input type="number" step="0.01" placeholder="Preço (para todas as fotos)" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required disabled={isUploadingFotos} />
-                            </>
+                        {meusJornais.length > 0 && (
+                            <div style={{ marginBottom: '15px' }}>
+                                <span style={labelStyleClean}>Para onde quer mandar essas fotos?</span>
+                                <select
+                                    value={uploadDestino}
+                                    onChange={(e) => {
+                                        setUploadDestino(e.target.value);
+                                        if(e.target.value === 'site') setSelectedJornais([]);
+                                    }}
+                                    style={inputStyle}
+                                    disabled={isUploadingFotos}
+                                >
+                                    <option value="site">Salvar APENAS na minha Loja (Site)</option>
+                                    <option value="ambos">Duplo Envio: Salvar na Loja + Enviar para Jornais</option>
+                                    <option value="ftp">Enviar APENAS para os Jornais (FTP)</option>
+                                </select>
+                            </div>
                         )}
+
+                        {/* 🚀 DROP DOWN INTELIGENTE: ABA / CATEGORIA (FOTOS) */}
+                        <div style={{ marginBottom: '15px' }}>
+                            <span style={labelStyleClean}>
+                                Organizar em Aba / Sub-pasta (Opcional)
+                            </span>
+
+                            {existingCategories.length > 0 && (
+                                <select
+                                    value={existingCategories.includes(fotoCategoria) ? fotoCategoria : 'nova'}
+                                    onChange={(e) => {
+                                        if (e.target.value === 'nova') setFotoCategoria('');
+                                        else setFotoCategoria(e.target.value);
+                                    }}
+                                    disabled={isUploadingFotos}
+                                    style={{...inputStyle, marginBottom: (!existingCategories.includes(fotoCategoria) || fotoCategoria === '') ? '10px' : '0'}}
+                                >
+                                    <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                    {existingCategories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            )}
+
+                            {(!existingCategories.includes(fotoCategoria) || existingCategories.length === 0) && (
+                                <input 
+                                    type="text" 
+                                    placeholder="Ex: Jogo 1 - Guarany x Pelotas" 
+                                    value={fotoCategoria}
+                                    onChange={(e) => setFotoCategoria(e.target.value)}
+                                    disabled={isUploadingFotos}
+                                    style={inputStyle}
+                                />
+                            )}
+                        </div>
+                        {/* ------------------------------- */}
+
+                        <div style={{ padding: '15px', border: '2px dashed #ccc', borderRadius: '8px', textAlign: 'center', backgroundColor: '#fafafa', marginBottom: '15px' }}>
+                            <label htmlFor="photo-upload" className="create-button" style={{ display: 'inline-block', cursor: 'pointer', margin: 0 }}>Selecionar Ficheiros...</label>
+                            <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos} style={{ display: 'none' }}/>
+                            {fotoFiles.length > 0 && <p style={{ color: '#28a745', fontWeight: 'bold', margin: '10px 0 0 0', fontSize: '13px' }}>{fotoFiles.length} foto(s) selecionada(s)</p>}
+                        </div>
                         
-                        {isUploadingFotos && (
-                            <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', border: '1px solid #ffeeba', fontWeight: 'bold' }}>
-                                ⏳ {uploadStatusMsg}
+                        {uploadDestino !== 'ftp' && (
+                            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                                <div style={{ flex: 2 }}>
+                                    <span style={labelStyleClean}>Legenda para o Site (Opcional)</span>
+                                    <input type="text" style={inputStyle} onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos}/>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <span style={labelStyleClean}>Preço de Venda (R$)</span>
+                                    <input type="number" step="0.01" style={inputStyle} value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required={uploadDestino !== 'ftp'} disabled={isUploadingFotos} />
+                                </div>
                             </div>
                         )}
                         
-                        {/* A caixa de Jornais só aparece se o destino NÃO FOR EXCLUSIVO para o SITE */}
+                        {isUploadingFotos && (
+                            <div style={{ marginBottom: '15px', padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', border: '1px solid #ffeeba', fontWeight: 'bold', textAlign: 'center' }}>
+                                {uploadStatusMsg}
+                            </div>
+                        )}
+                        
                         {uploadDestino !== 'site' && meusJornais.length > 0 && (
-                            <div style={{ marginTop: '15px', marginBottom: '15px', padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #e1bce0' }}>
+                            <div style={{ marginBottom: '15px', padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #e1bce0' }}>
                                 <h4 style={{ margin: '0 0 10px 0', color: '#6c0464' }}>🚀 Distribuir via FTP para:</h4>
                                 <p style={{ fontSize: '12px', color: '#555', marginTop: 0, marginBottom: '10px' }}>
                                     (Obrigatório) Escolha para quais parceiros deseja enviar estas fotos automaticamente.
@@ -306,42 +377,110 @@ function DashboardUploadPage() {
                                                 disabled={isUploadingFotos}
                                                 style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                                             />
-                                            📰 {jornal.nome_jornal}
+                                            {jornal.nome_jornal}
                                         </label>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        <button type="submit" className="upload-submit-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ opacity: isUploadingFotos ? 0.6 : 1 }}>
-                            {isUploadingFotos ? '🔒 A enviar e salvar... Aguarde.' : `Enviar ${fotoFiles.length || 0} Foto(s)`}
-                        </button>
+                        <div style={{ display: 'flex', gap: '15px', marginTop: '20px', width: '100%' }}>
+                            <Link to="/dashboard/albuns" className="button-outline" style={{ flex: 1, padding: 0, fontSize: '14px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', textDecoration: 'none', borderRadius: '25px', border: '1px solid #e1bce0', color: '#e1bce0' }}>
+                                Voltar
+                            </Link>
+                            <button type="submit" className="create-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ flex: 1, opacity: (isUploadingFotos || fotoFiles.length === 0) ? 0.6 : 1, padding: 0, fontSize: '14px', height: '45px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', borderRadius: '25px', border: 'none', backgroundColor: '#6c0464', color: '#fff', cursor: (isUploadingFotos || fotoFiles.length === 0) ? 'not-allowed' : 'pointer' }}>
+                                {isUploadingFotos ? 'A enviar...' : `Enviar Fotos`}
+                            </button>
+                        </div>
                     </form>
 
                     {/* FORMULÁRIO DE VÍDEOS */}
-                    <div className="upload-form">
-                        <h3>2. Adicionar novos vídeos</h3>
-                        <label htmlFor="video-upload" className="custom-file-upload">Escolher ficheiros</label>
-                        <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple disabled={isUploadingVideos}/>
+                    <form onSubmit={handleVideoSubmit} className="upload-form">
+                        <h3 style={{ marginBottom: '20px' }}>3. Adicionar novos vídeos</h3>
+                        
+                        {/* 🚀 DROP DOWN INTELIGENTE: ABA / CATEGORIA (VÍDEOS) */}
+                        <div style={{ marginBottom: '15px' }}>
+                            <span style={labelStyleClean}>
+                                Organizar em Aba / Sub-pasta (Opcional)
+                            </span>
+
+                            {existingCategories.length > 0 && (
+                                <select
+                                    value={existingCategories.includes(videoCategoria) ? videoCategoria : 'nova'}
+                                    onChange={(e) => {
+                                        if (e.target.value === 'nova') setVideoCategoria('');
+                                        else setVideoCategoria(e.target.value);
+                                    }}
+                                    disabled={isUploadingVideos}
+                                    style={{...inputStyle, marginBottom: (!existingCategories.includes(videoCategoria) || videoCategoria === '') ? '10px' : '0'}}
+                                >
+                                    <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                    {existingCategories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            )}
+
+                            {(!existingCategories.includes(videoCategoria) || existingCategories.length === 0) && (
+                                <input 
+                                    type="text" 
+                                    placeholder="Ex: Entrevistas" 
+                                    value={videoCategoria}
+                                    onChange={(e) => setVideoCategoria(e.target.value)}
+                                    disabled={isUploadingVideos}
+                                    style={inputStyle}
+                                />
+                            )}
+                        </div>
+
+                        <div style={{ padding: '15px', border: '2px dashed #ccc', borderRadius: '8px', textAlign: 'center', backgroundColor: '#fafafa', marginBottom: '15px' }}>
+                            <label htmlFor="video-upload" className="create-button" style={{ display: 'inline-block', cursor: 'pointer', margin: 0 }}>Selecionar Ficheiros de Vídeo...</label>
+                            <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple disabled={isUploadingVideos} style={{ display: 'none' }}/>
+                        </div>
+                        
                         {stagedVideos.length > 0 && (
-                            <div className="staging-area">
-                                <h4>Vídeos para enviar:</h4>
+                            <div className="staging-area" style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #eee', marginBottom: '15px' }}>
+                                <h4 style={{ marginTop: 0 }}>Vídeos selecionados:</h4>
                                 {stagedVideos.map((video) => (
-                                    <div key={video.id} className="staged-item">
-                                        <p className='staged-item-name'>{video.videoFile.name}</p>
-                                        <input type="text" placeholder="Título do vídeo" onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} disabled={isUploadingVideos}/>
-                                        <input type="number" step="0.01" value={video.preco} onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} required disabled={isUploadingVideos}/>
-                                        <button type="button" onClick={() => removeStagedVideo(video.id)} className="remove-button-small" disabled={isUploadingVideos}>Remover</button>
+                                    <div key={video.id} className="staged-item" style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #ddd' }}>
+                                        <p style={{ fontWeight: 'bold', fontSize: '13px', margin: '0 0 5px 0', color: '#6c0464' }}>{video.videoFile.name}</p>
+                                        
+                                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Título do vídeo" 
+                                                style={{...inputStyle, flex: '1 1 200px', marginBottom: 0}}
+                                                onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} 
+                                                disabled={isUploadingVideos}
+                                            />
+                                            <input 
+                                                type="number" 
+                                                step="0.01" 
+                                                placeholder="Preço R$"
+                                                style={{...inputStyle, flex: '1 1 100px', marginBottom: 0}}
+                                                value={video.preco} 
+                                                onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} 
+                                                required 
+                                                disabled={isUploadingVideos}
+                                            />
+                                        </div>
+
+                                        <button type="button" onClick={() => removeStagedVideo(video.id)} className="remove-button-small" disabled={isUploadingVideos} style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>Remover</button>
                                     </div>
                                 ))}
                             </div>
                         )}
-                        {isUploadingVideos && <p style={{ fontWeight: 'bold', color: '#6c0464' }}>⏳ Enviando e processando vídeo {uploadProgressVideos} de {stagedVideos.length}... Por favor, não feche a página.</p>}
+                        {isUploadingVideos && <p style={{ fontWeight: 'bold', color: '#6c0464', textAlign: 'center' }}>⏳ Enviando e processando vídeo {uploadProgressVideos} de {stagedVideos.length}... Por favor, não feche a página.</p>}
                         
-                        <button onClick={handleVideoSubmit} className="upload-submit-button" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ opacity: isUploadingVideos ? 0.6 : 1 }}>
-                            {isUploadingVideos ? '🔒 A enviar... Aguarde.' : `Enviar ${stagedVideos.length} Vídeo(s)`}
-                        </button>
-                    </div>
+                        <div style={{ display: 'flex', gap: '15px', marginTop: '20px', width: '100%' }}>
+                            <Link to="/dashboard/albuns" className="button-outline" style={{ flex: 1, padding: 0, fontSize: '14px', height: '45px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', textDecoration: 'none', borderRadius: '25px', border: '1px solid #e1bce0', color: '#e1bce0' }}>
+                                Voltar
+                            </Link>
+                            <button onClick={handleVideoSubmit} className="create-button" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ flex: 1, opacity: (isUploadingVideos || stagedVideos.length === 0) ? 0.6 : 1, padding: 0, fontSize: '14px', height: '45px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', borderRadius: '25px', border: 'none', backgroundColor: '#6c0464', color: '#fff', cursor: (isUploadingVideos || stagedVideos.length === 0) ? 'not-allowed' : 'pointer' }}>
+                                {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
         </div>

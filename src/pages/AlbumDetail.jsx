@@ -8,8 +8,6 @@ import axiosInstance from '../api/axiosInstance';
 import Lightbox from '../components/Lightbox';
 import { toast } from 'react-toastify';
 
-// Coloque isto ANTES da função AlbumDetail()
-
 const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
     const videoRef = React.useRef(null);
     const [isHovered, setIsHovered] = React.useState(false);
@@ -17,7 +15,6 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
     const handleMouseEnter = () => {
         setIsHovered(true);
         if (videoRef.current) {
-            // O play() retorna uma Promise, fazemos o catch para evitar erros no console
             videoRef.current.play().catch(error => console.log("Erro ao reproduzir:", error));
         }
     };
@@ -26,7 +23,6 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
         setIsHovered(false);
         if (videoRef.current) {
             videoRef.current.pause();
-            // Retorna o vídeo ao início quando o cliente tira o rato de cima
             videoRef.current.currentTime = 0; 
         }
     };
@@ -38,24 +34,20 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
             onMouseLeave={handleMouseLeave}
             style={{ position: 'relative', overflow: 'hidden' }}
         >
-            {/* CORREÇÃO AQUI: Usando arquivo_preview_url em vez de preview_url */}
             {video.arquivo_preview_url ? (
                 <video 
                     ref={videoRef}
                     src={video.arquivo_preview_url}
-                    poster={video.miniatura_url} /* A imagem estática fica aqui como capa */
-                    muted /* É OBRIGATÓRIO estar sem som para os navegadores permitirem o autoplay */
+                    poster={video.miniatura_url} 
+                    muted 
                     loop
                     playsInline
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
             ) : (
-                /* Fallback de segurança: se não houver vídeo de preview, mostra só a foto */
                 <img src={video.miniatura_url} alt={video.titulo} />
             )}
             
-            {/* O ícone de play sobreposto (só aparece quando NÃO está com o hover) */}
-            {/* CORREÇÃO AQUI TAMBÉM: arquivo_preview_url */}
             {!isHovered && video.arquivo_preview_url && (
                 <div style={{
                     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -76,9 +68,6 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
     );
 };
 
-// Coloque AQUI, logo abaixo do VideoPreviewCard e acima do AlbumDetail
-
-// --- NOVO COMPONENTE DE PAGINAÇÃO NUMÉRICA ---
 const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
 
@@ -155,21 +144,28 @@ function AlbumDetail() {
   const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // --- Estados para a Busca Facial no Álbum ---
+  // --- Estados para a Busca Facial ---
   const [referenceImage, setReferenceImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isSearchingFaces, setIsSearchingFaces] = useState(false);
   const [faceSearchResults, setFaceSearchResults] = useState(null); 
-  // ---------------------------------------------
+  
+  // Estado para filtrar apenas as fotos sem reconhecimento facial
+  const [showUnidentifiedOnly, setShowUnidentifiedOnly] = useState(false);
+  // -----------------------------------
 
-  // --- NOVO: ESTADO DA PAGINAÇÃO ---
+  // ESTADO DA ABA SELECIONADA
+  const [selectedTab, setSelectedTab] = useState('Todas');
+
   const [currentPage, setCurrentPage] = useState(1);
-  const fotosPorPagina = 20; // Quantas fotos mostrar por vez
-  // ---------------------------------
+  const fotosPorPagina = 20;
 
   const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
   const [propostaForm, setPropostaForm] = useState({ qtdFotos: '', qtdVideos: '', valor: '' });
   const [isSendingProposta, setIsSendingProposta] = useState(false);
+
+  // Ref para ancorar a galeria e fazer scroll suave
+  const galleryRef = useRef(null);
 
   const getAlbumDetail = useCallback(async () => {
     try {
@@ -208,7 +204,6 @@ function AlbumDetail() {
       e.stopPropagation(); 
       
       try {
-          // O "await" obriga o React a esperar a confirmação do servidor
           await addToCart(media); 
       } catch (error) {
           console.error("Erro no carrinho:", error);
@@ -216,7 +211,6 @@ function AlbumDetail() {
       }
   };
 
-  // --- Lógica da Busca Facial ---
   const handleFaceFileChange = (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -231,14 +225,19 @@ function AlbumDetail() {
       setReferenceImage(null);
       setPreviewUrl('');
       setFaceSearchResults(null);
-      setCurrentPage(1); // Volta para a página 1 ao limpar a busca
+      setShowUnidentifiedOnly(false); // Limpa também o filtro de "Não identificadas"
+      setCurrentPage(1); 
   };
 
   const handleFaceSearchSubmit = async (e) => {
       e.preventDefault();
-      if (!referenceImage) return;
+      if (!referenceImage) {
+          toast.warning("Por favor, escolha uma selfie primeiro.");
+          return;
+      }
 
       setIsSearchingFaces(true);
+      setShowUnidentifiedOnly(false); // Desativa as fotos não identificadas se for buscar um rosto
 
       const formData = new FormData();
       formData.append('imagem_referencia', referenceImage);
@@ -249,7 +248,7 @@ function AlbumDetail() {
               headers: { 'Content-Type': 'multipart/form-data' }
           });
           setFaceSearchResults(response.data);
-          setCurrentPage(1); // Se buscou algo novo, começa na página 1
+          setCurrentPage(1); 
           
           if (response.data.length === 0) {
               toast.info("Nenhuma foto sua encontrada neste álbum.");
@@ -263,22 +262,70 @@ function AlbumDetail() {
           setIsSearchingFaces(false);
       }
   };
-  // ------------------------------------
 
-  // --- LÓGICA DE FATIAMENTO DA PAGINAÇÃO ---
-  // A lista base: Se tem busca ativa, usa os resultados. Senão, as fotos do álbum.
-  const basePhotoList = faceSearchResults !== null ? faceSearchResults : (album?.fotos || []);
+  // Função ativada ao clicar em "Fotos não identificadas"
+  const handleUnidentifiedMediaClick = () => {
+      setReferenceImage(null);
+      setPreviewUrl('');
+      setFaceSearchResults(null);
+      
+      setShowUnidentifiedOnly(true);
+      setCurrentPage(1);
+
+      if (galleryRef.current) {
+          galleryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+  };
+
+  // EXTRAIR CATEGORIAS ÚNICAS 
+  const todasCategorias = new Set();
+  if (album?.fotos) {
+      album.fotos.forEach(f => {
+          if (f.categoria && f.categoria.trim() !== '') todasCategorias.add(f.categoria.trim());
+      });
+  }
+  if (album?.videos) {
+      album.videos.forEach(v => {
+          if (v.categoria && v.categoria.trim() !== '') todasCategorias.add(v.categoria.trim());
+      });
+  }
+  const tabs = ['Todas', ...Array.from(todasCategorias).sort()];
+
+  const handleTabChange = (tab) => {
+      setSelectedTab(tab);
+      setCurrentPage(1);
+      setCurrentVideoPage(1);
+  };
+
+  // APLICAR FILTROS (Busca Facial E Fotos Não Identificadas)
+  let rawPhotoList = album?.fotos || [];
   
-  // Calcula o total de páginas possíveis
-  const totalPages = Math.ceil(basePhotoList.length / fotosPorPagina);
+  if (faceSearchResults !== null) {
+      rawPhotoList = faceSearchResults;
+  } else if (showUnidentifiedOnly) {
+      rawPhotoList = rawPhotoList.filter(f => f.tem_rostos === false || f.faces_detectadas === 0 || f.has_faces === false);
+  }
 
-  // Corta o array para pegar APENAS as fotos da página atual
+  let rawVideoList = album?.videos || [];
+  if (showUnidentifiedOnly) {
+      rawVideoList = rawVideoList.filter(v => v.tem_rostos === false || v.faces_detectadas === 0 || v.has_faces === false);
+  }
+
+  // Filtragem por Aba
+  const basePhotoList = selectedTab === 'Todas' 
+      ? rawPhotoList 
+      : rawPhotoList.filter(f => f.categoria?.trim() === selectedTab);
+
+  const baseVideoList = selectedTab === 'Todas' 
+      ? rawVideoList 
+      : rawVideoList.filter(v => v.categoria?.trim() === selectedTab);
+
+  // --- LÓGICA DE PAGINAÇÃO DE FOTOS ---
+  const totalPages = Math.ceil(basePhotoList.length / fotosPorPagina);
   const indexOfLastPhoto = currentPage * fotosPorPagina;
   const indexOfFirstPhoto = indexOfLastPhoto - fotosPorPagina;
   const currentPhotos = basePhotoList.slice(indexOfFirstPhoto, indexOfLastPhoto);
-  // -----------------------------------------
 
-  // A navegação do Lightbox precisa respeitar a lista cortada (currentPhotos)
   const handleNextImage = () => {
     const currentIndex = currentPhotos.findIndex(f => f.id === selectedImage.id);
     if (currentIndex === currentPhotos.length - 1) {
@@ -297,28 +344,24 @@ function AlbumDetail() {
     }
   };
 
-  // Funções da nova paginação
   const handlePageChange = (novaPagina) => {
       setCurrentPage(novaPagina);
-      window.scrollTo({ top: 300, behavior: 'smooth' });
+      if (galleryRef.current) {
+          galleryRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
   };
 
-  // --- ESTADOS E LÓGICA DE PAGINAÇÃO DOS VÍDEOS ---
+  // --- LÓGICA DE PAGINAÇÃO DE VÍDEOS ---
   const [currentVideoPage, setCurrentVideoPage] = useState(1);
   const videosPorPagina = 20;
 
-  const baseVideoList = album?.videos || [];
   const totalVideoPages = Math.ceil(baseVideoList.length / videosPorPagina);
-  
-  // Fatiar a lista para mostrar apenas os vídeos da página atual
   const indexOfLastVideo = currentVideoPage * videosPorPagina;
   const indexOfFirstVideo = indexOfLastVideo - videosPorPagina;
   const currentVideos = baseVideoList.slice(indexOfFirstVideo, indexOfLastVideo);
 
-  // Função de navegação dos vídeos
   const handleVideoPageChange = (novaPagina) => {
       setCurrentVideoPage(novaPagina);
-      window.scrollTo({ top: 600, behavior: 'smooth' });
   };
 
   const handlePropostaSubmit = async (e) => {
@@ -337,7 +380,7 @@ function AlbumDetail() {
           });
           toast.success("🤝 Proposta enviada com sucesso! O fotógrafo analisará em breve.");
           setIsPropostaModalOpen(false);
-          setPropostaForm({ qtd: '', valor: '' });
+          setPropostaForm({ qtdFotos: '', qtdVideos: '', valor: '' });
       } catch (error) {
           toast.error(error.response?.data?.error || "Erro ao enviar proposta.");
       } finally {
@@ -350,116 +393,200 @@ function AlbumDetail() {
 
   return (
     <div className="page-container">
+      {/* CABEÇALHO DO ÁLBUM */}
       <header className="page-header-detail" style={{ 
                 backgroundColor: '#fff', border: '1px solid #e1bce0',
                 borderRadius: '8px', padding: '20px', marginBottom: '2rem',
                 boxShadow: '0 4px 10px rgba(108, 4, 100, 0.05)'
             }}>
-        <h1>{album.titulo}</h1>
-        <p>{album.descricao}</p>
-        <p><strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}</p>
         
-        <div style={{ display: 'flex', gap: '10px', marginTop: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            {/* O botão de compartilhar voltou aqui! */}
-            <button onClick={handleShareClick} className="button-outline">
-                Compartilhar álbum
-            </button>
-            <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">
-                Proposta
-            </button>
+        <div style={{ textAlign: 'center' }}>
+            <h1 style={{ marginTop: 0, marginBottom: '10px' }}>{album.titulo}</h1>
+            {album.descricao && <p style={{ marginBottom: '15px' }}>{album.descricao}</p>}
+            
+            <p style={{ color: '#555', margin: 0, fontSize: '0.95rem' }}>
+                <strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}
+                {album.local && <> | <strong>Local:</strong> {album.local}</>}
+            </p>
         </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+            <button onClick={handleShareClick} className="button-outline">Compartilhar álbum</button>
+            <button onClick={() => setIsPropostaModalOpen(true)} className="create-button">Proposta</button>
+        </div>
+
       </header>
+
       <main>
         
-        {/* 🔥 NOVO: BANNER DE DESCONTOS PROGRESSIVOS AUTOMÁTICO 🔥 */}
+        {/* BLOCO DE DESCONTOS CENTRALIZADO */}
         {(album.qtd_desconto_1 > 0 || album.qtd_desconto_2 > 0 || album.qtd_desconto_3 > 0) && (
-            <div className="discount-promo-banner">
-                <div className="discount-promo-header">
-                    
-                    <h3>Aproveite nossos descontos!</h3>
+            <div className="discount-promo-banner" style={{ textAlign: 'center' }}>
+                <div className="discount-promo-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <h3 style={{ textAlign: 'center' }}>Aproveite nossos descontos!</h3>
                 </div>
                 <div className="discount-promo-list">
                     {album.qtd_desconto_1 > 0 && album.pct_desconto_1 > 0 && (
-                        <div className="discount-item">
-                            <span className="discount-check">✓</span>
-                            <p>Compre <strong>{album.qtd_desconto_1} fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_1)}% OFF</strong></p>
+                        <div className="discount-item" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <span className="discount-check" style={{ marginRight: '8px' }}>✓</span>
+                            <p style={{ margin: 0 }}>Compre <strong>{album.qtd_desconto_1} fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_1)}% OFF</strong></p>
                         </div>
                     )}
                     {album.qtd_desconto_2 > 0 && album.pct_desconto_2 > 0 && (
-                        <div className="discount-item">
-                            <span className="discount-check">✓</span>
-                            <p>Compre <strong>{album.qtd_desconto_2} fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_2)}% OFF</strong></p>
+                        <div className="discount-item" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <span className="discount-check" style={{ marginRight: '8px' }}>✓</span>
+                            <p style={{ margin: 0 }}>Compre <strong>{album.qtd_desconto_2} fotos</strong> e ganhe <strong>{parseFloat(album.pct_desconto_2)}% OFF</strong></p>
                         </div>
                     )}
                     {album.qtd_desconto_3 > 0 && album.pct_desconto_3 > 0 && (
-                        <div className="discount-item">
-                            <span className="discount-check">✓</span>
-                            <p>Compre <strong>{album.qtd_desconto_3} ou mais</strong> e ganhe <strong>{parseFloat(album.pct_desconto_3)}% OFF</strong></p>
+                        <div className="discount-item" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <span className="discount-check" style={{ marginRight: '8px' }}>✓</span>
+                            <p style={{ margin: 0 }}>Compre <strong>{album.qtd_desconto_3} ou mais</strong> e ganhe <strong>{parseFloat(album.pct_desconto_3)}% OFF</strong></p>
                         </div>
                     )}
                 </div>
             </div>
         )}
 
-        {/* MINI BARRA DE BUSCA FACIAL */}
+        {/* 🚀 BLOCO DE BUSCA FACIAL */}
         {album.fotos && album.fotos.length > 0 && (
             <div style={{ 
                 backgroundColor: '#fff', border: '1px solid #e1bce0', 
-                borderRadius: '8px', padding: '20px', marginBottom: '2rem',
-                boxShadow: '0 4px 10px rgba(108, 4, 100, 0.05)'
+                borderRadius: '8px', padding: '30px 20px', marginBottom: '2rem',
+                boxShadow: '0 4px 10px rgba(108, 4, 100, 0.05)',
+                textAlign: 'center'
             }}>
-                <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '10px', fontSize: '1.2rem' }}>
-                    Procurar minhas fotos neste álbum
-                </h3>
-                <p style={{ fontSize: '14px', color: '#555', marginBottom: '15px', marginTop: 0 }}>
-                    Envie uma selfie e o nosso sistema encontrara sua foto.
-                </p>
-                <form onSubmit={handleFaceSearchSubmit} style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                <h3 style={{ color: '#333', marginTop: '1.5rem', marginBottom: '20px', fontSize: '1.4rem' }}>Encontre suas fotos por reconhecimento facial</h3>
+                
+                <form onSubmit={handleFaceSearchSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
                     
-                    <label htmlFor="album-face-upload" className="button-outline" style={{ cursor: 'pointer', margin: 0, padding: '0.6rem 1.2rem' }}>
-                        {referenceImage ? 'Trocar Imagem' : 'Escolher Selfie'}
+                    {/* Botão de Escolher/Trocar Selfie */}
+                    <label htmlFor="album-face-upload" className="button-outline" style={{ cursor: 'pointer', margin: 0, padding: '0.6rem 1.2rem', borderColor: '#ccc', color: '#555' }}>
+                        {referenceImage ? 'Trocar Selfie' : 'Escolher Selfie'}
                     </label>
                     <input id="album-face-upload" type="file" accept="image/*" onChange={handleFaceFileChange} style={{ display: 'none' }} />
 
+                    {/* 🚀 FOTO CENTRALIZADA ENTRE OS BOTÕES */}
                     {previewUrl && (
-                        <img src={previewUrl} alt="Selfie" style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #6c0464' }} />
+                        <img 
+                            src={previewUrl} 
+                            alt="Selfie" 
+                            style={{ 
+                                width: '70px', 
+                                height: '70px', 
+                                borderRadius: '50%', 
+                                objectFit: 'cover', 
+                                border: '3px solid #dc3545',
+                                boxShadow: '0 4px 8px rgba(220,53,69,0.3)',
+                                margin: '5px 0'
+                            }} 
+                        />
                     )}
 
-                    {referenceImage && (
-                        <button type="submit" className="create-button" disabled={isSearchingFaces} style={{ padding: '0.6rem 1.2rem', margin: 0 }}>
-                            {isSearchingFaces ? 'A procurar...' : 'Filtrar Fotos'}
-                        </button>
-                    )}
+                    {/* Botão de Encontrar Foto */}
+                    <button 
+                        type="submit" 
+                        className="create-button" 
+                        disabled={!referenceImage || isSearchingFaces} 
+                        style={{ 
+                            padding: '1rem', 
+                            width: '100%', 
+                            maxWidth: '250px', 
+                            margin: 0, 
+                            backgroundColor: '#dc3545', 
+                            border: 'none', 
+                            borderRadius: '25px', 
+                            fontSize: '16px',
+                            opacity: (!referenceImage || isSearchingFaces) ? 0.5 : 1,
+                            cursor: (!referenceImage || isSearchingFaces) ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        {isSearchingFaces ? 'A procurar...' : 'Encontrar sua foto'}
+                    </button>
 
+                    {/* Botão de Limpar Busca (Aparece apenas quando há resultados ativos) */}
                     {faceSearchResults !== null && (
-                        <button type="button" onClick={clearFaceSearch} className="delete-button-pill" style={{ padding: '0.6rem 1.2rem', margin: 0 }}>
-                            ❌ Limpar Busca
+                        <button type="button" onClick={clearFaceSearch} className="delete-button-pill" style={{ padding: '0.6rem 1.2rem', margin: '5px 0 0 0' }}>
+                            Limpar Busca Facial
                         </button>
                     )}
                 </form>
+
+                {/* LINK: Fotos não identificadas */}
+                <div style={{ marginTop: '25px' }}>
+                    <button 
+                        onClick={handleUnidentifiedMediaClick}
+                        style={{
+                            background: 'none', border: 'none', color: '#666', 
+                            textDecoration: 'underline', fontSize: '14px', cursor: 'pointer',
+                            padding: '5px'
+                        }}
+                    >
+                        Fotos ou vídeos não identificados
+                    </button>
+                </div>
             </div>
         )}
 
-        <div className="section-header">
+        {/* BARRA DE ABAS / CATEGORIAS DENTRO DO ÁLBUM */}
+        {tabs.length > 1 && (
+            <div style={{
+                display: 'flex', gap: '10px', overflowX: 'auto', marginBottom: '2rem', paddingBottom: '10px',
+                scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch'
+            }}>
+                {tabs.map(tab => {
+                    const isActive = selectedTab === tab;
+                    return (
+                        <button
+                            key={tab}
+                            onClick={() => handleTabChange(tab)}
+                            style={{
+                                padding: '8px 20px', 
+                                borderRadius: '25px', 
+                                cursor: 'pointer', 
+                                whiteSpace: 'nowrap', 
+                                transition: 'all 0.2s',
+                                border: isActive ? 'none' : '1px solid #e1bce0',
+                                backgroundColor: isActive ? '#9427a5' : 'rgba(255, 255, 255, 0.05)',
+                                color: isActive ? '#ffffff' : '#f794f7',
+                                fontWeight: 'bold',
+                                boxShadow: isActive ? '0 4px 10px rgba(184, 50, 206, 0.4)' : 'none',
+                                textShadow: isActive ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
+                            }}
+                        >
+                            {tab}
+                        </button>
+                    );
+                })}
+            </div>
+        )}
+
+        {/* TÍTULOS DINÂMICOS DEPENDENDO DO FILTRO (Ref: galleryRef) */}
+        <div ref={galleryRef} className="section-header">
           <h2>
-             {faceSearchResults !== null ? `Resultados da Busca (${basePhotoList.length})` : `Fotos (${basePhotoList.length})`}
+             {faceSearchResults !== null 
+                ? `Resultados da Busca (${basePhotoList.length})` 
+                : showUnidentifiedOnly 
+                    ? `Fotos Não Identificadas (${basePhotoList.length})`
+                    : `Fotos (${basePhotoList.length})`
+             }
           </h2>
-          <Link to="/eventos" className="button-outline">Voltar</Link>
+          
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {/* Botão para limpar o filtro de não identificadas e ver todas */}
+            {showUnidentifiedOnly && (
+                <button onClick={() => setShowUnidentifiedOnly(false)} className="delete-button-pill" style={{ padding: '0.6rem 1rem', margin: 0 }}>
+                    Todas
+                </button>
+            )}
+            <Link to="/eventos" className="button-outline">Voltar</Link>
+          </div>
         </div>
 
-        {/* GRELHA DE FOTOS (Mostra apenas as da página atual) */}
         <div className="photo-grid">
           {currentPhotos.map(foto => (
-            <div 
-              key={foto.id} 
-              className="photo-card" 
-              onClick={() => setSelectedImage(foto)}
-            >
-              <img 
-                src={foto.imagem_url} 
-                alt={foto.legenda || `Foto ${foto.id}`} 
-                style={{ transform: `rotate(${foto.rotacao}deg)` }}
-              />
+            <div key={foto.id} className="photo-card" onClick={() => setSelectedImage(foto)}>
+              <img src={foto.imagem_url} alt={foto.legenda || `Foto ${foto.id}`} style={{ transform: `rotate(${foto.rotacao}deg)` }}/>
               <div className="photo-overlay">
                 <p>R$ {foto.preco}</p>
                 {(!user || user.papel === 'CLIENTE') && (
@@ -470,14 +597,9 @@ function AlbumDetail() {
           ))}
         </div>
 
-        {/* --- CONTROLOS DE PAGINAÇÃO --- */}
-        <CustomPagination 
-            currentPage={currentPage} 
-            totalPages={totalPages} 
-            onPageChange={handlePageChange} 
-        />
-        {/* -------------------------------- */}
+        <CustomPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
 
+        {/* Mensagens de estado vazio */}
         {faceSearchResults !== null && currentPhotos.length === 0 && (
             <div style={{ textAlign: 'center', padding: '3rem 0', color: '#888' }}>
                 <p>Não encontramos o seu rosto nestas fotos. Experimente usar uma selfie mais clara e com o rosto bem iluminado.</p>
@@ -485,7 +607,13 @@ function AlbumDetail() {
             </div>
         )}
 
-        {/* SECÇÃO DE VÍDEOS PAGINADOS */}
+        {showUnidentifiedOnly && currentPhotos.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#888' }}>
+                <p>Ótimo! O sistema conseguiu identificar rostos em todas as fotos deste álbum.</p>
+                <button onClick={() => setShowUnidentifiedOnly(false)} className="button-outline" style={{ marginTop: '10px' }}>Ver todas as fotos do álbum</button>
+            </div>
+        )}
+
         {faceSearchResults === null && baseVideoList.length > 0 && (
           <>
             <div className="section-header" style={{marginTop: '3rem'}}>
@@ -494,22 +622,11 @@ function AlbumDetail() {
             
             <div className="photo-grid">
               {currentVideos.map(video => (
-                  <VideoPreviewCard 
-                      key={video.id} 
-                      video={video} 
-                      user={user} 
-                      handleAddToCartClick={handleAddToCartClick} 
-                  />
+                  <VideoPreviewCard key={video.id} video={video} user={user} handleAddToCartClick={handleAddToCartClick} />
               ))}
             </div>
 
-            {/* --- BARRA DE PAGINAÇÃO DOS VÍDEOS --- */}
-            <CustomPagination 
-                currentPage={currentVideoPage} 
-                totalPages={totalVideoPages} 
-                onPageChange={handleVideoPageChange} 
-            />
-            {/* --------------------------------------- */}
+            <CustomPagination currentPage={currentVideoPage} totalPages={totalVideoPages} onPageChange={handleVideoPageChange} />
           </>
         )}
       </main>
@@ -517,13 +634,12 @@ function AlbumDetail() {
       {selectedImage && (
         <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} onNext={handleNextImage} onPrev={handlePrevImage} />
       )}
+      
       {isPropostaModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
               <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
                   <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px' }}>Fazer uma Proposta</h3>
-                  <p style={{ color: '#555', fontSize: '14px', marginBottom: '20px' }}>
-                      Quer comprar um pacote de fotos? Diga ao fotógrafo quantas fotos quer e qual valor deseja pagar.
-                  </p>
+                  <p style={{ color: '#555', fontSize: '14px', marginBottom: '20px' }}>Quer comprar um pacote de fotos? Diga ao fotógrafo quantas fotos quer e qual valor deseja pagar.</p>
                   
                   <form onSubmit={handlePropostaSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                       <div style={{ display: 'flex', gap: '10px' }}>

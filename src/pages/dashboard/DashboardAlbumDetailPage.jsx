@@ -76,7 +76,7 @@ function MediaEditForm({ media, mediaType, onSubmit, onCancel }) {
     );
 }
 
-// --- COMPONENTE DO CARD DE VÍDEO DO PAINEL (Adicione aqui) ---
+// --- COMPONENTE DO CARD DE VÍDEO DO PAINEL ---
 function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalType }) {
     const videoRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
@@ -139,9 +139,8 @@ function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalT
         </div>
     );
 }
-// --------------------------------------------------------------
 
-// --- NOVO COMPONENTE DE PAGINAÇÃO NUMÉRICA ---
+// --- COMPONENTE DE PAGINAÇÃO NUMÉRICA ---
 const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
 
@@ -210,8 +209,6 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     );
 };
 
-// --------------------------------------------------------------
-
 // --- Componente Principal da Página ---
 function DashboardAlbumDetailPage() {
     const [album, setAlbum] = useState(null);
@@ -225,11 +222,11 @@ function DashboardAlbumDetailPage() {
     const [meusJornais, setMeusJornais] = useState([]); 
     const [selectedJornais, setSelectedJornais] = useState([]);
     
-    // Controle de Destino Simples (Sem Metadados)
     const [uploadDestino, setUploadDestino] = useState('site'); 
-
     const [fotoPreco, setFotoPreco] = useState('15.00');
     const [fotoLegenda, setFotoLegenda] = useState('');
+    const [fotoCategoria, setFotoCategoria] = useState(''); 
+
     const [isUploadingFotos, setIsUploadingFotos] = useState(false);
     const [uploadStatusMsg, setUploadStatusMsg] = useState('');
 
@@ -237,6 +234,7 @@ function DashboardAlbumDetailPage() {
     const [stagedVideos, setStagedVideos] = useState([]);
     const [isUploadingVideos, setIsUploadingVideos] = useState(false);
     const [uploadProgressVideos, setUploadProgressVideos] = useState(0);
+    const [videoCategoria, setVideoCategoria] = useState(''); 
     
     // Outros estados
     const [isPolling, setIsPolling] = useState(false);
@@ -254,39 +252,15 @@ function DashboardAlbumDetailPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [mediaToDelete, setMediaToDelete] = useState(null);
 
+    const [selectedTab, setSelectedTab] = useState('Todas');
+
     const corPrincipal = '#6c0464';
     const overlayRosado = 'rgba(108, 4, 100, 0.4)';
     const inputStyle = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', backgroundColor: '#fff', color: '#333', colorScheme: 'light' };
     
+    const labelStyleClean = { display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '5px', border: 'none', outline: 'none', background: 'transparent', boxShadow: 'none', padding: 0 };
+
     const itensPorPagina = 20;
-
-    // Paginação de Fotos
-    const [currentPhotoPage, setCurrentPhotoPage] = useState(1);
-    const basePhotoList = album?.fotos || [];
-    const totalPhotoPages = Math.ceil(basePhotoList.length / itensPorPagina);
-    const currentPhotos = basePhotoList.slice((currentPhotoPage - 1) * itensPorPagina, currentPhotoPage * itensPorPagina);
-
-    // Funções da nova paginação de Fotos
-    const handlePhotoPageChange = (novaPagina) => {
-        setCurrentPhotoPage(novaPagina);
-        window.scrollTo({ top: 300, behavior: 'smooth' });
-    };
-
-    // Paginação de Vídeos
-    const [currentVideoPage, setCurrentVideoPage] = useState(1);
-    const baseVideoList = album?.videos || [];
-    const totalVideoPages = Math.ceil(baseVideoList.length / itensPorPagina);
-    const currentVideos = baseVideoList.slice((currentVideoPage - 1) * itensPorPagina, currentVideoPage * itensPorPagina);
-
-    // Funções da nova paginação de Vídeos
-    const handleVideoPageChange = (novaPagina) => {
-        setCurrentVideoPage(novaPagina);
-        window.scrollTo({ top: 800, behavior: 'smooth' }); // Rola direto para os vídeos
-    };
-
-    const globalModalOverlay = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: overlayRosado, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, backdropFilter: 'blur(3px)' };
-    const globalModalContent = { backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' };
-    const globalModalHeader = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '20px' };
 
     const fetchAlbumDetails = useCallback(async () => {
         try {
@@ -341,6 +315,54 @@ function DashboardAlbumDetailPage() {
 
     useEffect(() => { return () => { if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current); }; }, []);
 
+    const todasCategorias = new Set();
+    const rawPhotoList = album?.fotos || [];
+    const rawVideoList = album?.videos || [];
+
+    rawPhotoList.forEach(f => {
+        if (f.categoria && f.categoria.trim() !== '') todasCategorias.add(f.categoria.trim());
+    });
+    rawVideoList.forEach(v => {
+        if (v.categoria && v.categoria.trim() !== '') todasCategorias.add(v.categoria.trim());
+    });
+    
+    const existingCategories = Array.from(todasCategorias).sort();
+    const tabs = ['Todas', ...existingCategories];
+
+    const handleTabChange = (tab) => {
+        setSelectedTab(tab);
+        setCurrentPhotoPage(1);
+        setCurrentVideoPage(1);
+    };
+
+    const basePhotoList = selectedTab === 'Todas' 
+        ? rawPhotoList 
+        : rawPhotoList.filter(f => f.categoria?.trim() === selectedTab);
+
+    const baseVideoList = selectedTab === 'Todas' 
+        ? rawVideoList 
+        : rawVideoList.filter(v => v.categoria?.trim() === selectedTab);
+
+    // Paginação de Fotos
+    const [currentPhotoPage, setCurrentPhotoPage] = useState(1);
+    const totalPhotoPages = Math.ceil(basePhotoList.length / itensPorPagina);
+    const currentPhotos = basePhotoList.slice((currentPhotoPage - 1) * itensPorPagina, currentPhotoPage * itensPorPagina);
+
+    const handlePhotoPageChange = (novaPagina) => {
+        setCurrentPhotoPage(novaPagina);
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+    };
+
+    // Paginação de Vídeos
+    const [currentVideoPage, setCurrentVideoPage] = useState(1);
+    const totalVideoPages = Math.ceil(baseVideoList.length / itensPorPagina);
+    const currentVideos = baseVideoList.slice((currentVideoPage - 1) * itensPorPagina, currentVideoPage * itensPorPagina);
+
+    const handleVideoPageChange = (novaPagina) => {
+        setCurrentVideoPage(novaPagina);
+        window.scrollTo({ top: 800, behavior: 'smooth' }); 
+    };
+
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
         if (fotoFiles.length === 0) { toast.info("Selecione pelo menos uma foto."); return; }
@@ -362,6 +384,7 @@ function DashboardAlbumDetailPage() {
             formData.append('album', id);
             formData.append('imagem', file);
             formData.append('destino_upload', uploadDestino);
+            formData.append('categoria', fotoCategoria);
             
             if (uploadDestino !== 'ftp') {
                 formData.append('preco', fotoPreco);
@@ -419,6 +442,7 @@ function DashboardAlbumDetailPage() {
             formData.append('titulo', video.titulo);
             formData.append('preco', video.preco);
             formData.append('arquivo_video', video.videoFile);
+            formData.append('categoria', videoCategoria);
             
             try { await axiosInstance.post('/dashboard/videos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }); } 
             catch (error) { toast.error(`Erro no vídeo ${video.videoFile.name}`); }
@@ -456,14 +480,12 @@ function DashboardAlbumDetailPage() {
     const handleDownloadOriginal = async (fotoId) => {
         try {
             toast.info("Preparando arquivo para download...");
-            // Faz a chamada para a rota que criamos no Django
             const response = await axiosInstance.get(`/dashboard/fotos/${fotoId}/baixar_original/`);
             const urlDownload = response.data.url_download;
             
-            // Cria um link temporário invisível e clica nele para iniciar o download
             const link = document.createElement('a');
             link.href = urlDownload;
-            link.setAttribute('download', ''); // Instrui o navegador a baixar
+            link.setAttribute('download', ''); 
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -521,25 +543,67 @@ function DashboardAlbumDetailPage() {
     if (loading) return <p>Carregando...</p>;
     if (!album) return <p>Álbum não encontrado.</p>;
 
+    const globalModalOverlay = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: overlayRosado, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, backdropFilter: 'blur(3px)' };
+    const globalModalContent = { backgroundColor: '#2a2a2a', padding: '30px', borderRadius: '12px', maxWidth: '550px', width: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' };
+    const globalModalHeader = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #444', paddingBottom: '15px', marginBottom: '20px' };
+
     return (
         <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             
-            <div className="page-header" style={{ display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', marginBottom: '30px' }}>
-                <div>
-                    <h1 style={{ textAlign: 'center', fontSize: '28px', color: corPrincipal, margin: '0 0 10px 0' }}>{album.titulo}</h1>
-                    <p style={{ color: '#555', margin: 0 }}>{album.descricao}</p>
+            {/* 🚀 CABEÇALHO DO ÁLBUM NO DASHBOARD (ATUALIZADO) */}
+            <header className="dashboard-header-card">
+                <div style={{ textAlign: 'center' }}>
+                    <h1 className="dashboard-header-title">{album.titulo}</h1>
+                    {album.descricao && <p className="dashboard-header-text" style={{ marginBottom: '15px' }}>{album.descricao}</p>}
+                    
+                    <p className="dashboard-header-text" style={{ margin: 0, fontSize: '0.95rem' }}>
+                        <strong>Fotógrafo:</strong> {album.fotografo} | <strong>Data:</strong> {new Date(album.data_evento).toLocaleDateString()}
+                        {album.local && <> | <strong>Local:</strong> {album.local}</>}
+                    </p>
                 </div>
                 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '1.5rem' }}>
                     <Link to="/dashboard/albuns" className="button-outline" style={{ textDecoration: 'none' }}>Voltar</Link>
-                    <button onClick={() => setActiveGlobalModal('uploadFotos')} className="create-button">Adicionar Fotos</button>
-                    <button onClick={() => setActiveGlobalModal('uploadVideos')} className="create-button">Adicionar Vídeos</button>
-                    <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">Editar Preço (Fotos)</button>
-                    <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">Editar Preço (Vídeos)</button>
-                    <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="create-button" style={{ backgroundColor: '#17a2b8', borderColor: '#17a2b8', textDecoration: 'none' }}>Click & Share</Link>
+                    <button onClick={() => setActiveGlobalModal('uploadFotos')} className="button-outline">+ Fotos</button>
+                    <button onClick={() => setActiveGlobalModal('uploadVideos')} className="button-outline">+ Vídeos</button>
+                    <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">Editar R$ (Fotos)</button>
+                    <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">Editar R$ (Vídeos)</button>
+                    <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textDecoration: 'none' }}>Click & Share</Link>
                 </div>
-            </div>           
+            </header>          
             
+            {tabs.length > 1 && (
+                <div style={{
+                    display: 'flex', gap: '10px', overflowX: 'auto', marginBottom: '2rem', paddingBottom: '10px',
+                    scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch'
+                }}>
+                    {tabs.map(tab => {
+                        const isActive = selectedTab === tab;
+                        return (
+                            <button
+                                key={tab}
+                                onClick={() => handleTabChange(tab)}
+                                style={{
+                                    padding: '8px 20px', 
+                                    borderRadius: '25px', 
+                                    cursor: 'pointer', 
+                                    whiteSpace: 'nowrap', 
+                                    transition: 'all 0.2s',
+                                    border: isActive ? 'none' : '1px solid #e1bce0',
+                                    backgroundColor: isActive ? '#b832ce' : 'rgba(255, 255, 255, 0.05)',
+                                    color: isActive ? '#ffffff' : '#f794f7',
+                                    fontWeight: 'bold',
+                                    boxShadow: isActive ? '0 4px 10px rgba(184, 50, 206, 0.4)' : 'none',
+                                    textShadow: isActive ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
+                                }}
+                            >
+                                {tab}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
             <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px' }}>Galeria de Fotos ({basePhotoList.length})</h3>
             <div className="media-grid">
                 {currentPhotos.map(foto => (
@@ -560,10 +624,8 @@ function DashboardAlbumDetailPage() {
                 ))}
             </div>
             
-            {basePhotoList.length === 0 && <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhuma foto neste álbum.</p>}
+            {basePhotoList.length === 0 && <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhuma foto nesta categoria.</p>}
 
-            
-            {/* --- CONTROLES DE PAGINAÇÃO DAS FOTOS --- */}
             <CustomPagination 
                 currentPage={currentPhotoPage} 
                 totalPages={totalPhotoPages} 
@@ -582,8 +644,8 @@ function DashboardAlbumDetailPage() {
                 ))}
             </div>
 
-            
-            {/* --- CONTROLES DE PAGINAÇÃO DOS VÍDEOS --- */}
+            {baseVideoList.length === 0 && <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhum vídeo nesta categoria.</p>}
+
             <CustomPagination 
                 currentPage={currentVideoPage} 
                 totalPages={totalVideoPages} 
@@ -591,21 +653,21 @@ function DashboardAlbumDetailPage() {
             />
 
             {/* ========================================================================= */}
-            {/* 🚀 MODAIS DE UPLOAD SIMPLIFICADOS (SEM FORMULÁRIO DE METADADOS) */}
+            {/* 🚀 MODAIS DE UPLOAD */}
             {/* ========================================================================= */}
             
             {activeGlobalModal === 'uploadFotos' && (
                 <div style={globalModalOverlay}>
                     <div style={globalModalContent}>
                         <div style={globalModalHeader}>
-                            <h3 style={{ color: corPrincipal, margin: 0 }}>✙ Adicionar Novas Fotos</h3>
+                            <h3 style={{ color: '#f794f7', margin: 0 }}>✙ Adicionar Novas Fotos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} disabled={isUploadingFotos} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✖</button>
                         </div>
                         <form onSubmit={handlePhotoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             
                             {meusJornais.length > 0 && (
-                                <div style={{ backgroundColor: '#f0f4f8', padding: '15px', borderRadius: '8px', border: '1px solid #d1e3ea' }}>
-                                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333', marginBottom: '8px', display: 'block' }}>Para onde quer enviar essas fotos?</label>
+                                <div>
+                                    <label style={labelStyleClean}>Para onde quer enviar essas fotos?</label>
                                     <select 
                                         value={uploadDestino} 
                                         onChange={(e) => {
@@ -621,7 +683,41 @@ function DashboardAlbumDetailPage() {
                                 </div>
                             )}
 
-                            <div style={{ padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', textAlign: 'center', backgroundColor: '#fdfbfe' }}>
+                            <div>
+                                <label style={labelStyleClean}>
+                                    Organizar em Aba / Sub-pasta (Opcional)
+                                </label>
+
+                                {existingCategories.length > 0 && (
+                                    <select
+                                        value={existingCategories.includes(fotoCategoria) ? fotoCategoria : 'nova'}
+                                        onChange={(e) => {
+                                            if (e.target.value === 'nova') setFotoCategoria('');
+                                            else setFotoCategoria(e.target.value);
+                                        }}
+                                        disabled={isUploadingFotos}
+                                        style={{...inputStyle, marginBottom: (!existingCategories.includes(fotoCategoria) || fotoCategoria === '') ? '10px' : '0'}}
+                                    >
+                                        <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                        {existingCategories.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                )}
+
+                                {(!existingCategories.includes(fotoCategoria) || existingCategories.length === 0) && (
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ex: Jogo 1 - Guarany x Pelotas" 
+                                        value={fotoCategoria}
+                                        onChange={(e) => setFotoCategoria(e.target.value)}
+                                        disabled={isUploadingFotos}
+                                        style={inputStyle}
+                                    />
+                                )}
+                            </div>
+
+                            <div style={{ padding: '15px', border: '2px dashed #666', borderRadius: '8px', textAlign: 'center', backgroundColor: 'transparent', margin: '10px 0' }}>
                                 <label htmlFor="photo-upload" className="create-button" style={{ display: 'inline-block', cursor: 'pointer' }}>Selecionar Ficheiros...</label>
                                 <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos} style={{ display: 'none' }} />
                                 {fotoFiles.length > 0 && <p style={{ color: '#28a745', fontWeight: 'bold', margin: '10px 0 0 0', fontSize: '13px' }}>{fotoFiles.length} foto(s) selecionada(s)</p>}
@@ -630,24 +726,24 @@ function DashboardAlbumDetailPage() {
                             {uploadDestino !== 'ftp' && (
                                 <div style={{ display: 'flex', gap: '10px' }}>
                                     <div style={{ flex: 2 }}>
-                                        <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Legenda para o Site (Opcional)</label>
+                                        <label style={labelStyleClean}>Legenda para o Site (Opcional)</label>
                                         <input type="text" style={inputStyle} onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos} />
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Preço de Venda (R$)</label>
+                                        <label style={labelStyleClean}>Preço de Venda (R$)</label>
                                         <input type="number" step="0.01" style={inputStyle} value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required={uploadDestino !== 'ftp'} disabled={isUploadingFotos} />
                                     </div>
                                 </div>
                             )}
                             
                             {uploadDestino !== 'site' && meusJornais.length > 0 && (
-                                <div style={{ padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: '1px solid #e1bce0' }}>
-                                    <h4 style={{ margin: 0, color: corPrincipal, marginBottom: '10px' }}>Envio via FTP (Imprensa)</h4>
-                                    <p style={{ fontSize: '12px', color: '#666', marginTop: 0 }}>Selecione os jornais para onde deseja enviar estas fotos:</p>
+                                <div style={{ padding: '15px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid #444' }}>
+                                    <h4 style={{ margin: 0, color: '#f794f7', marginBottom: '10px' }}>🚀 Envio via FTP (Imprensa)</h4>
+                                    <p style={{ fontSize: '12px', color: '#aaa', marginTop: 0 }}>Selecione os jornais para onde deseja enviar estas fotos:</p>
                                     
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         {meusJornais.map(jornal => (
-                                            <label key={jornal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#333' }}>
+                                            <label key={jornal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#ddd' }}>
                                                 <input type="checkbox" checked={selectedJornais.includes(jornal.id)} onChange={() => toggleJornal(jornal.id)} disabled={isUploadingFotos} style={{ width: '18px', height: '18px' }} />
                                                 {jornal.nome_jornal}
                                             </label>
@@ -656,13 +752,13 @@ function DashboardAlbumDetailPage() {
                                 </div>
                             )}
 
-                            {isUploadingFotos && <div style={{ padding: '15px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', fontWeight: 'bold', textAlign: 'center' }}>{uploadStatusMsg}</div>}
+                            {isUploadingFotos && <div style={{ padding: '15px', backgroundColor: 'rgba(255, 243, 205, 0.1)', color: '#ffeeba', border: '1px solid #ffeeba', borderRadius: '5px', fontWeight: 'bold', textAlign: 'center' }}>{uploadStatusMsg}</div>}
 
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button type="button" onClick={() => setActiveGlobalModal(null)} className='create-button' style={{ flex: 1, padding: '12px'}}>
+                            <div style={{ display: 'flex', gap: '15px', marginTop: '20px', width: '100%' }}>
+                                <button type="button" onClick={() => setActiveGlobalModal(null)} className='button-outline' style={{ flex: 1, padding: 0, fontSize: '14px', height: '45px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
                                     Voltar
                                 </button>
-                                <button type="submit" className="create-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ flex: 1, opacity: isUploadingFotos ? 0.6 : 1, padding: '12px', fontSize: '14px' }}>
+                                <button type="submit" className="create-button" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ flex: 1, opacity: isUploadingFotos ? 0.6 : 1, padding: 0, fontSize: '14px', height: '45px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
                                     {isUploadingFotos ? 'A enviar...' : `Enviar Fotos`}
                                 </button>
                             </div>
@@ -675,33 +771,94 @@ function DashboardAlbumDetailPage() {
                 <div style={globalModalOverlay}>
                     <div style={globalModalContent}>
                         <div style={globalModalHeader}>
-                            <h3 style={{ color: corPrincipal, margin: 0 }}>✙ Adicionar Novos Vídeos</h3>
+                            <h3 style={{ color: '#f794f7', margin: 0 }}>✙ Adicionar Novos Vídeos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} disabled={isUploadingVideos} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✖</button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            <div style={{ padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', textAlign: 'center', backgroundColor: '#fdfbfe' }}>
+                            
+                            <div>
+                                <label style={labelStyleClean}>
+                                    Organizar em Aba / Sub-pasta (Opcional)
+                                </label>
+
+                                {existingCategories.length > 0 && (
+                                    <select
+                                        value={existingCategories.includes(videoCategoria) ? videoCategoria : 'nova'}
+                                        onChange={(e) => {
+                                            if (e.target.value === 'nova') setVideoCategoria('');
+                                            else setVideoCategoria(e.target.value);
+                                        }}
+                                        disabled={isUploadingVideos}
+                                        style={{...inputStyle, marginBottom: (!existingCategories.includes(videoCategoria) || videoCategoria === '') ? '10px' : '0'}}
+                                    >
+                                        <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                        {existingCategories.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                )}
+
+                                {(!existingCategories.includes(videoCategoria) || existingCategories.length === 0) && (
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ex: Entrevistas" 
+                                        value={videoCategoria}
+                                        onChange={(e) => setVideoCategoria(e.target.value)}
+                                        disabled={isUploadingVideos}
+                                        style={inputStyle}
+                                    />
+                                )}
+                            </div>
+
+                            <div style={{ padding: '15px', border: '2px dashed #666', borderRadius: '8px', textAlign: 'center', backgroundColor: 'transparent', margin: '10px 0' }}>
                                 <label htmlFor="video-upload" className="create-button" style={{ display: 'inline-block', cursor: 'pointer' }}>Selecionar Ficheiros de Vídeo...</label>
                                 <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple disabled={isUploadingVideos} style={{ display: 'none' }} />
                             </div>
+                            
                             {stagedVideos.length > 0 && (
-                                <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #eee' }}>
-                                    <h4 style={{ marginTop: 0 }}>Vídeos selecionados:</h4>
+                                <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '8px', border: '1px solid #444' }}>
+                                    <h4 style={{ marginTop: 0, color: '#ccc' }}>Vídeos selecionados:</h4>
                                     {stagedVideos.map((video) => (
-                                        <div key={video.id} style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #ddd' }}>
-                                            <p style={{ fontWeight: 'bold', fontSize: '13px', margin: '0 0 5px 0', color: corPrincipal }}>{video.videoFile.name}</p>
-                                            <div style={{ display: 'flex', gap: '10px' }}>
-                                                <input type="text" placeholder="Título" style={{...inputStyle, flex: 2}} onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} disabled={isUploadingVideos} />
-                                                <input type="number" step="0.01" placeholder="R$" value={video.preco} style={{...inputStyle, flex: 1}} onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} required disabled={isUploadingVideos} />
+                                        <div key={video.id} style={{ marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #555' }}>
+                                            <p style={{ fontWeight: 'bold', fontSize: '13px', margin: '0 0 5px 0', color: '#f794f7' }}>{video.videoFile.name}</p>
+                                            
+                                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Título do vídeo" 
+                                                    style={{...inputStyle, flex: '1 1 200px', marginBottom: 0}} 
+                                                    onChange={(e) => handleStagedVideoChange(video.id, 'titulo', e.target.value)} 
+                                                    disabled={isUploadingVideos} 
+                                                />
+                                                <input 
+                                                    type="number" 
+                                                    step="0.01" 
+                                                    placeholder="Preço R$" 
+                                                    value={video.preco} 
+                                                    style={{...inputStyle, flex: '1 1 100px', marginBottom: 0}} 
+                                                    onChange={(e) => handleStagedVideoChange(video.id, 'preco', e.target.value)} 
+                                                    required 
+                                                    disabled={isUploadingVideos} 
+                                                />
                                             </div>
+
                                             <button type="button" onClick={() => removeStagedVideo(video.id)} disabled={isUploadingVideos} style={{ marginTop: '8px', padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>Remover</button>
                                         </div>
                                     ))}
                                 </div>
                             )}
-                            {isUploadingVideos && <p style={{ fontWeight: 'bold', color: corPrincipal, textAlign: 'center' }}>⏳ Enviando vídeo {uploadProgressVideos} de {stagedVideos.length}...</p>}
-                            <button onClick={handleVideoSubmit} className="create-button" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ opacity: isUploadingVideos ? 0.6 : 1, width: '100%', padding: '15px', fontSize: '16px' }}>
-                                {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
-                            </button>
+                            
+                            {isUploadingVideos && <p style={{ fontWeight: 'bold', color: '#f794f7', textAlign: 'center' }}>⏳ Enviando vídeo {uploadProgressVideos} de {stagedVideos.length}...</p>}
+                            
+                            <div style={{ display: 'flex', gap: '15px', marginTop: '20px', width: '100%' }}>
+                                <button type="button" onClick={() => setActiveGlobalModal(null)} className='button-outline' style={{ flex: 1, padding: 0, fontSize: '14px', height: '45px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
+                                    Voltar
+                                </button>
+                                <button onClick={handleVideoSubmit} className="create-button" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ flex: 1, opacity: isUploadingVideos ? 0.6 : 1, padding: 0, fontSize: '14px', height: '45px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
+                                    {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -748,13 +905,13 @@ function DashboardAlbumDetailPage() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {actionModalType === 'foto' && (
                                 <>
-                                    <button onClick={() => { handleSetCover(actionModalMedia.id); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #6c0464', backgroundColor: '#fbf0fa', color: '#6c0464', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>⭐ Definir como Capa</button>
-                                    <button onClick={() => { handleToggleArchivePhotoClick(actionModalMedia); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2a03f', backgroundColor: '#fcf6ec', color: '#b97a00', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>📦 {actionModalMedia.is_arquivado ? 'Restaurar Foto na Loja' : 'Arquivar (Ocultar da Loja)'}</button>
-                                    <button onClick={() => { handleDownloadOriginal(actionModalMedia.id); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #28a745', backgroundColor: '#d4edda', color: '#155724', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>⬇️ Baixar Arquivo Original</button>
+                                    <button onClick={() => { handleSetCover(actionModalMedia.id); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #6c0464', backgroundColor: '#fbf0fa', color: '#6c0464', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>Definir como Capa</button>
+                                    <button onClick={() => { handleToggleArchivePhotoClick(actionModalMedia); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e2a03f', backgroundColor: '#fcf6ec', color: '#b97a00', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>{actionModalMedia.is_arquivado ? 'Restaurar Foto na Loja' : 'Arquivar (Ocultar da Loja)'}</button>
+                                    <button onClick={() => { handleDownloadOriginal(actionModalMedia.id); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #28a745', backgroundColor: '#d4edda', color: '#155724', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>Baixar Arquivo Original</button>
                                 </>
                             )}
-                            <button onClick={() => { openEditForm(actionModalMedia, actionModalType); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #17a2b8', backgroundColor: '#e2f3f5', color: '#0c5460', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>✏️ Editar Informações</button>
-                            <button onClick={() => { handleDeleteMediaClick(actionModalMedia.id, actionModalType); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #dc3545', backgroundColor: '#f8d7da', color: '#721c24', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>🗑️ Excluir Definitivamente</button>
+                            <button onClick={() => { openEditForm(actionModalMedia, actionModalType); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #17a2b8', backgroundColor: '#e2f3f5', color: '#0c5460', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>Editar Informações</button>
+                            <button onClick={() => { handleDeleteMediaClick(actionModalMedia.id, actionModalType); setActionModalMedia(null); }} style={{ padding: '12px', borderRadius: '8px', border: '1px solid #dc3545', backgroundColor: '#f8d7da', color: '#721c24', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>Excluir Definitivamente</button>
                         </div>
                         <button onClick={() => setActionModalMedia(null)} style={{ marginTop: '25px', padding: '12px', borderRadius: '20px', border: 'none', backgroundColor: '#6c757d', color: 'white', fontWeight: 'bold', cursor: 'pointer', width: '100%' }}>Voltar</button>
                     </div>
@@ -800,6 +957,42 @@ function DashboardAlbumDetailPage() {
                     </div>
                 </div>
             )}
+
+            {/* --- ESTILOS CSS INJETADOS --- */}
+            <style>{`
+                /* 🚀 NOVO: Estilos do Cabeçalho do Dashboard */
+                .dashboard-header-card {
+                    background-color: #fff;
+                    border: 1px solid #e1bce0;
+                    border-radius: 8px;
+                    padding: 30px 20px;
+                    margin-bottom: 30px;
+                    box-shadow: 0 4px 10px rgba(108, 4, 100, 0.05);
+                }
+                .dashboard-header-title {
+                    color: #6c0464;
+                    margin-top: 0;
+                    margin-bottom: 10px;
+                    font-size: 28px;
+                }
+                .dashboard-header-text {
+                    color: #555;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    .dashboard-header-card {
+                        background-color: #2a2a2a;
+                        border-color: #444;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                    }
+                    .dashboard-header-title {
+                        color: #f794f7;
+                    }
+                    .dashboard-header-text {
+                        color: #ccc;
+                    }
+                }
+            `}</style>
             
         </div>
     );
