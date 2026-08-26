@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
@@ -39,11 +40,13 @@ import DashboardCuponsPage from './pages/dashboard/DashboardCuponsPage';
 import DashboardPropostasPage from './pages/dashboard/DashboardPropostasPage';
 import DashboardUploadPage from './pages/dashboard/DashboardUploadPage';
 import DashboardPerfilPage from './pages/dashboard/DashboardPerfilPage';
+import DashboardImprensaPage from './pages/dashboard/DashboardImprensaPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ContactPage from './pages/ContactPage';
 import WatermarkToolPage from './pages/dashboard/WatermarkToolPage';
 import ServicesPage from './pages/ServicesPage';
+import ImprensaPage from './pages/ImprensaPage';
 import AboutPage from './pages/AboutPage';
 import NewsListPage from './pages/NewsListPage';
 import NewsDetailPage from './pages/NewsDetailPage';
@@ -60,6 +63,10 @@ function App() {
   return (
     <>
       <Routes>
+        
+        {/* ========================================================
+            ROTAS COM O LAYOUT PRINCIPAL (Com NavBar Preto) 
+        ======================================================== */}
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="eventos" element={<AlbumList />} />
@@ -72,11 +79,22 @@ function App() {
           <Route path="contato" element={<ContactPage />} />
           <Route path="quem-somos" element={<AboutPage />} />
           <Route path="solucoes" element={<ServicesPage />} />
+          <Route path="imprensa" element={<ImprensaPage />} />
           <Route path="noticias" element={<NewsListPage />} />
           <Route path="noticias/:slug" element={<NewsDetailPage />} />
-          <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+          <Route path="privacidade" element={<PoliticaPrivacidade />} />
+          
+          {/* 🚀 ROTA DE IMPRENSA MOVIDA PARA DENTRO DO LAYOUT PRINCIPAL */}
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'JORNALISTA', 'ASSESSOR_IMPRENSA', 'ASSESSOR_COMUNICACAO']} />}>
+            <Route path="dashboard/imprensa" element={<DashboardImprensaPage />} />
+          </Route>
+
         </Route>
 
+
+        {/* ========================================================
+            ROTAS SEM LAYOUT PRINCIPAL (Login, Registo, etc) 
+        ======================================================== */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registrar" element={<RegisterPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
@@ -84,7 +102,10 @@ function App() {
         <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
         <Route path="/resetar-senha/:uidb64/:token" element={<ResetPasswordPage />} />
 
-        {/* ROTAS DO FOTÓGRAFO */}
+
+        {/* ========================================================
+            ROTAS DO FOTÓGRAFO (Têm um layout específico: DashboardLayout) 
+        ======================================================== */}
         <Route element={<ProtectedRoute allowedRoles={['FOTOGRAFO']} />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route path="albuns" element={<DashboardAlbunsPage />} />
@@ -97,13 +118,14 @@ function App() {
             <Route path="carrinhos-ativos" element={<DashboardCarrinhosPage />} />
             <Route path="propostas" element={<DashboardPropostasPage />} />
             <Route path="watermark-tool" element={<WatermarkToolPage />} />
-            
-            {/* ROTA DO SAQUE AQUI */}
             <Route path="saques" element={<FotografoSaquesPage />} /> 
           </Route>
         </Route>
 
-        {/* ROTAS DO ADMIN */}
+
+        {/* ========================================================
+            ROTAS DO ADMIN (Têm um layout específico: AdminLayout) 
+        ======================================================== */}
         <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminStatsPage />} />
@@ -115,6 +137,7 @@ function App() {
             <Route path="avaliacoes" element={<AdminAvaliacoesPage />} />
           </Route>
         </Route>
+
       </Routes>
 
       <ToastContainer 

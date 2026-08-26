@@ -59,6 +59,7 @@ function Layout() {
                         <NavLink to="/eventos">Álbuns</NavLink>
                         <NavLink to="/noticias">Notícias</NavLink>
                         <NavLink to="/solucoes">Serviços</NavLink>
+                        <NavLink to="/imprensa">Na Mídia</NavLink>
 
                         {/* 2. ÁREA DE UTILIZADOR E CARRINHO */}
                         <div className="nav-user-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -67,6 +68,12 @@ function Layout() {
                                     {/* Links específicos por papel */}
                                     {user.papel === 'ADMIN' && <NavLink to="/admin">Painel</NavLink>}
                                     {user.papel === 'FOTOGRAFO' && <NavLink to="/dashboard/albuns">Painel</NavLink>}
+                                    
+                                    {/* 🚀 NOVO LINK PARA A EQUIPA DE COMUNICAÇÃO ACEDER AO DASHBOARD DE IMPRENSA */}
+                                    {['JORNALISTA', 'ASSESSOR_IMPRENSA', 'ASSESSOR_COMUNICACAO'].includes(user.papel) && (
+                                        <NavLink to="/dashboard/imprensa">Painel</NavLink>
+                                    )}
+
                                     {user.papel === 'CLIENTE' && <NavLink to="/minhas-compras">Compras</NavLink>}
                                     {user.papel === 'CLIENTE' && (
                                         <NavLink to="/minhas-propostas" onClick={() => setHasPropostaUpdate(false)} style={{ position: 'relative' }}>
@@ -82,8 +89,8 @@ function Layout() {
                                         </NavLink>
                                     )}
 
-                                    {/* O Perfil é igual para Fotógrafo e Cliente */}
-                                    {(user.papel === 'FOTOGRAFO' || user.papel === 'CLIENTE') && (
+                                    {/* O Perfil é igual para Fotógrafo, Cliente e equipa de comunicação */}
+                                    {user.papel !== 'ADMIN' && (
                                         <NavLink to="/perfil" className="nav-link">Perfil</NavLink>
                                     )}
 
@@ -168,7 +175,7 @@ function Layout() {
 
             {/* --- Whats flutuante --- */}
             <a 
-                href="https://wa.me/5592984840065"
+                href="https://wa.me/5592984840065?text=Olá!%20Vim%20através%20do%20site%20da%20Acesso%20Imagens.%20Estou%20tendo%20algumas%20dificuldades,%20pode%20me%20ajudar?"
                 className="whatsapp-fab"
                 target="_blank"
                 rel="noopener noreferrer"
