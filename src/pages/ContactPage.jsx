@@ -37,7 +37,10 @@ function ContactPage() {
     return (
         <div className="page-container">
             <h1>Contato</h1>
-            <div className="auth-card" style={{ maxWidth: '700px' }}>
+            <p style={{textAlign: "center", marginBottom: "2rem"}}>
+                Deixe aqui seu comentário  (dúvidas, queixas ou sugestões).
+            </p>
+            <div className="auth-card" style={{ maxWidth: '700px', marginBottom: "2rem" }}>
                 <form onSubmit={handleSubmit} className="auth-form">
                     {/* ... (inputs do formulário) ... */}
                     <input type="text" name="nome" placeholder="Seu Nome" value={formData.nome} onChange={handleChange} required />

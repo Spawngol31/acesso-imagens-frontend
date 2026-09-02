@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import Lightbox from '../components/Lightbox';
-import { useAuth } from '../contexts/AuthContext'; // Importa para saber se o utilizador está logado
-import { useCart } from '../contexts/CartContext'; // Importa para adicionar ao carrinho
+import { useAuth } from '../contexts/AuthContext'; 
+import { useCart } from '../contexts/CartContext'; 
 
 function SearchPage() {
     const [referenceImage, setReferenceImage] = useState(null);
@@ -30,6 +30,52 @@ function SearchPage() {
         }
     };
 
+    // 🚀 A MÁGICA DA ECONOMIA E VELOCIDADE: Função nativa para comprimir a foto no navegador do cliente
+    const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_SIZE = 800; // Tamanho ideal e minúsculo para a IA da AWS
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Mantém a proporção correta da imagem
+                    if (width > height) {
+                        if (width > MAX_SIZE) {
+                            height *= MAX_SIZE / width;
+                            width = MAX_SIZE;
+                        }
+                    } else {
+                        if (height > MAX_SIZE) {
+                            width *= MAX_SIZE / height;
+                            height = MAX_SIZE;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Transforma o Canvas num novo ficheiro JPEG levezinho (80% de qualidade)
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    }, 'image/jpeg', 0.8);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!referenceImage) {
@@ -40,13 +86,21 @@ function SearchPage() {
         setError('');
         setSearched(true);
         setSearchResults([]);
-        const formData = new FormData();
-        formData.append('imagem_referencia', referenceImage);
+        
         try {
+            // 1. O React comprime a selfie na hora (Ex: de 6MB cai para 150KB)
+            const compressedFile = await compressImage(referenceImage);
+            
+            // 2. Monta o formulário com o ficheiro "peso-pluma"
+            const formData = new FormData();
+            formData.append('imagem_referencia', compressedFile); 
+            
+            // 3. Envia para o Django (que vai disparar mais rápido para a AWS)
             const response = await axiosInstance.post('/fotos/busca-facial/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setSearchResults(response.data);
+            
         } catch (err) {
             console.error("Erro na busca facial:", err);
             setError("Ocorreu um erro ao realizar a busca. Tente novamente.");
@@ -93,7 +147,6 @@ function SearchPage() {
                         {searchResults.length === 0 ? (
                             <p style={{textAlign: 'center'}}>Nenhuma foto foi encontrada com este rosto.</p>
                         ) : (
-                            // --- GRELHA DE RESULTADOS ATUALIZADA ---
                             <div className="purchase-grid">
                                 {searchResults.map(foto => (
                                     <div key={foto.id} className="purchase-card">                                        

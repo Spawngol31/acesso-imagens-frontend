@@ -48,6 +48,9 @@ a {
   flex-grow: 1; 
   width: 100%;
 }
+/*================== 
+  tamanho pagina entre cabeçalho e footer (fundo)
+====================*/
 .container {
   width: 100%;
   max-width: 1400px;
@@ -60,23 +63,37 @@ a {
 /* ==========================================================================
    3. Layout do Site Público
    ========================================================================== */
+/*====================
+cabeçalho
+======================*/
 .main-header {
   background-color: white;
   border-bottom: 1px solid #eee;
   padding: 0.5rem 0;
 }
+/*=======================
+local e fundo cabeçalho e local e fundo rodapé
+=========================*/
 .main-header .container, .main-footer .container {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+/*======================
+logo acesso (botao pagina inicial)
+========================*/
 .logo img { height: 40px; }
-
+/*=====================
+menu cabeçalho
+=======================*/
 .main-nav {
   display: flex;
   align-items:center;
   gap: 1rem;
 }
+/*======================
+logo acesso (botao pagina inicial) inicio
+========================*/
 .main-nav a { font-weight: 500;
   color: var(--primary-purple);
   padding-bottom: 5px;
@@ -87,6 +104,9 @@ a {
   border-bottom-color: var(--primary-purple);
   color: var(--hover-purple-light);
 }
+/*======================
+logo acesso (botao pagina inicial) fim
+========================*/
 /* Estilo para quando o menu estiver selecionado (ativo) */
 .main-nav a.active {
     color: #6c0464; /* A cor roxa da sua marca */
@@ -97,11 +117,17 @@ a {
 .main-nav a.cart-link.active {
     border-bottom: none;
 }
+/*======================
+menu fotografo, admin e cliente
+========================*/
 .nav-user-menu {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
+/*======================
+botao sair menu cabeçalho inicio
+========================*/
 .nav-user-menu button {
   background-color: white;
   border: 1px solid var(--primary-purple);
@@ -117,32 +143,68 @@ a {
   color: white;
   border: 1px solid #D90000;
 }
+/*======================
+botao sair menu cabeçalho fim
+========================*/
+/*======================
+local rodapé
+========================*/
 .main-footer {
   background-color: #6c0464;
   color: #ccc;
   padding: 2rem 0;
 }
+/*======================
+fundo do rodapé
+========================*/
 .main-footer .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
 }
+/*======================
+link e img @acessoimagens inicio
+========================*/
 .footer-social {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.75rem;
 }
+.footer-social img { height: 24px; }
 .social-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
+/*======================
+link e img @acessoimagens fim
+========================*/
+/*======================
+link quem somos inicio
+========================*/
+.footer-main-link { /* Novo estilo para o link principal do rodapé */
+    color: white;
+    font-size: 1rem;
+}
+.footer-main-link:hover {
+    color: var(--hover-purple-light);
+    font-weight: bold;
+}
+/*======================
+link quem somos fim
+========================*/
+/*======================
+link contato e politica de privacidade
+========================*/
 .footer-links {
   display: flex;
   gap: 1.5rem;
 }
+/*======================
+estilos para links rodapé inicio
+========================*/
 .main-footer a {
   color: white;
   text-decoration: none;
@@ -152,18 +214,19 @@ a {
   font-weight: bold;
   color: #AD02AD;
 }
-.footer-social img { height: 24px; }
-
+/*======================
+estilos para links rodapé fim
+========================*/
+/*
+=======================================
+*/
 .footer-contact { text-align: right; }
-
-.main-footer a { color: white;
-  text-decoration: none;
-  transition: color 0.2s ease-in-out, font-weight 0.2s ease-in-out;
-}
-.main-footer a:hover {
-  font-weight: bold;
-  color: #AD02AD;
-}
+/*
+=======================================
+*/
+/*======================
+login page esqueceu sua senha inicio
+========================*/
 .forgot-password-link {
   margin-top: 1rem;
   font-size: 0.8rem;
@@ -174,7 +237,12 @@ a {
   transition: color 0.2s ease-in-out;
 }
 .forgot-password-link a:hover { color: #AD02AD; }
-
+/*======================
+login page esqueceu sua senha fim
+========================*/
+/*======================
+whatsapp flutuante home page inicio
+========================*/
 .whatsapp-fab {
   position: fixed;
   bottom: 2rem;
@@ -191,6 +259,9 @@ a {
   z-index: 1000;
   transition: transform 0.2s ease-in-out;
 }
+/*======================
+whatsapp flutuante tamanho imagem
+========================*/
 .whatsapp-fab img {
   width: 32px; 
   height: 32px;
@@ -199,6 +270,12 @@ a {
   transform: scale(1.1);
   color: white;
 }
+/*======================
+whatsapp flutuante home page fim
+========================*/
+/*======================
+LoginPage area email inicio
+========================*/
 .auth-form textarea {
   width: 100%;
   padding: 1rem;
@@ -216,34 +293,59 @@ a {
   border-color: var(--primary-purple);
   box-shadow: 0 0 0 3px rgba(108, 4, 100, 0.2);
 }
-
+/*======================
+LoginPage area email fim
+========================*/
+/*======================
+div botao enviar mensagem contato
+========================*/
 .form-submit-wrapper {
   display: flex;
   justify-content: center;
   margin-top: 1rem;
 }
+/*
+===============================
+*/
 .contact-form-wrapper .create-button,
-
+/*
+===============================
+*/
+/*==============================
+botao enviar mensagem contactpage
+================================*/
 .auth-card .create-button {
   width: auto;
   padding: 0.8rem 2.5rem;
 }
+/*===============================
+corpo da mensagem em quem somos
+=================================*/
 .about-section {
   max-width: 800px;
   margin: 2rem auto;
   text-align: center;
   line-height: 1.7;
 }
+/*===============================
+subtitulo da mensagem em quem somos 
+=================================*/
 .about-section h2 {
   color: var(--primary-purple);
   margin-top: 2rem;
 }
+/*===============================
+fundo colaboradores grid em quem somos 
+=================================*/
 .collaborator-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
 }
+/*===============================
+card dos colaboradores em quem somos 
+=================================*/
 .collaborator-card {
   background-color: white;
   border-radius: 8px;
@@ -251,6 +353,9 @@ a {
   text-align: center;
   padding: 1.5rem;
 }
+/*===============================
+foto dos colaboradores em quem somos 
+=================================*/
 .collaborator-photo {
   width: 100%;
   height: auto;
@@ -259,10 +364,24 @@ a {
   margin-bottom: 1rem;
   border: 3px solid var(--light-purple);
 }
-.collaborator-info h3 { margin: 0.5rem 0; color: var(--text-dark); }
-
-.collaborator-info .collaborator-role { font-weight: bold; color: var(--primary-purple); margin: 0; }
-
+/*===============================
+info dos colaboradores em quem somos 
+=================================*/
+.collaborator-info h3 { 
+  margin: 0.5rem 0; 
+  color: var(--text-dark); 
+}
+/*===============================
+info dos colaboradores papel em quem somos 
+=================================*/
+.collaborator-info .collaborator-role { 
+  font-weight: bold; 
+  color: var(--primary-purple); 
+  margin: 0; 
+}
+/*===============================
+info dos colaboradores insta em quem somos inicio
+=================================*/
 .collaborator-info .collaborator-social {
   font-size: 0.9rem;
   color: #555;
@@ -274,17 +393,15 @@ a {
   color: var(--primary-purple); /* Muda para a sua cor roxa */
   font-weight: bold;
 }
-.footer-main-link { /* Novo estilo para o link principal do rodapé */
-    color: white;
-    font-size: 1rem;
-}
-.footer-main-link:hover {
-    color: var(--hover-purple-light);
-    font-weight: bold;
-}
+/*===============================
+info dos colaboradores insta em quem somos fim
+=================================*/
 /*=====================================================================
       Estilos da Página de Busca Facial
-  ====================================================================== */
+====================================================================== */
+/*==============================
+  fundo escolhas busca facial
+================================*/
 .search-form { display: flex;
   flex-direction: column;
   align-items: center;
@@ -296,11 +413,28 @@ a {
   max-width: 600px;
   margin: 2rem auto;
 }
+/*==============================
+onde a foto procurada aparece busca facial inicio
+================================*/
 .search-form input[type="file"] {
   border: 1px solid #ccc;
   padding: 0.5rem;
   border-radius: 4px;
 }
+input[type="file"] {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+/*==============================
+onde a foto procurada aparece busca facial inicio
+================================*/
+/*==============================
+botao procurar foto busca facial inicio
+================================*/
 .search-form .cta-button {
   border-radius: 50px;
   color: var(--primary-purple);
@@ -315,6 +449,19 @@ a {
   color: white;
   border: 1px solid var(--primary-purple);
 }
+/*==============================
+botao procurar foto busca facial fim, abaixo imput da self
+================================*/
+/*==============================
+nome da self escolhida para procura searchpage
+================================*/
+.file-name {
+  font-style: italic;
+  color: #555;
+}
+/*==============================
+imagem procurada busca facial
+================================*/
 .image-preview {
   max-width: 150px;
   max-height: 150px;
@@ -323,21 +470,21 @@ a {
   object-fit: cover;
   aspect-ratio: 1 / 1;
 }
+/*==============================
+imagem achada busca facial
+================================*/
 .search-results { margin-top: 3rem; }
-
+/*==============================
+titulo foto achada busca facial
+================================*/
 .search-results h2 {
   text-align: center;
   color: var(--primary-purple);
   margin-bottom: 2rem;
 }
-input[type="file"] {
-  width: 0.1px;
-  height: 0.1px;
-  opacity: 0;
-  overflow: hidden;
-  position: absolute;
-  z-index: -1;
-}
+/*==============================
+escolher imagem self busca facial inicio
+================================*/
 .custom-file-upload {
     border: 1px solid var(--primary-purple);
     display: inline-block;
@@ -354,10 +501,9 @@ input[type="file"] {
   background-color: var(--primary-purple);
   color: white;
 }
-.file-name {
-  font-style: italic;
-  color: #555;
-}
+/*==============================
+escolher imagem self busca facial fim
+================================*/
 /* ===============================================================================================================
      A grelha de fotos agora terá o mesmo espaçamento da grelha de álbuns 
   ========================================================================================================*/
@@ -2527,7 +2673,6 @@ img {
     color: #bd01b0;
     font-weight: 800;
 }
-
 /* ==========================================================================
    🌙 MODO NOTURNO AUTOMÁTICO (DARK MODE)
    ========================================================================== */
@@ -3616,5 +3761,7 @@ img {
   div[style*="background-color: rgb(248, 249, 250)"] h4 {
       color: #e3e3e3 !important;
   }
-  
+  .imprensa-card-content {
+    background-color: #2a2a2a !important;
+  }
 }

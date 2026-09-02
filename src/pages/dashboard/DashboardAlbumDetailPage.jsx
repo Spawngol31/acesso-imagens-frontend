@@ -77,7 +77,7 @@ function MediaEditForm({ media, mediaType, onSubmit, onCancel }) {
 }
 
 // --- COMPONENTE DO CARD DE VÍDEO DO PAINEL ---
-function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalType }) {
+function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalType, isSelectionMode, isSelected, onToggleSelect }) {
     const videoRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -97,7 +97,19 @@ function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalT
     };
 
     return (
-        <div className="dashboard-media-card" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <div 
+            className="dashboard-media-card" 
+            onMouseEnter={handleMouseEnter} 
+            onMouseLeave={handleMouseLeave}
+            onClick={() => isSelectionMode && onToggleSelect(video.id)}
+            style={{ position: 'relative', cursor: isSelectionMode ? 'pointer' : 'default', border: isSelected ? '2px solid #b832ce' : 'none' }}
+        >
+            {isSelectionMode && (
+                <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '2px', display: 'flex' }}>
+                    <input type="checkbox" checked={isSelected} readOnly style={{ width: '22px', height: '22px', cursor: 'pointer', margin: 0 }} />
+                </div>
+            )}
+
             <div className="dashboard-media-image" style={{ width: '100%', aspectRatio: '1 / 1', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '8px 8px 0 0', position: 'relative' }}>
                 
                 {video.arquivo_preview_url ? (
@@ -131,7 +143,12 @@ function DashboardVideoPreviewCard({ video, setActionModalMedia, setActionModalT
                 <p className="media-title">{video.titulo}</p>
                 <p>R$ {parseFloat(video.preco).toFixed(2)}</p>
                 <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
-                    <button onClick={() => { setActionModalMedia(video); setActionModalType('video'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setActionModalMedia(video); setActionModalType('video'); }} 
+                        disabled={isSelectionMode}
+                        className="button-outline" 
+                        style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold', opacity: isSelectionMode ? 0.3 : 1 }}
+                    >
                         Opções
                     </button>
                 </div>
@@ -170,6 +187,7 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
                 style={{ 
                     border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1,
+                    color: 'white'
                 }}
             >
                 &lt;
@@ -185,7 +203,7 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
                             style={{
                                 width: '40px', height: '40px', border: 'none', borderRadius: '8px',
                                 backgroundColor: currentPage === page ? '#6c0464' : 'transparent',
-                                color: currentPage === page ? 'white' : '#333',
+                                color: currentPage === page ? 'white' : '#ccc',
                                 cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
                                 fontSize: '1rem', transition: 'all 0.2s'
                             }}
@@ -201,6 +219,7 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
                 style={{ 
                     border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1,
+                    color: 'white'
                 }}
             >
                 &gt;
@@ -253,6 +272,15 @@ function DashboardAlbumDetailPage() {
     const [mediaToDelete, setMediaToDelete] = useState(null);
 
     const [selectedTab, setSelectedTab] = useState('Todas');
+
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [selectedFotos, setSelectedFotos] = useState([]);
+    const [selectedVideos, setSelectedVideos] = useState([]);
+
+    // 🚀 NOVO: Estados dos Modais de Exclusão em Massa e Pasta
+    const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+    const [isCategoryDeleteModalOpen, setIsCategoryDeleteModalOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
 
     const corPrincipal = '#6c0464';
     const overlayRosado = 'rgba(108, 4, 100, 0.4)';
@@ -333,6 +361,8 @@ function DashboardAlbumDetailPage() {
         setSelectedTab(tab);
         setCurrentPhotoPage(1);
         setCurrentVideoPage(1);
+        setSelectedFotos([]);
+        setSelectedVideos([]);
     };
 
     const basePhotoList = selectedTab === 'Todas' 
@@ -343,7 +373,6 @@ function DashboardAlbumDetailPage() {
         ? rawVideoList 
         : rawVideoList.filter(v => v.categoria?.trim() === selectedTab);
 
-    // Paginação de Fotos
     const [currentPhotoPage, setCurrentPhotoPage] = useState(1);
     const totalPhotoPages = Math.ceil(basePhotoList.length / itensPorPagina);
     const currentPhotos = basePhotoList.slice((currentPhotoPage - 1) * itensPorPagina, currentPhotoPage * itensPorPagina);
@@ -353,7 +382,6 @@ function DashboardAlbumDetailPage() {
         window.scrollTo({ top: 300, behavior: 'smooth' });
     };
 
-    // Paginação de Vídeos
     const [currentVideoPage, setCurrentVideoPage] = useState(1);
     const totalVideoPages = Math.ceil(baseVideoList.length / itensPorPagina);
     const currentVideos = baseVideoList.slice((currentVideoPage - 1) * itensPorPagina, currentVideoPage * itensPorPagina);
@@ -361,6 +389,87 @@ function DashboardAlbumDetailPage() {
     const handleVideoPageChange = (novaPagina) => {
         setCurrentVideoPage(novaPagina);
         window.scrollTo({ top: 800, behavior: 'smooth' }); 
+    };
+
+    const toggleFotoSelection = (fotoId) => {
+        setSelectedFotos(prev => prev.includes(fotoId) ? prev.filter(id => id !== fotoId) : [...prev, fotoId]);
+    };
+    
+    const toggleVideoSelection = (videoId) => {
+        setSelectedVideos(prev => prev.includes(videoId) ? prev.filter(id => id !== videoId) : [...prev, videoId]);
+    };
+
+    const handleSelectAllVisible = () => {
+        const photosIds = currentPhotos.map(f => f.id);
+        const videosIds = currentVideos.map(v => v.id);
+        setSelectedFotos(photosIds);
+        setSelectedVideos(videosIds);
+    };
+
+    const handleDeselectAll = () => {
+        setSelectedFotos([]);
+        setSelectedVideos([]);
+    };
+
+    const clearSelection = () => {
+        setSelectedFotos([]);
+        setSelectedVideos([]);
+        setIsSelectionMode(false);
+    };
+
+    // 🚀 NOVO: Abrir o Modal de Exclusão em Massa
+    const handleBulkDeleteClick = () => {
+        const total = selectedFotos.length + selectedVideos.length;
+        if (total === 0) return;
+        setIsBulkDeleteModalOpen(true);
+    };
+
+    // 🚀 NOVO: Executar Exclusão em Massa
+    const executeBulkDelete = async () => {
+        setIsBulkDeleteModalOpen(false); // Fecha o modal imediatamente
+        toast.info("A excluir arquivos selecionados, aguarde...");
+        try {
+            const photoPromises = selectedFotos.map(id => axiosInstance.delete(`/dashboard/fotos/${id}/`));
+            const videoPromises = selectedVideos.map(id => axiosInstance.delete(`/dashboard/videos/${id}/`));
+            
+            await Promise.all([...photoPromises, ...videoPromises]);
+            toast.success("Todos os itens selecionados foram excluídos com sucesso!");
+            clearSelection();
+            fetchAlbumDetails();
+        } catch (error) {
+            toast.error("Ocorreu um erro ao excluir alguns arquivos. Podem estar vinculados a uma venda.");
+            fetchAlbumDetails(); 
+        }
+    };
+
+    // 🚀 NOVO: Abrir o Modal de Excluir Pasta Inteira
+    const handleDeleteCategoryClick = (categoriaNome) => {
+        if (categoriaNome === 'Todas') return;
+        setCategoryToDelete(categoriaNome);
+        setIsCategoryDeleteModalOpen(true);
+    };
+
+    // 🚀 NOVO: Executar a Exclusão da Pasta Inteira
+    const executeDeleteCategory = async () => {
+        const fotosNaCategoria = rawPhotoList.filter(f => f.categoria?.trim() === categoryToDelete);
+        const videosNaCategoria = rawVideoList.filter(v => v.categoria?.trim() === categoryToDelete);
+
+        setIsCategoryDeleteModalOpen(false); // Fecha o modal imediatamente
+        toast.info(`A excluir a pasta "${categoryToDelete}"...`);
+        try {
+            const photoPromises = fotosNaCategoria.map(f => axiosInstance.delete(`/dashboard/fotos/${f.id}/`));
+            const videoPromises = videosNaCategoria.map(v => axiosInstance.delete(`/dashboard/videos/${v.id}/`));
+            
+            await Promise.all([...photoPromises, ...videoPromises]);
+            toast.success(`Pasta "${categoryToDelete}" e todo o seu conteúdo foram excluídos!`);
+            setSelectedTab('Todas');
+            setCategoryToDelete(null);
+            fetchAlbumDetails();
+        } catch (error) {
+            toast.error("Erro ao excluir alguns arquivos da pasta.");
+            setCategoryToDelete(null);
+            fetchAlbumDetails();
+        }
     };
 
     const handlePhotoSubmit = async (e) => {
@@ -548,9 +657,8 @@ function DashboardAlbumDetailPage() {
     const globalModalHeader = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #444', paddingBottom: '15px', marginBottom: '20px' };
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', paddingBottom: isSelectionMode ? '80px' : '0' }}>
             
-            {/* 🚀 CABEÇALHO DO ÁLBUM NO DASHBOARD (ATUALIZADO) */}
             <header className="dashboard-header-card">
                 <div style={{ textAlign: 'center' }}>
                     <h1 className="dashboard-header-title">{album.titulo}</h1>
@@ -569,36 +677,53 @@ function DashboardAlbumDetailPage() {
                     <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">Editar R$ (Fotos)</button>
                     <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">Editar R$ (Vídeos)</button>
                     <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textDecoration: 'none' }}>Click & Share</Link>
+                    
+                    <button 
+                        className="button-outline"
+                        onClick={() => setIsSelectionMode(!isSelectionMode)} 
+                    >
+                        {isSelectionMode ? 'Cancelar Seleção' : 'Seleção Múltipla'}
+                    </button>
                 </div>
             </header>          
             
             {tabs.length > 1 && (
                 <div style={{
                     display: 'flex', gap: '10px', overflowX: 'auto', marginBottom: '2rem', paddingBottom: '10px',
-                    scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch'
+                    scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch', alignItems: 'center'
                 }}>
                     {tabs.map(tab => {
                         const isActive = selectedTab === tab;
                         return (
-                            <button
-                                key={tab}
-                                onClick={() => handleTabChange(tab)}
-                                style={{
-                                    padding: '8px 20px', 
-                                    borderRadius: '25px', 
-                                    cursor: 'pointer', 
-                                    whiteSpace: 'nowrap', 
-                                    transition: 'all 0.2s',
-                                    border: isActive ? 'none' : '1px solid #e1bce0',
-                                    backgroundColor: isActive ? '#b832ce' : 'rgba(255, 255, 255, 0.05)',
-                                    color: isActive ? '#ffffff' : '#f794f7',
-                                    fontWeight: 'bold',
-                                    boxShadow: isActive ? '0 4px 10px rgba(184, 50, 206, 0.4)' : 'none',
-                                    textShadow: isActive ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
-                                }}
-                            >
-                                {tab}
-                            </button>
+                            <div key={tab} style={{ display: 'flex', alignItems: 'center', backgroundColor: isActive ? '#b832ce' : 'rgba(255, 255, 255, 0.05)', borderRadius: '25px', padding: '0 5px 0 0', border: isActive ? 'none' : '1px solid #e1bce0', transition: 'all 0.2s', boxShadow: isActive ? '0 4px 10px rgba(184, 50, 206, 0.4)' : 'none' }}>
+                                <button
+                                    onClick={() => handleTabChange(tab)}
+                                    style={{
+                                        padding: '8px 20px', 
+                                        borderRadius: '25px', 
+                                        cursor: 'pointer', 
+                                        whiteSpace: 'nowrap', 
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: isActive ? '#ffffff' : '#f794f7',
+                                        fontWeight: 'bold',
+                                        textShadow: isActive ? 'none' : '0 1px 2px rgba(0,0,0,0.5)'
+                                    }}
+                                >
+                                    {tab}
+                                </button>
+                                {isActive && tab !== 'Todas' && (
+                                    <button 
+                                        onClick={() => handleDeleteCategoryClick(tab)}
+                                        title={`Excluir a pasta "${tab}" e todos os seus arquivos`}
+                                        style={{ background: 'transparent', border: 'none', color: '#ffb3b3', cursor: 'pointer', fontSize: '16px', padding: '0 10px 0 5px', display: 'flex', alignItems: 'center', transition: '0.2s' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.color = '#ff4d4d'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = '#ffb3b3'}
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
+                            </div>
                         );
                     })}
                 </div>
@@ -606,22 +731,41 @@ function DashboardAlbumDetailPage() {
 
             <h3 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '10px' }}>Galeria de Fotos ({basePhotoList.length})</h3>
             <div className="media-grid">
-                {currentPhotos.map(foto => (
-                    <div key={foto.id} className={`dashboard-media-card ${foto.is_arquivado ? 'archived' : ''}`}>
-                        <div className="dashboard-media-image">
-                           <img src={foto.imagem_url} alt={foto.legenda} style={{ transform: `rotate(${foto.rotacao}deg)` }} />
-                        </div>
-                        <div className="dashboard-media-info">
-                            <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
-                            {foto.is_arquivado && <span className="status-archived-small">Arquivado</span>}
-                            <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
-                                <button onClick={() => { setActionModalMedia(foto); setActionModalType('foto'); }} className="button-outline" style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold' }}>
-                                    Opções
-                                </button>
+                {currentPhotos.map(foto => {
+                    const isSelected = selectedFotos.includes(foto.id);
+                    return (
+                        <div 
+                            key={foto.id} 
+                            className={`dashboard-media-card ${foto.is_arquivado ? 'archived' : ''}`}
+                            style={{ position: 'relative', cursor: isSelectionMode ? 'pointer' : 'default', border: isSelected ? '2px solid #b832ce' : 'none' }}
+                            onClick={() => isSelectionMode && toggleFotoSelection(foto.id)}
+                        >
+                            {isSelectionMode && (
+                                <div style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '2px', display: 'flex' }}>
+                                    <input type="checkbox" checked={isSelected} readOnly style={{ width: '22px', height: '22px', cursor: 'pointer', margin: 0 }} />
+                                </div>
+                            )}
+
+                            <div className="dashboard-media-image">
+                               <img src={foto.imagem_url} alt={foto.legenda} style={{ transform: `rotate(${foto.rotacao}deg)` }} />
+                            </div>
+                            <div className="dashboard-media-info">
+                                <p>R$ {parseFloat(foto.preco).toFixed(2)}</p>
+                                {foto.is_arquivado && <span className="status-archived-small">Arquivado</span>}
+                                <div className="media-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); setActionModalMedia(foto); setActionModalType('foto'); }} 
+                                        disabled={isSelectionMode}
+                                        className="button-outline" 
+                                        style={{ width: '100%', borderRadius: '20px', padding: '8px', fontSize: '13px', fontWeight: 'bold', opacity: isSelectionMode ? 0.3 : 1 }}
+                                    >
+                                        Opções
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
             
             {basePhotoList.length === 0 && <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhuma foto nesta categoria.</p>}
@@ -639,7 +783,10 @@ function DashboardAlbumDetailPage() {
                         key={video.id} 
                         video={video} 
                         setActionModalMedia={setActionModalMedia} 
-                        setActionModalType={setActionModalType} 
+                        setActionModalType={setActionModalType}
+                        isSelectionMode={isSelectionMode}
+                        isSelected={selectedVideos.includes(video.id)}
+                        onToggleSelect={toggleVideoSelection}
                     />
                 ))}
             </div>
@@ -652,8 +799,44 @@ function DashboardAlbumDetailPage() {
                 onPageChange={handleVideoPageChange} 
             />
 
+            {/* 🚀 BARRA FLUTUANTE DE AÇÕES EM MASSA */}
+            {isSelectionMode && (
+                <div className="modalselect" style={{
+                    position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+                    backgroundColor: '#fff', padding: '15px 30px', borderRadius: '40px',
+                    display: 'flex', gap: '15px', alignItems: 'center', zIndex: 9999,
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.6)', border: '1px solid #444', flexWrap: 'wrap', justifyContent: 'center'
+                }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#f794f7' }}>
+                        {selectedFotos.length + selectedVideos.length} item(s) selecionado(s)
+                    </span>
+                    <button onClick={handleSelectAllVisible} style={{ padding: '8px 15px', borderRadius: '20px', border: 'none', backgroundColor: '#444', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
+                        Selecionar Tudo (Página)
+                    </button>
+                    
+                    <button 
+                        onClick={handleDeselectAll} 
+                        disabled={selectedFotos.length === 0 && selectedVideos.length === 0}
+                        style={{ 
+                            padding: '8px 15px', borderRadius: '20px', border: '1px solid #555', backgroundColor: 'transparent', color: '#c010b1', cursor: 'pointer', fontWeight: 'bold',
+                            opacity: (selectedFotos.length === 0 && selectedVideos.length === 0) ? 0.5 : 1 
+                        }}
+                    >
+                        Deselecionar Tudo
+                    </button>
+
+                    <button onClick={handleBulkDeleteClick} disabled={selectedFotos.length === 0 && selectedVideos.length === 0} style={{ padding: '8px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold', opacity: (selectedFotos.length === 0 && selectedVideos.length === 0) ? 0.5 : 1 }}>
+                        Apagar Selecionados
+                    </button>
+
+                    <button onClick={clearSelection} style={{ padding: '8px 15px', borderRadius: '20px', border: '1px solid #777', backgroundColor: 'transparent', color: '#c010b1', cursor: 'pointer' }}>
+                        Sair do Modo Seleção
+                    </button>
+                </div>
+            )}
+
             {/* ========================================================================= */}
-            {/* 🚀 MODAIS DE UPLOAD */}
+            {/* MODAIS GLOBAIS DE UPLOAD E EDIÇÃO */}
             {/* ========================================================================= */}
             
             {activeGlobalModal === 'uploadFotos' && (
@@ -926,6 +1109,10 @@ function DashboardAlbumDetailPage() {
                 </div>
             )}
 
+            {/* ========================================================================= */}
+            {/* MODAIS DE CONFIRMAÇÃO E EXCLUSÃO (Agora todos no mesmo estilo limpo!) */}
+            {/* ========================================================================= */}
+
             {isConfirmModalOpen && fotoParaMudar && (
                 <div style={globalModalOverlay}>
                     <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
@@ -958,9 +1145,38 @@ function DashboardAlbumDetailPage() {
                 </div>
             )}
 
+            {isBulkDeleteModalOpen && (
+                <div style={globalModalOverlay}>
+                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                        <h3 style={{ color: '#dc3545', marginTop: 0 }}>Excluir Arquivos Selecionados?</h3>
+                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                            Tem certeza que deseja APAGAR os <strong>{selectedFotos.length + selectedVideos.length}</strong> arquivo(s) selecionado(s)? Esta ação é PERMANENTE e não pode ser desfeita.
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                            <button onClick={() => setIsBulkDeleteModalOpen(false)} className="button-outline" style={{ padding: '10px 20px'}}>Cancelar</button>
+                            <button onClick={executeBulkDelete} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>Sim, Excluir Tudo</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isCategoryDeleteModalOpen && categoryToDelete && (
+                <div style={globalModalOverlay}>
+                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                        <h3 style={{ color: '#dc3545', marginTop: 0 }}>Excluir Pasta Inteira?</h3>
+                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                            ATENÇÃO: Deseja apagar a pasta "<strong>{categoryToDelete}</strong>" e TODOS os seus arquivos permanentemente? Esta ação não pode ser desfeita.
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                            <button onClick={() => { setIsCategoryDeleteModalOpen(false); setCategoryToDelete(null); }} className="button-outline" style={{ padding: '10px 20px'}}>Cancelar</button>
+                            <button onClick={executeDeleteCategory} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>Sim, Excluir Tudo</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* --- ESTILOS CSS INJETADOS --- */}
             <style>{`
-                /* 🚀 NOVO: Estilos do Cabeçalho do Dashboard */
                 .dashboard-header-card {
                     background-color: #fff;
                     border: 1px solid #e1bce0;
@@ -990,6 +1206,10 @@ function DashboardAlbumDetailPage() {
                     }
                     .dashboard-header-text {
                         color: #ccc;
+                    }
+                    .modalselect {
+                        backgroundColor: #1a1a1a;
+                        color: white;
                     }
                 }
             `}</style>

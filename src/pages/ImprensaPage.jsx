@@ -97,14 +97,14 @@ function ImprensaPage() {
                     font-size: clamp(2.5rem, 5vw, 3.5rem); 
                     margin-bottom: 15px;
                     font-weight: 800;
-                    color: #fff;
+                    color: #6c0464;
                 }
                 .imprensa-subtitle-text {
                     font-size: clamp(1rem, 2vw, 1.1rem);
                     max-width: 600px;
                     line-height: 1.5;
                     margin: 0 auto;
-                    color: #eee;
+                    color: #333;
                 }
 
                 /* GRID DOS CARDS DE MATÉRIA */
@@ -156,13 +156,13 @@ function ImprensaPage() {
                     flex-direction: column;
                     flex-grow: 1;
                     text-align: center;
-                    background-color: #222;
+                    background-color: #fff;
                 }
                 
                 .imprensa-card-title {
                     margin: 0 0 10px 0; 
                     font-size: 1.15rem; 
-                    color: #fff; 
+                    color: #6c0464; 
                     line-height: 1.4;
                     font-weight: bold;
                     /* Trunca o texto em 2 linhas se for muito grande */
