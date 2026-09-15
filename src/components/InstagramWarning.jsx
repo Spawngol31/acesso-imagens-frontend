@@ -42,3 +42,5 @@ function InstagramWarning() {
 }
 
 export default InstagramWarning;
+
+<InstagramWarning />

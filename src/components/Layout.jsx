@@ -95,7 +95,7 @@ function Layout() {
 
     return (
         <div className="site-wrapper">
-            <InstagramWarning />
+            
             <header className="main-header">
                 <div className="container header-container">
                     
