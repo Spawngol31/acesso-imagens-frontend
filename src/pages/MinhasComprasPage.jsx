@@ -27,6 +27,11 @@ function MinhasComprasPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    // 🚀 NOVOS ESTADOS PARA A GAVETA (BOTTOM SHEET)
+    const [isDownloadDrawerOpen, setIsDownloadDrawerOpen] = useState(false);
+    const [downloadUrlToCopy, setDownloadUrlToCopy] = useState('');
+    const [copied, setCopied] = useState(false);
+
     useEffect(() => {
         setIsInAppBrowser(isSocialMediaBrowser());
     }, []);
@@ -76,28 +81,37 @@ function MinhasComprasPage() {
         }
     };
 
+    // 🚀 FUNÇÃO DE COPIAR O LINK DENTRO DA GAVETA
+    const handleCopyDownloadLink = () => {
+        if (!downloadUrlToCopy) return;
+        navigator.clipboard.writeText(downloadUrlToCopy)
+            .then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 3000);
+            })
+            .catch(err => console.error("Erro ao copiar o link", err));
+    };
+
     const handleBulkDownloadZip = async () => {
         if (selecionadas.length === 0) return;
         setIsBulkDownloading(true);
-        
-        const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
-
-        // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM:
-        if (isInAppBrowser && !isAndroid) {
-            navigator.clipboard.writeText(window.location.href)
-                .then(() => toast.info("🔗 Link copiado! Abra o Safari, cole o link e baixe o seu ZIP.", { autoClose: 6000, theme: "colored" }));
-            setSelecionadas([]);
-            setIsBulkDownloading(false);
-            return;
-        }
-
         toast.info("A preparar o seu ficheiro ZIP. Isto pode demorar alguns segundos...", { autoClose: 4000 });
 
         try {
             const response = await axiosInstance.post('/download-fotos-zip/', { foto_ids: selecionadas });
             const urlOriginal = response.data.download_url;
+            const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
 
-            // 🚀 SE FOR ANDROID NO INSTAGRAM:
+            // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM: ABRE A GAVETA COM O LINK DO ZIP!
+            if (isInAppBrowser && !isAndroid) {
+                setDownloadUrlToCopy(urlOriginal);
+                setIsDownloadDrawerOpen(true);
+                setSelecionadas([]);
+                setIsBulkDownloading(false);
+                return;
+            }
+
+            // SE FOR ANDROID NO INSTAGRAM: USA INTENT
             if (isInAppBrowser && isAndroid) {
                 const urlSemHttps = urlOriginal.replace(/^https?:\/\//, '');
                 const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
@@ -107,6 +121,7 @@ function MinhasComprasPage() {
                 return;
             }
 
+            // SE ESTIVER NO PC OU SAFARI NORMAL
             const link = document.createElement('a');
             link.href = urlOriginal;
             link.setAttribute('download', `acesso_imagens_pacote.zip`);
@@ -124,50 +139,24 @@ function MinhasComprasPage() {
         }
     };
 
-    const handleBulkSendEmail = async () => {
-        if (selecionadas.length === 0) return;
-        setIsBulkEmailing(true);
-
-        try {
-            const response = await axiosInstance.post('/enviar-fotos-email/', { foto_ids: selecionadas });
-            toast.success(`Fotos enviadas com sucesso para:\n${response.data.email_destino}`, {
-                position: "top-center", autoClose: 5000, theme: "colored"
-            });
-            setSelecionadas([]); 
-        } catch (error) {
-            console.error("Erro ao enviar e-mail em massa:", error);
-            toast.error("Erro ao enviar o e-mail. Tente novamente.");
-        } finally {
-            setIsBulkEmailing(false);
-        }
-    };
-
     const handleDownload = async (fotoId, fileName) => {
         setDownloading(fotoId);
-        
-        const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
-
-        // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM: 
-        // Em vez de falhar, ele copia o link e avisa o cliente.
-        if (isInAppBrowser && !isAndroid) {
-            navigator.clipboard.writeText(window.location.href)
-                .then(() => {
-                    toast.info("🔗 Link copiado! Abra o navegador Safari, cole o link e baixe suas fotos.", { autoClose: 6000, theme: "colored" });
-                })
-                .catch(() => {
-                    toast.error("Para baixar as fotos, abra este link no Safari.");
-                });
-            setDownloading(null);
-            return;
-        }
-
         toast.info("A preparar o ficheiro original...");
 
         try {
             const response = await axiosInstance.get(`/download-foto/${fotoId}/`);
             const urlSegura = response.data.download_url;
+            const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
 
-            // 🚀 SE FOR ANDROID NO INSTAGRAM:
+            // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM: ABRE A GAVETA COM O LINK DIRETO DA FOTO!
+            if (isInAppBrowser && !isAndroid) {
+                setDownloadUrlToCopy(urlSegura);
+                setIsDownloadDrawerOpen(true);
+                setDownloading(null);
+                return;
+            }
+
+            // SE FOR ANDROID NO INSTAGRAM: USA INTENT
             if (isInAppBrowser && isAndroid) {
                 const urlSemHttps = urlSegura.replace(/^https?:\/\//, '');
                 const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
@@ -176,7 +165,7 @@ function MinhasComprasPage() {
                 return;
             }
 
-            // FAZ O FETCH PARA O BLOB (Força o download real no Safari/Chrome)
+            // FAZ O FETCH PARA O BLOB (Força o download real no Safari/Chrome/PC)
             const imageResponse = await fetch(urlSegura);
             if (!imageResponse.ok) throw new Error("A imagem não pôde ser descarregada.");
             
@@ -202,17 +191,21 @@ function MinhasComprasPage() {
         }
     };
 
-    const handleSendEmail = async (fotoId) => {
-        setSendingEmail(fotoId);
+    const handleBulkSendEmail = async () => {
+        if (selecionadas.length === 0) return;
+        setIsBulkEmailing(true);
+
         try {
-            const response = await axiosInstance.post(`/download-foto/${fotoId}/enviar-email/`);
-            toast.success(`Link da foto enviado para:\n${response.data.email_destino}`, {
+            const response = await axiosInstance.post('/enviar-fotos-email/', { foto_ids: selecionadas });
+            toast.success(`Fotos enviadas com sucesso para:\n${response.data.email_destino}`, {
                 position: "top-center", autoClose: 5000, theme: "colored"
             });
+            setSelecionadas([]); 
         } catch (error) {
+            console.error("Erro ao enviar e-mail em massa:", error);
             toast.error("Erro ao enviar o e-mail. Tente novamente.");
         } finally {
-            setSendingEmail(null);
+            setIsBulkEmailing(false);
         }
     };
 
@@ -394,6 +387,51 @@ function MinhasComprasPage() {
                             className="create-button btn-secondary-pink"
                         >
                             {isBulkEmailing ? 'A enviar...' : '📧 Enviar para E-mail'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ========================================================================= */}
+            {/* GAVETA DO INSTAGRAM (BOTTOM SHEET TIPO BANLEK) */}
+            {/* ========================================================================= */}
+            {isDownloadDrawerOpen && (
+                <div className="insta-modal-overlay">
+                    <div className="insta-modal-content">
+                        <div className="insta-modal-drag-handle"></div>
+                        
+                        <h3 className="insta-modal-title">Copie o link para baixar</h3>
+                        <p className="insta-modal-subtitle">Siga os passos para baixar:</p>
+                        
+                        <div className="insta-steps-container">
+                            <div className="insta-step-row">
+                                <div className="insta-step-number">1</div>
+                                <div className="insta-step-text">Copie o link clicando no botão ao lado</div>
+                                <button 
+                                    className={`insta-copy-btn ${copied ? 'copied' : ''}`}
+                                    onClick={handleCopyDownloadLink}
+                                >
+                                    {copied ? 'Copiado!' : 'Copiar link'}
+                                </button>
+                            </div>
+                            
+                            <div className="insta-step-row">
+                                <div className="insta-step-number">2</div>
+                                <div className="insta-step-text">Abra seu navegador (Safari/Chrome)</div>
+                            </div>
+                            
+                            <div className="insta-step-row">
+                                <div className="insta-step-number">3</div>
+                                <div className="insta-step-text">Cole o link e baixe suas fotos</div>
+                            </div>
+                        </div>
+                        
+                        <div className="insta-divider">
+                            <span>ou</span>
+                        </div>
+
+                        <button className="insta-close-btn" onClick={() => setIsDownloadDrawerOpen(false)}>
+                            Voltar e continuar navegando
                         </button>
                     </div>
                 </div>
