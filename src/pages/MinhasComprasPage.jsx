@@ -138,48 +138,60 @@ function MinhasComprasPage() {
         }
     };
 
+    // 🚀 LÓGICA DE DOWNLOAD 100% CORRIGIDA COM FETCH/BLOB
     const handleDownload = async (fotoId, fileName) => {
         setDownloading(fotoId);
-        let urlOriginal = '';
+        toast.info("A preparar o ficheiro original...");
+
         try {
+            // Passo 1: Obter a URL segura gerada pelo backend
             const response = await axiosInstance.get(`/download-foto/${fotoId}/`);
-            urlOriginal = response.data.download_url;
+            const urlSegura = response.data.download_url;
 
             const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
             
+            // Tratamento especial para Android no Instagram
             if (isInAppBrowser && isAndroid) {
-                const urlSemHttps = urlOriginal.replace(/^https?:\/\//, '');
+                const urlSemHttps = urlSegura.replace(/^https?:\/\//, '');
                 const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
                 window.location.href = intentUrl;
                 setDownloading(null);
                 return;
             }
 
+            // Tratamento especial para iOS no Instagram
             if (isInAppBrowser && !isAndroid) {
-                window.open(urlOriginal, '_blank');
+                window.open(urlSegura, '_blank');
                 setDownloading(null);
                 return;
             }
 
+            // Passo 2: O TRUQUE DE MESTRE - Fazer um Fetch da imagem para a memória local (Blob)
+            // Isso força o navegador a fazer download em vez de apenas abrir a imagem noutra janela
+            const imageResponse = await fetch(urlSegura);
+            if (!imageResponse.ok) throw new Error("A imagem não pôde ser descarregada.");
+            
+            const imageBlob = await imageResponse.blob();
+            const urlBlob = window.URL.createObjectURL(imageBlob);
+
+            // Passo 3: Criar um botão "fantasma" que clica a si mesmo
             const link = document.createElement('a');
-            link.href = urlOriginal;
-            link.setAttribute('download', fileName || `foto_${fotoId}.jpg`);
+            link.href = urlBlob;
+            
+            // Tenta criar um nome bonito baseado na legenda, ou usa um nome padrão
+            const safeName = fileName ? fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : `acesso_imagens_foto_${fotoId}`;
+            link.download = `${safeName}.jpg`;
+            
             document.body.appendChild(link);
             link.click();
+
+            // Passo 4: Limpar o lixo
             document.body.removeChild(link);
-            
+            window.URL.revokeObjectURL(urlBlob);
+
         } catch (error) {
-            if (urlOriginal) {
-                const linkFallback = document.createElement('a');
-                linkFallback.href = urlOriginal;
-                linkFallback.download = fileName || `foto_${fotoId}.jpg`;
-                linkFallback.target = '_blank';
-                document.body.appendChild(linkFallback);
-                linkFallback.click();
-                document.body.removeChild(linkFallback);
-            } else {
-                toast.error("Não foi possível gerar o link de download.");
-            }
+            console.error("Erro crítico ao fazer download:", error);
+            toast.error("Ocorreu um erro. Tente novamente mais tarde.");
         } finally {
             setDownloading(null);
         }
