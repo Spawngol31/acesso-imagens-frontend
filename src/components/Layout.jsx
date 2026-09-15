@@ -146,10 +146,10 @@ function Layout() {
                                         
                                         {user.papel === 'CLIENTE' && (
                                             <>
-                                                <Link to="/minhas-compras" className="dark-dropdown-item"><span className="dark-icon"><IconImage /></span>Minahs Compras</Link>
+                                                <Link to="/minhas-compras" className="dark-dropdown-item"><span className="dark-icon"><IconImage /></span>Minhas compras</Link>
                                                 <Link to="/minhas-compras-abertas" className="dark-dropdown-item"><span className="dark-icon"><IconCart /></span>Compras em aberto</Link>
                                                 <Link to="/minhas-propostas" className="dark-dropdown-item dropdown-relative">
-                                                    <span className="dark-icon"><IconPaperclip /></span>Minhas Propostas
+                                                    <span className="dark-icon"><IconPaperclip /></span>Minhas propostas
                                                     {hasPropostaUpdate && <span className="dropdown-badge-nova">● Nova!</span>}
                                                 </Link>
                                             </>

@@ -79,25 +79,29 @@ function MinhasComprasPage() {
     const handleBulkDownloadZip = async () => {
         if (selecionadas.length === 0) return;
         setIsBulkDownloading(true);
+        
+        const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
+
+        // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM:
+        if (isInAppBrowser && !isAndroid) {
+            navigator.clipboard.writeText(window.location.href)
+                .then(() => toast.info("🔗 Link copiado! Abra o Safari, cole o link e baixe o seu ZIP.", { autoClose: 6000, theme: "colored" }));
+            setSelecionadas([]);
+            setIsBulkDownloading(false);
+            return;
+        }
+
         toast.info("A preparar o seu ficheiro ZIP. Isto pode demorar alguns segundos...", { autoClose: 4000 });
 
         try {
             const response = await axiosInstance.post('/download-fotos-zip/', { foto_ids: selecionadas });
             const urlOriginal = response.data.download_url;
-            
-            const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
 
+            // 🚀 SE FOR ANDROID NO INSTAGRAM:
             if (isInAppBrowser && isAndroid) {
                 const urlSemHttps = urlOriginal.replace(/^https?:\/\//, '');
                 const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
                 window.location.href = intentUrl;
-                setSelecionadas([]);
-                setIsBulkDownloading(false);
-                return;
-            }
-
-            if (isInAppBrowser && !isAndroid) {
-                window.open(urlOriginal, '_blank');
                 setSelecionadas([]);
                 setIsBulkDownloading(false);
                 return;
@@ -138,19 +142,32 @@ function MinhasComprasPage() {
         }
     };
 
-    // 🚀 LÓGICA DE DOWNLOAD 100% CORRIGIDA COM FETCH/BLOB
     const handleDownload = async (fotoId, fileName) => {
         setDownloading(fotoId);
+        
+        const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
+
+        // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM: 
+        // Em vez de falhar, ele copia o link e avisa o cliente.
+        if (isInAppBrowser && !isAndroid) {
+            navigator.clipboard.writeText(window.location.href)
+                .then(() => {
+                    toast.info("🔗 Link copiado! Abra o navegador Safari, cole o link e baixe suas fotos.", { autoClose: 6000, theme: "colored" });
+                })
+                .catch(() => {
+                    toast.error("Para baixar as fotos, abra este link no Safari.");
+                });
+            setDownloading(null);
+            return;
+        }
+
         toast.info("A preparar o ficheiro original...");
 
         try {
-            // Passo 1: Obter a URL segura gerada pelo backend
             const response = await axiosInstance.get(`/download-foto/${fotoId}/`);
             const urlSegura = response.data.download_url;
 
-            const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
-            
-            // Tratamento especial para Android no Instagram
+            // 🚀 SE FOR ANDROID NO INSTAGRAM:
             if (isInAppBrowser && isAndroid) {
                 const urlSemHttps = urlSegura.replace(/^https?:\/\//, '');
                 const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
@@ -159,33 +176,21 @@ function MinhasComprasPage() {
                 return;
             }
 
-            // Tratamento especial para iOS no Instagram
-            if (isInAppBrowser && !isAndroid) {
-                window.open(urlSegura, '_blank');
-                setDownloading(null);
-                return;
-            }
-
-            // Passo 2: O TRUQUE DE MESTRE - Fazer um Fetch da imagem para a memória local (Blob)
-            // Isso força o navegador a fazer download em vez de apenas abrir a imagem noutra janela
+            // FAZ O FETCH PARA O BLOB (Força o download real no Safari/Chrome)
             const imageResponse = await fetch(urlSegura);
             if (!imageResponse.ok) throw new Error("A imagem não pôde ser descarregada.");
             
             const imageBlob = await imageResponse.blob();
             const urlBlob = window.URL.createObjectURL(imageBlob);
 
-            // Passo 3: Criar um botão "fantasma" que clica a si mesmo
             const link = document.createElement('a');
             link.href = urlBlob;
             
-            // Tenta criar um nome bonito baseado na legenda, ou usa um nome padrão
             const safeName = fileName ? fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : `acesso_imagens_foto_${fotoId}`;
             link.download = `${safeName}.jpg`;
             
             document.body.appendChild(link);
             link.click();
-
-            // Passo 4: Limpar o lixo
             document.body.removeChild(link);
             window.URL.revokeObjectURL(urlBlob);
 
@@ -345,7 +350,7 @@ function MinhasComprasPage() {
                                                     className="create-button"
                                                     style={{ width: '100%' }}
                                                 >
-                                                    {downloading === item.foto.id ? 'A abrir no Chrome...' : 'Baixar Original'}
+                                                    {downloading === item.foto.id ? 'A processar...' : 'Baixar Original'}
                                                 </button>
                                             </div>
                                         ) : (
