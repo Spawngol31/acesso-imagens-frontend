@@ -578,22 +578,9 @@ input[type="file"] { width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; 
 .remove-button-small:hover { background-color: #dc3545; color: white; }
 
 .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
-.dashboard-media-card { background-color: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
-.dashboard-media-image {
-    width: 100%;
-    aspect-ratio: 1 / 1; 
-    overflow: hidden;
-    background-color: var(--bg-secondary);
-    border-radius: 8px 8px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.dashboard-media-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; 
-}
+.dashboard-media-card { background-color: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.dashboard-media-image { width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background-color: var(--bg-secondary); border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center; }
+.dashboard-media-image img { width: 100%; height: 100%; object-fit: cover; }
 .dashboard-media-info { padding: 1rem; text-align: center; border-top: 1px solid var(--border-color); }
 .dashboard-media-info p { margin: 0 0 0.75rem 0; font-weight: bold; color: var(--text-main); }
 .media-actions { display: flex; justify-content: center; gap: 0.5rem; }
@@ -2276,6 +2263,20 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .detail-meta { margin: 0; font-size: 0.95rem; }
 .detail-meta strong { color: var(--text-main); }
 .detail-header-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 1.5rem; }
+.bulk-selection-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--bg-card); padding: 15px 30px; border-radius: 40px; display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid var(--border-color);  justify-content: center; }
+.bulk-selection-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
+
+/* ==========================================================================
+   AÇÕES DO ÁLBUM (BOTÕES DESKTOP VS MOBILE)
+   ========================================================================== */
+.desktop-actions-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%;}
+.mobile-actions-trigger { display: none; width: 100%; padding: 12px; font-size: 15px; margin-top: 10px;}
+
+/* Regra Mágica para Telemóveis */
+@media (max-width: 768px) {
+    .desktop-actions-group { display: none !important;}
+    .mobile-actions-trigger { display: block !important; }
+}
 
 /* Abas (Tabs) */
 .detail-tabs-wrapper { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 2rem; padding-bottom: 10px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; align-items: center; }
@@ -2298,7 +2299,7 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .detail-empty-msg { color: var(--text-muted); text-align: center; padding: 20px; }
 
 /* Cartão de Mídia (Video & Foto) */
-.media-checkbox-overlay { position: absolute; top: 10px; left: 10px; z-index: 10; background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 2px; display: flex; }
+.media-checkbox-overlay { position: absolute; top: 10px; left: 10px; z-index: 10; background-color: var(--bg-card); border-radius: 4px; padding: 2px; display: flex; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 .video-preview-box { width: 100%; aspect-ratio: 1 / 1; background-color: var(--bg-secondary); display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px 8px 0 0; position: relative; }
 .video-player-cover { width: 100%; height: 100%; object-fit: cover; }
 .video-play-icon-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0,0,0,0.5); border-radius: 50%; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; pointer-events: none; }
@@ -2320,8 +2321,8 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .bulk-btn-dark:hover {color: var(--bg-main);}
 .bulk-btn-outline { border: 1px solid var(--text-muted); background-color: transparent; color: var(--primary-purple); }
 .bulk-btn-outline:hover {color: var(--bg-main);}
-.bulk-btn-danger { background-color: #dc3545; color: var(--primary-purple); }
-.bulk-btn-danger:hover {color: var(--bg-main);}
+.bulk-btn-danger { background-color: #dc3545; color: var(--text-light); }
+.bulk-btn-danger:hover {color: var(--text-light); background-color: #b40718; border: none;}
 .bulk-btn-exit { border: 1px solid #777; background-color: transparent; color: var(--primary-purple); }
 .bulk-btn-exit:hover {color: var(--bg-main);}
 /* Modais de Upload e Edição em Massa */
@@ -2353,7 +2354,7 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 
 @media (prefers-color-scheme: dark) {
     .modal-upload-status { color: #ffeeba; border-color: #856404; }
-    .bulk-selection-bar { background-color: #1a1a1a; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border-color: #444; }
+    .bulk-selection-bar { background-color: var(--bg-card); box-shadow: 0 10px 30px rgba(0,0,0,0.6); border-color: var(--border-color); }
     .floating-bar-text { color: var(--primary-purple); }
 }
 
@@ -3239,8 +3240,15 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .checkout-footer-actions { margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
 .checkout-link-btn { text-decoration: none; display: inline-block; }
 
+/* notificaçao insta ios*/
+.noti-insta { position: sticky; top: 0; z-index: 99999; background-color: #dc3545; color: #fff; padding: 12px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.noti-insta-aviso { margin: 0 0 10px 0; font-size: 13px; font-weight: 500; }
+.noti-insta-aviso-link { background-color: var(--primary-purple); color: var(--bg-main); padding: 8px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
+.noti-insta-aviso-link:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
 @media (prefers-color-scheme: dark) {
     .payment-approved-title { color: #4ade80; }
+    .noti-insta { background-color: #b02a37; }
 }
 /* ==========================================================================
    12. RESPONSIVIDADE GERAL (MOBILE / CELULARES)

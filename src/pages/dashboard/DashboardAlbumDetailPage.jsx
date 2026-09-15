@@ -260,10 +260,12 @@ function DashboardAlbumDetailPage() {
     const [selectedFotos, setSelectedFotos] = useState([]);
     const [selectedVideos, setSelectedVideos] = useState([]);
 
-    // 🚀 NOVO: Estados dos Modais de Exclusão em Massa e Pasta
     const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
     const [isCategoryDeleteModalOpen, setIsCategoryDeleteModalOpen] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
+
+    // 🚀 NOVO: Estado para abrir o Menu Mobile
+    const [isMobileActionsMenuOpen, setIsMobileActionsMenuOpen] = useState(false);
 
     const itensPorPagina = 20;
 
@@ -394,16 +396,14 @@ function DashboardAlbumDetailPage() {
         setIsSelectionMode(false);
     };
 
-    // 🚀 NOVO: Abrir o Modal de Exclusão em Massa
     const handleBulkDeleteClick = () => {
         const total = selectedFotos.length + selectedVideos.length;
         if (total === 0) return;
         setIsBulkDeleteModalOpen(true);
     };
 
-    // 🚀 NOVO: Executar Exclusão em Massa
     const executeBulkDelete = async () => {
-        setIsBulkDeleteModalOpen(false); // Fecha o modal imediatamente
+        setIsBulkDeleteModalOpen(false); 
         toast.info("A excluir arquivos selecionados, aguarde...");
         try {
             const photoPromises = selectedFotos.map(id => axiosInstance.delete(`/dashboard/fotos/${id}/`));
@@ -419,19 +419,17 @@ function DashboardAlbumDetailPage() {
         }
     };
 
-    // 🚀 NOVO: Abrir o Modal de Excluir Pasta Inteira
     const handleDeleteCategoryClick = (categoriaNome) => {
         if (categoriaNome === 'Todas') return;
         setCategoryToDelete(categoriaNome);
         setIsCategoryDeleteModalOpen(true);
     };
 
-    // 🚀 NOVO: Executar a Exclusão da Pasta Inteira
     const executeDeleteCategory = async () => {
         const fotosNaCategoria = rawPhotoList.filter(f => f.categoria?.trim() === categoryToDelete);
         const videosNaCategoria = rawVideoList.filter(v => v.categoria?.trim() === categoryToDelete);
 
-        setIsCategoryDeleteModalOpen(false); // Fecha o modal imediatamente
+        setIsCategoryDeleteModalOpen(false); 
         toast.info(`A excluir a pasta "${categoryToDelete}"...`);
         try {
             const photoPromises = fotosNaCategoria.map(f => axiosInstance.delete(`/dashboard/fotos/${f.id}/`));
@@ -644,19 +642,31 @@ function DashboardAlbumDetailPage() {
                 </div>
                 
                 <div className="detail-header-actions">
-                    <Link to="/dashboard/albuns" className="button-outline">Voltar</Link>
-                    <button onClick={() => setActiveGlobalModal('uploadFotos')} className="button-outline">+ Fotos</button>
-                    <button onClick={() => setActiveGlobalModal('uploadVideos')} className="button-outline">+ Vídeos</button>
-                    <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">Editar R$ (Fotos)</button>
-                    <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">Editar R$ (Vídeos)</button>
-                    <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline">Click & Share</Link>
                     
+                    {/* 🚀 BOTÃO ÚNICO PARA MOBILE */}
                     <button 
-                        className="button-outline"
-                        onClick={() => setIsSelectionMode(!isSelectionMode)} 
+                        className="button-outline mobile-actions-trigger" 
+                        onClick={() => setIsMobileActionsMenuOpen(true)}
                     >
-                        {isSelectionMode ? 'Cancelar Seleção' : 'Seleção Múltipla'}
+                        Opções do Álbum
                     </button>
+
+                    {/* 🚀 GRUPO DE BOTÕES PARA DESKTOP */}
+                    <div className="desktop-actions-group">
+                        <Link to="/dashboard/albuns" className="button-outline">Voltar</Link>
+                        <button onClick={() => setActiveGlobalModal('uploadFotos')} className="button-outline">+ Fotos</button>
+                        <button onClick={() => setActiveGlobalModal('uploadVideos')} className="button-outline">+ Vídeos</button>
+                        <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">Editar R$ (Fotos)</button>
+                        <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">Editar R$ (Vídeos)</button>
+                        <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline">Click & Share</Link>
+                        
+                        <button 
+                            className="button-outline"
+                            onClick={() => setIsSelectionMode(!isSelectionMode)} 
+                        >
+                            {isSelectionMode ? 'Cancelar Seleção' : 'Seleção Múltipla'}
+                        </button>
+                    </div>
                 </div>
             </header>          
             
@@ -759,32 +769,39 @@ function DashboardAlbumDetailPage() {
             {/* 🚀 BARRA FLUTUANTE DE AÇÕES EM MASSA */}
             {isSelectionMode && (
                 <div className="floating-action-bar bulk-selection-bar">
+                    
+                    {/* Texto isolado no topo */}
                     <span className="floating-bar-text">
                         {selectedFotos.length + selectedVideos.length} item(s) selecionado(s)
                     </span>
-                    <button onClick={handleSelectAllVisible} className="bulk-btn bulk-btn-dark">
-                        Selecionar Tudo (Página)
-                    </button>
                     
-                    <button 
-                        onClick={handleDeselectAll} 
-                        disabled={selectedFotos.length === 0 && selectedVideos.length === 0}
-                        className="bulk-btn bulk-btn-outline"
-                    >
-                        Deselecionar Tudo
-                    </button>
+                    {/* Botões agrupados em baixo */}
+                    <div className="bulk-selection-actions">
+                        <button onClick={handleSelectAllVisible} className="bulk-btn bulk-btn-dark">
+                            Selecionar Tudo (Página)
+                        </button>
+                        
+                        <button 
+                            onClick={handleDeselectAll} 
+                            disabled={selectedFotos.length === 0 && selectedVideos.length === 0}
+                            className="bulk-btn bulk-btn-outline"
+                        >
+                            Deselecionar Tudo
+                        </button>
 
-                    <button 
-                        onClick={handleBulkDeleteClick} 
-                        disabled={selectedFotos.length === 0 && selectedVideos.length === 0} 
-                        className="bulk-btn bulk-btn-danger"
-                    >
-                        Apagar Selecionados
-                    </button>
+                        <button 
+                            onClick={handleBulkDeleteClick} 
+                            disabled={selectedFotos.length === 0 && selectedVideos.length === 0} 
+                            className="bulk-btn bulk-btn-danger"
+                        >
+                            Apagar Selecionados
+                        </button>
 
-                    <button onClick={clearSelection} className="bulk-btn bulk-btn-exit">
-                        Sair do Modo Seleção
-                    </button>
+                        <button onClick={clearSelection} className="bulk-btn bulk-btn-exit">
+                            Sair do Modo Seleção
+                        </button>
+                    </div>
+
                 </div>
             )}
 
@@ -1063,7 +1080,40 @@ function DashboardAlbumDetailPage() {
             )}
 
             {/* ========================================================================= */}
-            {/* MODAIS DE CONFIRMAÇÃO E EXCLUSÃO (Agora todos no mesmo estilo limpo!) */}
+            {/* MODAL DE MENUS MOBILE (OPÇÕES DO ÁLBUM) */}
+            {/* ========================================================================= */}
+            
+            {isMobileActionsMenuOpen && (
+                <div className="dash-modal-overlay" style={{zIndex: 9999}}>
+                    <div className="dash-modal-content dash-modal-small">
+                        <div className="dash-modal-header" style={{marginBottom: '15px'}}>
+                            <h3 className="dash-modal-title" style={{fontSize: '1.2rem'}}>Opções do Álbum</h3>
+                            <button onClick={() => setIsMobileActionsMenuOpen(false)} className="dash-modal-close">✖</button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <Link to="/dashboard/albuns" className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Voltar</Link>
+                            <button onClick={() => { setActiveGlobalModal('uploadFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Fotos</button>
+                            <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Vídeos</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Fotos)</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Vídeos)</button>
+                            <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Click & Share</Link>
+                            
+                            <hr style={{width: '100%', border: 'none', borderTop: '1px solid var(--border-color)', margin: '5px 0'}}/>
+                            
+                            <button 
+                                className="button-outline"
+                                style={{ padding: '12px', borderColor: isSelectionMode ? '#dc3545' : 'var(--primary-purple)', color: isSelectionMode ? '#dc3545' : 'var(--primary-purple)' }}
+                                onClick={() => { setIsSelectionMode(!isSelectionMode); setIsMobileActionsMenuOpen(false); }}
+                            >
+                                {isSelectionMode ? 'Cancelar Seleção Múltipla' : 'Ativar Seleção Múltipla'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ========================================================================= */}
+            {/* MODAIS DE CONFIRMAÇÃO E EXCLUSÃO */}
             {/* ========================================================================= */}
 
             {isConfirmModalOpen && fotoParaMudar && (
