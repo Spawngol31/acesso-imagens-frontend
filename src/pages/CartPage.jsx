@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import axiosInstance from '../api/axiosInstance'; // <-- IMPORTANTE
-import { toast } from 'react-toastify'; // <-- IMPORTANTE
+import axiosInstance from '../api/axiosInstance'; 
+import { toast } from 'react-toastify'; 
 
 function CartPage() {
     const { cart, removeFromCart, applyCoupon } = useCart();
@@ -16,7 +16,8 @@ function CartPage() {
 
     // --- ESTADOS DO MODAL DE PROPOSTA ---
     const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
-    const [propostaForm, setPropostaForm] = useState({ albumId: null, qtdFotos: 0, qtdVideos: 0, valor: '' });
+    // 🚀 NOVO: Adicionado 'comentario' ao estado inicial
+    const [propostaForm, setPropostaForm] = useState({ albumId: null, qtdFotos: 0, qtdVideos: 0, valor: '', comentario: '' });
     const [isSendingProposta, setIsSendingProposta] = useState(false);
     // ------------------------------------
 
@@ -41,9 +42,9 @@ function CartPage() {
         }
     };
 
-    // --- LÓGICA DA PROPOSTA NO CARRINHO ---
     const abrirModalProposta = (albumId, qtdFotos, qtdVideos) => {
-        setPropostaForm({ albumId: albumId, qtdFotos: qtdFotos, qtdVideos: qtdVideos, valor: '' });
+        // 🚀 Limpa o comentário ao abrir
+        setPropostaForm({ albumId: albumId, qtdFotos: qtdFotos, qtdVideos: qtdVideos, valor: '', comentario: '' });
         setIsPropostaModalOpen(true);
     };
 
@@ -57,7 +58,9 @@ function CartPage() {
                 album: propostaForm.albumId,
                 quantidade_fotos: propostaForm.qtdFotos,
                 quantidade_videos: propostaForm.qtdVideos,
-                valor_oferecido: propostaForm.valor
+                valor_oferecido: propostaForm.valor,
+                // 🚀 NOVO: Envia o comentário para o backend
+                comentario: propostaForm.comentario 
             });
             toast.success("Proposta enviada com sucesso! Acompanhe em 'Minhas Propostas'.");
             setIsPropostaModalOpen(false);
@@ -75,7 +78,7 @@ function CartPage() {
     if (cart.itens.length === 0) {
         return (
             <div className='page-container' style={{ textAlign: 'center' }}>
-                <h1>🛒 Meu carrinho</h1>
+                <h1>Meu carrinho</h1>
                 <div className="empty-state-container">
                     <p>O seu carrinho está vazio.</p>
                     <Link to="/eventos" className="create-button" style={{ textDecoration: 'none' }}>
@@ -86,7 +89,6 @@ function CartPage() {
         );
     }
 
-    // --- AGRUPAR MÍDIAS POR ÁLBUM ---
     const itensAgrupados = cart.itens.reduce((acc, item) => {
         const mediaVisual = item.foto || item.video;
         const albumId = mediaVisual?.album || 'avulso';
@@ -112,15 +114,14 @@ function CartPage() {
                 {/* Lado Esquerdo: Lista de Fotos Agrupadas */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {Object.values(itensAgrupados).map(grupo => (
-                        <div key={grupo.albumId} style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e1bce0', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+                        <div key={grupo.albumId} className="cart-album-group">
                             
                             {/* Cabeçalho do Grupo (Álbum) */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
-                                <h3 style={{ margin: 0, color: '#6c0464', fontSize: '18px' }}>
+                            <div className="cart-album-header">
+                                <h3 className="cart-album-title">
                                     📸 {grupo.albumTitulo} ({grupo.itens.length} itens)
                                 </h3>
                                 
-                                {/* O botão de proposta só aparece se houver pelo menos 2 itens do mesmo álbum */}
                                 {grupo.itens.length >= 2 && user && (
                                     <button 
                                         onClick={() => abrirModalProposta(grupo.albumId, grupo.qtdFotos, grupo.qtdVideos)} 
@@ -132,15 +133,13 @@ function CartPage() {
                                 )}
                             </div>
 
-                            {/* Grid das Fotos dentro do Grupo */}
-                            <div className="cart-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+                            <div className="cart-grid cart-grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
                                 {grupo.itens.map(item => {
-                                    const mediaVisual = item.foto || item.video; // Puxa a mídia correta
+                                    const mediaVisual = item.foto || item.video; 
                                     return (
                                         <div key={item.id} className="purchase-card">
-                                            <div className="purchase-card-image" style={{ position: 'relative', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div className="purchase-card-image purchase-card-image-styled" style={{ position: 'relative', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             
-                                            {/* Se tiver a imagem (ou miniatura do vídeo), mostra. Se não tiver, mostra um ícone */}
                                             {mediaVisual?.imagem_url || mediaVisual?.miniatura_url ? (
                                                 <img 
                                                     src={mediaVisual.imagem_url || mediaVisual.miniatura_url} 
@@ -148,19 +147,18 @@ function CartPage() {
                                                     style={{ transform: `rotate(${mediaVisual.rotacao || 0}deg)`, width: '100%', height: '100%', objectFit: 'cover' }}
                                                 />
                                             ) : (
-                                                <div style={{ color: '#aaa', fontSize: '30px' }}>
+                                                <div className="purchase-card-fallback-icon" style={{ color: '#aaa', fontSize: '30px' }}>
                                                     {item.video ? '🎥' : '📷'}
                                                 </div>
                                             )}
 
-                                            {/* Se for VÍDEO, coloca um selo de PLAY escuro por cima */}
                                             {item.video && (
-                                                <div style={{
+                                                <div className="video-play-overlay" style={{
                                                     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
                                                     backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: '50%', width: '36px', height: '36px',
                                                     display: 'flex', justifyContent: 'center', alignItems: 'center', pointerEvents: 'none'
                                                 }}>
-                                                    <span style={{ color: 'white', fontSize: '16px', marginLeft: '4px' }}>▶</span>
+                                                    <span className="video-play-icon" style={{ color: 'white', fontSize: '16px', marginLeft: '4px' }}>▶</span>
                                                 </div>
                                             )}
                                         </div>
@@ -175,8 +173,7 @@ function CartPage() {
                                 })}
                             </div>
                             
-                            {/* Subtotal do Álbum */}
-                            <div style={{ textAlign: 'right', marginTop: '15px', fontSize: '14px', color: '#555' }}>
+                            <div className="cart-album-subtotal">
                                 Subtotal deste álbum: <strong>R$ {grupo.total.toFixed(2)}</strong>
                             </div>
                         </div>
@@ -198,7 +195,7 @@ function CartPage() {
                             />
                             <button type="submit" disabled={!user}>Aplicar</button>
                         </form>
-                        {!user && <p style={{fontSize: '0.8rem', color: '#777', marginTop: '-10px'}}>Faça login para adicionar cupons e propostas.</p>}
+                        {!user && <p className="login-prompt-text" style={{fontSize: '0.8rem', color: '#777', marginTop: '-10px'}}>Faça login para adicionar cupons e propostas.</p>}
                         {cupomError && <p className="error-message" style={{color: 'red'}}>{cupomError}</p>}
                         
                         <hr />
@@ -229,7 +226,7 @@ function CartPage() {
                                 <Link 
                                     to="/checkout" 
                                     state={{ total: cart.total }} 
-                                    className="create-button"
+                                    className="create-button btn-full-width no-underline"
                                     style={{width: '100%', textAlign: 'center', textDecoration: 'none'}}
                                 >
                                     Finalizar Compra
@@ -237,7 +234,7 @@ function CartPage() {
                             ) : (
                                 <Link 
                                     to="/login" 
-                                    className="create-button"
+                                    className="create-button btn-full-width no-underline"
                                     style={{width: '100%', textAlign: 'center', textDecoration: 'none'}}
                                 >
                                     Fazer Login para Comprar
@@ -250,26 +247,26 @@ function CartPage() {
 
             {/* 🚀 MODAL DE PROPOSTA NO CARRINHO */}
             {isPropostaModalOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(3px)' }}>
-                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-                        <h3 style={{ color: '#6c0464', marginTop: 0, marginBottom: '15px' }}>🤝 Fazer uma Proposta</h3>
-                        <p style={{ color: '#555', fontSize: '14px', marginBottom: '20px' }}>
-                            Você está a propor um novo valor para comprar as <strong>{propostaForm.qtd} fotos</strong> que selecionou deste álbum.
+                <div className="modal-overlay">
+                    <div className="modal-content" >
+                        <h3 className="modal-title" >Fazer uma Proposta</h3>
+                        <p className="modal-description">
+                            Você está a propor um novo valor para comprar as <strong>{propostaForm.qtdFotos + propostaForm.qtdVideos} mídias</strong> que selecionou deste álbum.
                         </p>
                         
-                        <form onSubmit={handlePropostaSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <form onSubmit={handlePropostaSubmit} className="modal-form">
                             <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '5px' }}>Itens Selecionados (Trancado)</label>
+                                <label className="modal-label">Itens Selecionados</label>
                                 <input 
                                     type="text" 
                                     value={`${propostaForm.qtdFotos} Foto(s) e ${propostaForm.qtdVideos} Vídeo(s)`} 
                                     disabled 
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', backgroundColor: '#e9ecef', color: '#666' }} 
+                                    className="modal-input modal-input-disabled"
                                 />
                             </div>
                             
                             <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '5px' }}>Valor Oferecido (R$)</label>
+                                <label className="modal-label">Valor Oferecido (R$)</label>
                                 <input 
                                     type="number" 
                                     step="0.01" 
@@ -278,11 +275,23 @@ function CartPage() {
                                     placeholder="Ex: 150.00" 
                                     value={propostaForm.valor} 
                                     onChange={(e) => setPropostaForm({...propostaForm, valor: e.target.value})} 
-                                    style={{ backgroundColor: '#fff', color: '#666', width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} 
+                                    className="modal-input"
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                            {/* 🚀 NOVO CAMPO: COMENTÁRIO */}
+                            <div>
+                                <label className="modal-label">Enviar uma menssagem (Opcional)</label>
+                                <textarea 
+                                    placeholder="Ex: Olá, amei as fotos! Consegue fazer esse valor se eu levar 10?" 
+                                    value={propostaForm.comentario} 
+                                    onChange={(e) => setPropostaForm({...propostaForm, comentario: e.target.value})} 
+                                    rows="3"
+                                    className="modal-textarea"
+                                />
+                            </div>
+
+                            <div className="modal-actions">
                                 <button type="button" onClick={() => setIsPropostaModalOpen(false)} className="button-outline" style={{ flex: 1 }}>Cancelar</button>
                                 <button type="submit" disabled={isSendingProposta} className="create-button" style={{ flex: 1 }}>
                                     {isSendingProposta ? 'A enviar...' : 'Enviar Oferta'}

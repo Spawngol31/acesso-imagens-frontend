@@ -5,13 +5,11 @@ import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
 
 function AdminFinanceiroPage() {
-    // --- ESTADOS GERAIS ---
     const [activeTab, setActiveTab] = useState('pendentes'); 
     const [loading, setLoading] = useState(false);
     const [larguraJanela, setLarguraJanela] = useState(window.innerWidth);
     const isMobile = larguraJanela < 900;
 
-    // --- ESTADOS DA ABA DE CAIXA PENDENTE ---
     const [dados, setDados] = useState([]);
     const [resumo, setResumo] = useState({ total_vendas: 0, total_pagar: 0 });
     const [listaFotografos, setListaFotografos] = useState([]);
@@ -19,13 +17,15 @@ function AdminFinanceiroPage() {
     const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status: '', search: '', fotografo_id: '' });
     const [vendasBuscadas, setVendasBuscadas] = useState(false);
 
-    // 🔥 NOVO: Estado para guardar as datas exatas apuradas para o Recibo
     const [periodoPagamento, setPeriodoPagamento] = useState({ inicio: '', fim: '' });
 
-    // --- ESTADOS DA ABA DE HISTÓRICO ---
     const [historicoRecibos, setHistoricoRecibos] = useState([]);
     const [filtrosHistorico, setFiltrosHistorico] = useState({ data_inicio: '', data_fim: '', fotografo_id: '' });
     const [historicoBuscado, setHistoricoBuscado] = useState(false); 
+
+    const [currentPagePendentes, setCurrentPagePendentes] = useState(1);
+    const [currentPageHistorico, setCurrentPageHistorico] = useState(1);
+    const itemsPerPage = 20;
 
     useEffect(() => {
         const handleResize = () => setLarguraJanela(window.innerWidth);
@@ -41,7 +41,10 @@ function AdminFinanceiroPage() {
 
     const buscarDadosVendas = async (foiClicado = false) => {
         setLoading(true);
-        if (foiClicado === true) setVendasBuscadas(true);
+        if (foiClicado === true) {
+            setVendasBuscadas(true);
+            setCurrentPagePendentes(1);
+        }
         
         try {
             const params = new URLSearchParams();
@@ -95,19 +98,17 @@ function AdminFinanceiroPage() {
         }
     };
 
-    // 🔥 MÁGICA DOS RECIBOS: Calcula automaticamente a primeira e última data das vendas pendentes
     const handlePagarFotografoClick = () => {
         if (!filtros.fotografo_id) return;
 
         const vendasPendentes = dados.filter(v => !v.pago_ao_fotografo && v.status === 'PAGO');
         
         let dataInicioCalc = filtros.data_inicio;
-        let dataFimCalc = filtros.data_fim || new Date().toISOString().split('T')[0]; // Se não tiver fim, assume HOJE
+        let dataFimCalc = filtros.data_fim || new Date().toISOString().split('T')[0];
 
-        // Se o admin não filtrou a data de início, o sistema procura a data mais antiga na tabela!
         if (vendasPendentes.length > 0 && !filtros.data_inicio) {
             const datasEmMs = vendasPendentes.map(v => {
-                const [datePart] = v.data.split(' '); // Separa "DD/MM/YYYY" de "HH:MM"
+                const [datePart] = v.data.split(' '); 
                 const [dia, mes, ano] = datePart.split('/');
                 return new Date(`${ano}-${mes}-${dia}T12:00:00`).getTime();
             });
@@ -123,7 +124,7 @@ function AdminFinanceiroPage() {
         try {
             const payload = {
                 fotografo_id: filtros.fotografo_id,
-                data_inicio: periodoPagamento.inicio, // Usa as datas calculadas inteligentemente
+                data_inicio: periodoPagamento.inicio, 
                 data_fim: periodoPagamento.fim,
                 valor_pago: resumo.total_pagar
             };
@@ -143,6 +144,7 @@ function AdminFinanceiroPage() {
     const buscarHistorico = async () => {
         setLoading(true);
         setHistoricoBuscado(true);
+        setCurrentPageHistorico(1); 
         try {
             const params = new URLSearchParams();
             if (filtrosHistorico.data_inicio) params.append('data_inicio', filtrosHistorico.data_inicio);
@@ -167,7 +169,7 @@ function AdminFinanceiroPage() {
                 <title>Recibo de Pagamento - ${recibo.fotografo}</title>
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-                    .header { border-bottom: 3px solid #6c0464; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; alignItems: center; }
+                    .header { border-bottom: 3px solid #6c0464; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
                     .title { color: #6c0464; margin: 0; font-size: 28px; }
                     .info-box { background: #f8f9fa; border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
                     .value-box { background: #d4edda; color: #6c0464; padding: 20px; text-align: center; border-radius: 8px; border: 1px solid #eee; }
@@ -210,11 +212,67 @@ function AdminFinanceiroPage() {
         setTimeout(() => { janela.print(); }, 250);
     };
 
-    const corPrincipal = '#6c0464';
-    const inputStyle = { width: '100%', padding: '10px 12px', border: '1px solid #ced4da', borderRadius: '6px', boxSizing: 'border-box', fontSize: '14px', outline: 'none', marginBottom: '15px', color: '#495057', backgroundColor: '#fff' };
-    
+    const indexOfLastPendente = currentPagePendentes * itemsPerPage;
+    const indexOfFirstPendente = indexOfLastPendente - itemsPerPage;
+    const currentPendentes = dados.slice(indexOfFirstPendente, indexOfLastPendente);
+    const totalPagesPendentes = Math.ceil(dados.length / itemsPerPage);
+
+    const indexOfLastHistorico = currentPageHistorico * itemsPerPage;
+    const indexOfFirstHistorico = indexOfLastHistorico - itemsPerPage;
+    const currentHistorico = historicoRecibos.slice(indexOfFirstHistorico, indexOfLastHistorico);
+    const totalPagesHistorico = Math.ceil(historicoRecibos.length / itemsPerPage);
+
+    const renderPagination = (currentPage, totalPages, setCurrentPage) => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
+    };
+
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content finance-page-wrapper">
             
             <div className="finance-tabs-container">
                 <button className={`finance-tab ${activeTab === 'pendentes' ? 'active' : ''}`} onClick={() => setActiveTab('pendentes')}>
@@ -227,98 +285,109 @@ function AdminFinanceiroPage() {
 
             {activeTab === 'pendentes' && (
                 <>
-                    <div style={{ backgroundColor: '#fbf0fa', border: `1px solid #e1bce0`, color: corPrincipal, padding: '16px 20px', borderRadius: '8px', marginBottom: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', boxShadow: '0 2px 4px rgba(108, 4, 100, 0.05)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            
+                    <div className="finance-balance-box finance-admin-resume">
+                        <div className="admin-resume-text">
                             <span>RESUMO: Vendas Pagas (R$ {parseFloat(resumo.total_vendas).toFixed(2)}) | LÍQUIDO A REPASSAR: R$ {parseFloat(resumo.total_pagar).toFixed(2)}</span>
                         </div>
                         {filtros.fotografo_id && resumo.total_pagar > 0 && (
-                            <button onClick={handlePagarFotografoClick} style={{ padding: '10px 16px', backgroundColor: '#6c0464', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(40,167,69,0.3)' }}>
+                            <button onClick={handlePagarFotografoClick} className="btn-pay-photographer">
                                 Registrar Pagamento (Zerar Saldo)
                             </button>
                         )}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', flexDirection: isMobile ? 'column' : 'row', gap: '15px' }}>
-                                <div style={{ display: 'flex', gap: '10px', width: isMobile ? '100%' : 'auto' }}>
-                                    <input type="text" name="search" placeholder="Pesquisar ID do pedido..." value={filtros.search} onChange={handleChange} style={{ ...inputStyle, width: isMobile ? '100%' : '280px', marginBottom: '0', backgroundColor: '#fff' }} />
+                    <div className={`finance-split-layout ${isMobile ? 'mobile-layout' : ''}`}>
+                        <div className="finance-main-content">
+                            <div className="finance-search-row">
+                                <div className="finance-search-inputs">
+                                    <input 
+                                        type="text" 
+                                        name="search" 
+                                        placeholder="Pesquisar ID do pedido..." 
+                                        value={filtros.search} 
+                                        onChange={handleChange} 
+                                        className="filter-input search-input" 
+                                    />
                                     <button onClick={() => buscarDadosVendas(true)} className='create-button'>Pesquisar</button>
                                 </div>
                                 {!isMobile && <button onClick={baixarPlanilha} className='create-button'>Baixar Planilha (Excel)</button>}
                             </div>
 
                             {!vendasBuscadas ? (
-                                <div style={{ padding: '40px 20px', textAlign: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ced4da' }}>
-                                    
-                                    <h4 style={{ color: '#555', marginTop: '10px' }}>Modo Rápido Ativado</h4>
-                                    <p style={{ color: '#888' }}>Utilize os filtros e clique em Pesquisar para carregar as vendas de forma rápida.</p>
+                                <div className="finance-fast-mode-box">
+                                    <h4 className="fast-mode-title">Modo Rápido Ativado</h4>
+                                    <p className="fast-mode-desc">Utilize os filtros e clique em Pesquisar para carregar as vendas de forma rápida.</p>
                                 </div>
                             ) : loading ? (
-                                <p style={{ color: '#666' }}>A carregar vendas...</p>
+                                <p className="finance-loading-text">A carregar vendas...</p>
                             ) : (
-                                <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '850px' }}>
+                                <div className="finance-table-responsive no-border-shadow">
+                                    <table className="finance-table min-width-850">
                                         <thead>
-                                            <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                                <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>ID</th>
-                                                <th style={{ padding: '12px 10px' }}>FOTÓGRAFO</th>
-                                                <th style={{ padding: '12px 10px' }}>FOTO</th>
-                                                <th style={{ padding: '12px 10px' }}>DATA</th>
-                                                <th style={{ padding: '12px 10px' }}>PGTO CLIENTE</th>
-                                                <th style={{ padding: '12px 10px' }}>REPASSE</th>
-                                                <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>COMISSÃO</th>
+                                            <tr>
+                                                <th className="th-left-radius">ID</th>
+                                                <th>FOTÓGRAFO</th>
+                                                <th>FOTO</th>
+                                                <th>DATA</th>
+                                                <th>PGTO CLIENTE</th>
+                                                <th>REPASSE</th>
+                                                <th className="th-right-radius">COMISSÃO</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {dados.map((venda, index) => (
-                                                <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                                                    <td style={{ padding: '14px 10px', fontWeight: '500' }}>{venda.pedido_id}</td>
-                                                    <td style={{ padding: '14px 10px', color: '#555' }}>{venda.fotografo}</td>
-                                                    <td style={{ padding: '14px 10px' }}>{venda.foto_id}</td>
-                                                    <td style={{ padding: '14px 10px' }}>{venda.data}</td>
-                                                    <td style={{ padding: '14px 10px' }}>
-                                                        <span style={{ backgroundColor: venda.status === 'PAGO' ? '#d4edda' : (venda.status === 'FALHOU' ? '#f8d7da' : '#fff3cd'), color: venda.status === 'PAGO' ? '#155724' : (venda.status === 'FALHOU' ? '#721c24' : '#856404'), padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+                                            {currentPendentes.map((venda, index) => (
+                                                <tr key={index}>
+                                                    <td className="col-photo-id">{venda.pedido_id}</td>
+                                                    <td className="col-client">{venda.fotografo}</td>
+                                                    <td className="col-date">{venda.foto_id}</td>
+                                                    <td className="col-date">{venda.data}</td>
+                                                    <td>
+                                                        <span className={venda.status === 'PAGO' ? 'status-badge-paid' : (venda.status === 'FALHOU' ? 'status-badge-pending text-danger' : 'status-badge-pending text-warning')}>
                                                             {venda.status}
                                                         </span>
                                                     </td>
-                                                    <td style={{ padding: '14px 10px' }}>
-                                                        {venda.pago_ao_fotografo ? <span style={{color: '#28a745', fontWeight: 'bold'}}>✓ Feito</span> : <span style={{color: '#dc3545', fontWeight: 'bold'}}>⏳ Pendente</span>}
+                                                    <td>
+                                                        {venda.pago_ao_fotografo ? <span className="status-badge-paid">✓ Feito</span> : <span className="status-badge-pending">⏳ Pendente</span>}
                                                     </td>
-                                                    <td style={{ padding: '14px 10px', fontWeight: '500' }}>R$ {venda.comissao.toFixed(2)}</td>
+                                                    <td className="col-comission">R$ {venda.comissao.toFixed(2)}</td>
                                                 </tr>
                                             ))}
-                                            {dados.length === 0 && <tr><td colSpan="7" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Nenhuma venda encontrada.</td></tr>}
+                                            {dados.length === 0 && <tr><td colSpan="7" className="finance-empty-row">Nenhuma venda encontrada.</td></tr>}
                                         </tbody>
                                     </table>
+                                    
+                                    {renderPagination(currentPagePendentes, totalPagesPendentes, setCurrentPagePendentes)}
                                 </div>
                             )}
                             {isMobile && <button onClick={baixarPlanilha} className='create-button' style={{marginTop: '20px', width: '100%'}}>Baixar Planilha (Excel)</button>}
                         </div>
 
-                        <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
-                            <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>FILTROS</h3>
-                            <div style={{ marginTop: '25px' }}>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Inicial</label>
-                                <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} style={inputStyle} />
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Final</label>
-                                <input type="date" name="data_fim" value={filtros.data_fim} onChange={handleChange} style={inputStyle} />
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Fotógrafo</label>
-                                <select name="fotografo_id" value={filtros.fotografo_id} onChange={handleChange} style={inputStyle}>
+                        <div className="finance-sidebar">
+                            <h3 className="sidebar-filter-title">FILTROS</h3>
+                            <div className="sidebar-filter-form">
+                                <label className="filter-label">Data Inicial</label>
+                                <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} className="filter-input" />
+                                
+                                <label className="filter-label">Data Final</label>
+                                <input type="date" name="data_fim" value={filtros.data_fim} onChange={handleChange} className="filter-input" />
+                                
+                                <label className="filter-label">Fotógrafo</label>
+                                <select name="fotografo_id" value={filtros.fotografo_id} onChange={handleChange} className="filter-input">
                                     <option value="">Todos os fotógrafos</option>
                                     {listaFotografos.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
                                 </select>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Status</label>
-                                <select name="status" value={filtros.status} onChange={handleChange} style={inputStyle}>
+                                
+                                <label className="filter-label">Status</label>
+                                <select name="status" value={filtros.status} onChange={handleChange} className="filter-input">
                                     <option value="">Todos</option>
                                     <option value="PENDENTE">Pendente</option>
                                     <option value="PAGO">Pago</option>
                                     <option value="FALHOU">Falhou</option>
                                 </select>
-                                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                    <button onClick={() => buscarDadosVendas(true)} className='create-button'>Filtrar</button>
-                                    <button onClick={() => { setFiltros({data_inicio:'', data_fim:'', status:'', search:'', fotografo_id:''}); setTimeout(buscarDadosVendas, 100); }} className='create-button'>Limpar</button>
+                                
+                                <div className="filter-actions">
+                                    <button onClick={() => buscarDadosVendas(true)} className='create-button filter-btn'>Filtrar</button>
+                                    <button onClick={() => { setFiltros({data_inicio:'', data_fim:'', status:'', search:'', fotografo_id:''}); setCurrentPagePendentes(1); setTimeout(buscarDadosVendas, 100); }} className='create-button filter-btn filter-btn-clear'>Limpar</button>
                                 </div>
                             </div>
                         </div>
@@ -327,105 +396,103 @@ function AdminFinanceiroPage() {
             )}
 
             {activeTab === 'historico' && (
-                <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
+                <div className={`finance-split-layout ${isMobile ? 'mobile-layout' : ''}`}>
                     
-                    <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
-                        <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Registos de Pagamentos Anteriores</h3>
+                    <div className="finance-main-content">
+                        <h3 className="finance-section-title">Registros de Pagamentos Anteriores</h3>
                         
                         {!historicoBuscado ? (
-                            <div style={{ padding: '40px 20px', textAlign: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ced4da' }}>
-                                
-                                <h4 style={{ color: '#555', marginTop: '10px' }}>Modo Rápido Ativado</h4>
-                                <p style={{ color: '#888' }}>Utilize os filtros ao lado para pesquisar recibos antigos de forma rápida.</p>
+                            <div className="finance-fast-mode-box">
+                                <h4 className="fast-mode-title">Modo Rápido Ativado</h4>
+                                <p className="fast-mode-desc">Utilize os filtros ao lado para pesquisar recibos antigos de forma rápida.</p>
                             </div>
                         ) : loading ? (
-                            <p style={{ color: '#666' }}>A carregar recibos...</p>
+                            <p className="finance-loading-text">A carregar recibos...</p>
                         ) : (
-                            <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '750px' }}>
+                            <div className="finance-table-responsive no-border-shadow">
+                                <table className="finance-table min-width-750">
                                     <thead>
-                                        <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                            <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>Nº DO RECIBO</th>
-                                            <th style={{ padding: '12px 10px' }}>FOTÓGRAFO</th>
-                                            <th style={{ padding: '12px 10px' }}>DATA DO PGTO</th>
-                                            <th style={{ padding: '12px 10px' }}>PERÍODO APURADO</th>
-                                            <th style={{ padding: '12px 10px' }}>VALOR PAGO</th>
-                                            <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0', textAlign: 'center' }}>AÇÃO</th>
+                                        <tr>
+                                            <th className="th-left-radius">Nº DO RECIBO</th>
+                                            <th>FOTÓGRAFO</th>
+                                            <th>DATA DO PGTO</th>
+                                            <th>PERÍODO APURADO</th>
+                                            <th>VALOR PAGO</th>
+                                            <th className="th-right-radius text-center">AÇÃO</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {historicoRecibos.map((recibo) => (
-                                            <tr key={recibo.id} style={{ borderBottom: '1px solid #eee' }}>
-                                                <td style={{ padding: '14px 10px', fontWeight: 'bold' }}>#{recibo.id.toString().padStart(5, '0')}</td>
-                                                <td style={{ padding: '14px 10px', color: '#555' }}>{recibo.fotografo}</td>
-                                                <td style={{ padding: '14px 10px' }}>{recibo.data_pagamento}</td>
-                                                <td style={{ padding: '14px 10px', fontSize: '12px', color: '#666' }}>
+                                        {currentHistorico.map((recibo) => (
+                                            <tr key={recibo.id}>
+                                                <td className="col-receipt-id">#{recibo.id.toString().padStart(5, '0')}</td>
+                                                <td className="col-client">{recibo.fotografo}</td>
+                                                <td className="col-date">{recibo.data_pagamento}</td>
+                                                <td className="col-receipt-period">
                                                     {recibo.referencia_inicio} até {recibo.referencia_fim}
                                                 </td>
-                                                <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {recibo.valor_pago.toFixed(2)}</td>
-                                                <td style={{ padding: '14px 10px', textAlign: 'center' }}>
-                                                    <button 
-                                                        onClick={() => imprimirRecibo(recibo)}
-                                                        style={{ padding: '6px 12px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                                                    >
+                                                <td className="col-comission">R$ {recibo.valor_pago.toFixed(2)}</td>
+                                                <td className="col-receipt-action">
+                                                    <button onClick={() => imprimirRecibo(recibo)} className="print-receipt-btn">
                                                         Ver Recibo
                                                     </button>
                                                 </td>
                                             </tr>
                                         ))}
-                                        {historicoRecibos.length === 0 && <tr><td colSpan="6" style={{ padding: '30px', textAlign: 'center', color: '#888' }}>Nenhum recibo encontrado para este filtro.</td></tr>}
+                                        {historicoRecibos.length === 0 && <tr><td colSpan="6" className="finance-empty-row">Nenhum recibo encontrado para este filtro.</td></tr>}
                                     </tbody>
                                 </table>
+
+                                {renderPagination(currentPageHistorico, totalPagesHistorico, setCurrentPageHistorico)}
                             </div>
                         )}
                     </div>
 
-                    <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
-                        <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>FILTRAR RECIBOS</h3>
-                        <div style={{ marginTop: '25px' }}>
-                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Inicial</label>
-                            <input type="date" name="data_inicio" value={filtrosHistorico.data_inicio} onChange={handleChangeHistorico} style={inputStyle} />
+                    <div className="finance-sidebar">
+                        <h3 className="sidebar-filter-title">FILTRAR RECIBOS</h3>
+                        <div className="sidebar-filter-form">
+                            <label className="filter-label">Data Inicial</label>
+                            <input type="date" name="data_inicio" value={filtrosHistorico.data_inicio} onChange={handleChangeHistorico} className="filter-input" />
                             
-                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Final</label>
-                            <input type="date" name="data_fim" value={filtrosHistorico.data_fim} onChange={handleChangeHistorico} style={inputStyle} />
+                            <label className="filter-label">Data Final</label>
+                            <input type="date" name="data_fim" value={filtrosHistorico.data_fim} onChange={handleChangeHistorico} className="filter-input" />
                             
-                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Fotógrafo</label>
-                            <select name="fotografo_id" value={filtrosHistorico.fotografo_id} onChange={handleChangeHistorico} style={inputStyle}>
+                            <label className="filter-label">Fotógrafo</label>
+                            <select name="fotografo_id" value={filtrosHistorico.fotografo_id} onChange={handleChangeHistorico} className="filter-input">
                                 <option value="">Todos os fotógrafos</option>
                                 {listaFotografos.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
                             </select>
                             
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                <button onClick={buscarHistorico} className='create-button'>Pesquisar</button>
-                                <button onClick={() => { setFiltrosHistorico({data_inicio:'', data_fim:'', fotografo_id:''}); setHistoricoBuscado(false); }} className='create-button'>Limpar</button>
+                            <div className="filter-actions">
+                                <button onClick={buscarHistorico} className='create-button filter-btn'>Pesquisar</button>
+                                <button onClick={() => { setFiltrosHistorico({data_inicio:'', data_fim:'', fotografo_id:''}); setHistoricoBuscado(false); setCurrentPageHistorico(1); }} className='create-button filter-btn filter-btn-clear'>Limpar</button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* MODAL DE CONFIRMAÇÃO DE PAGAMENTO COM DATAS APURADAS */}
             {isPaymentModalOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-                        <h3 style={{ color: '#28a745', marginTop: 0 }}>Registrar Pagamento?</h3>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content dash-modal-small">
+                        <h3 className="dash-modal-title" style={{color: '#28a745'}}>Registrar Pagamento?</h3>
                         
-                        <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', margin: '20px 0', border: '1px solid #eee' }}>
-                            <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#666' }}>Período Apurado Automaticamente:</p>
-                            <p style={{ margin: 0, fontWeight: 'bold', color: '#333' }}>
+                        <div className="finance-payment-period-box">
+                            <p className="period-label">Período Apurado Automaticamente:</p>
+                            <p className="period-value">
                                 {periodoPagamento.inicio ? periodoPagamento.inicio.split('-').reverse().join('/') : 'Início das vendas'} 
                                 &nbsp; até &nbsp; 
                                 {periodoPagamento.fim ? periodoPagamento.fim.split('-').reverse().join('/') : 'Hoje'}
                             </p>
                         </div>
 
-                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                        <p className="dash-modal-text">
                             Tem a certeza que deseja registrar o pagamento de <strong>R$ {parseFloat(resumo.total_pagar).toFixed(2)}</strong> para este fotógrafo?
                         </p>
-                        <p style={{ color: '#dc3545', fontSize: '14px', lineHeight: '1.5', fontWeight: 'bold' }}>Isso irá zerar o saldo pendente dele na plataforma.</p>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
-                            <button onClick={() => setIsPaymentModalOpen(false)} className='create_button' style={{ padding: '10px 20px'}}>Cancelar</button>
-                            <button onClick={confirmarPagamento} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#28a745', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>Sim, Registrar Pagamento</button>
+                        <p className="dash-modal-warning">Isso irá zerar o saldo pendente dele na plataforma.</p>
+                        
+                        <div className="dash-modal-actions">
+                            <button onClick={() => setIsPaymentModalOpen(false)} className="modal-btn-cancel">Cancelar</button>
+                            <button onClick={confirmarPagamento} className="modal-btn-confirm btn-success">Sim, Registrar Pagamento</button>
                         </div>
                     </div>
                 </div>

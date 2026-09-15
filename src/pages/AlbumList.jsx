@@ -1,8 +1,10 @@
+// src/pages/AlbumList.jsx
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom'; 
 import axiosInstance from '../api/axiosInstance';
 
-// --- COMPONENTE DE PAGINAÇÃO NUMÉRICA (IDÊNTICO AO ALBUMDETAIL) ---
+// --- COMPONENTE DE PAGINAÇÃO NUMÉRICA (ADAPTADO AO DARK MODE) ---
 const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
 
@@ -23,17 +25,11 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     const pages = getPaginationRange();
 
     return (
-        <div style={{ 
-            display: 'flex', justifyContent: 'center', alignItems: 'center', 
-            gap: '8px', marginTop: '3rem', padding: '1rem' 
-        }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '3rem', padding: '1rem' }}>
             <button 
                 onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
-                style={{ 
-                    border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
-                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1,
-                    color: '#6c0464', fontWeight: 'bold'
-                }}
+                className="pagination-nav-btn"
+                style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
             >
                 &lt;
             </button>
@@ -41,14 +37,13 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
             {pages.map((page, index) => (
                 <React.Fragment key={index}>
                     {page === "..." ? (
-                        <span style={{ padding: '5px', color: '#888', letterSpacing: '2px' }}>...</span>
+                        <span style={{ padding: '5px', color: 'var(--text-muted)', letterSpacing: '2px' }}>...</span>
                     ) : (
                         <button
                             onClick={() => onPageChange(page)}
+                            className={`pagination-number ${currentPage === page ? 'active' : ''}`}
                             style={{
                                 width: '40px', height: '40px', border: 'none', borderRadius: '8px',
-                                backgroundColor: currentPage === page ? '#6c0464' : 'transparent',
-                                color: currentPage === page ? 'white' : '#6c0464',
                                 cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
                                 fontSize: '1rem', transition: 'all 0.2s'
                             }}
@@ -61,11 +56,8 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
 
             <button 
                 onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
-                style={{ 
-                    border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px',
-                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1,
-                    color: '#6c0464', fontWeight: 'bold'
-                }}
+                className="pagination-nav-btn"
+                style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
             >
                 &gt;
             </button>
@@ -125,21 +117,19 @@ function AlbumList() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   
-  // Estes são os 20 álbuns exatos que vão aparecer na página atual
   const albunsPaginados = albunsFiltrados.slice(startIndex, endIndex);
 
-  // --- FUNÇÃO PARA MUDAR A PÁGINA COM SCROLL SUAVE ---
   const handlePageChange = (novaPagina) => {
       setCurrentPage(novaPagina);
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Sobe a página ao mudar
+      window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
 
   return (
     <div className="page-container">
       
       {/* CABEÇALHO E BARRA DE PESQUISA */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '2rem' }}>
-          <h1 style={{ margin: 0, textAlign: 'left' }}>Álbuns</h1>
+      <div className="album-list-header-wrapper">
+          <h1 className="page-title" style={{ margin: 0, textAlign: 'left' }}>Álbuns</h1>
           
           <div style={{ width: '100%', maxWidth: '400px', position: 'relative' }}>
               <input 
@@ -147,13 +137,9 @@ function AlbumList() {
                   placeholder="Pesquisar pelo nome do álbum..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ 
-                      backgroundColor: '#fff', width: '100%', padding: '12px 20px', paddingLeft: '40px', borderRadius: '50px', 
-                      border: '1px solid #e1bce0', fontSize: '15px', outline: 'none',
-                      boxShadow: '0 2px 8px rgba(108, 4, 100, 0.05)', color: '#333'
-                  }}
+                  className="album-search-input"
               />
-              <span style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#888' }}>
+              <span className="album-search-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                 </svg>
@@ -162,7 +148,7 @@ function AlbumList() {
       </div>
       
       {loading ? (
-        <p style={{textAlign: 'center'}}>A carregar álbuns...</p>
+        <p className="page-subtitle" style={{textAlign: 'center'}}>A carregar álbuns...</p>
       ) : (
         <>
           <div className='album-grid'>
@@ -175,15 +161,19 @@ function AlbumList() {
                   ></div>
                   <div className="album-card-info">
                     <h3>{album.titulo}</h3>
-                    <p style={{color: '#555', fontSize: '0.9rem', marginTop: '0.25rem'}}>
-                      {new Date(album.data_evento).toLocaleDateString()}
-                    </p>
+                    
+                    <div className="album-meta-info">
+                      <span>{new Date(album.data_evento).toLocaleDateString()}</span>
+                      {album.fotografo && <span> • {album.fotografo}</span>}
+                    </div>
+                    
+                    {album.local && <p className="album-location">{album.local}</p>}
                   </div>
                 </Link>
               ))
             ) : (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 0', color: '#666' }}>
-                  <p style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Nenhum álbum encontrado.</p>
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 0' }}>
+                  <p className="page-subtitle" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Nenhum álbum encontrado.</p>
                   {searchTerm && (
                       <button onClick={() => setSearchTerm('')} className="button-outline">
                           Ver todos os álbuns
@@ -193,13 +183,11 @@ function AlbumList() {
             )}
           </div>
 
-          {/* --- NOVA BARRA DE PAGINAÇÃO NUMÉRICA --- */}
           <CustomPagination 
               currentPage={currentPage} 
               totalPages={totalPages} 
               onPageChange={handlePageChange} 
           />
-          {/* ---------------------------------------- */}
         </>
       )}
     </div>

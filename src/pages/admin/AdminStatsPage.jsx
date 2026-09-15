@@ -1,4 +1,4 @@
-// src/pages/dashboard/DashboardUploadPage.jsx
+// src/pages/admin/AdminStatsPage.jsx
 
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
@@ -22,122 +22,79 @@ ChartJS.register(
     Legend
 );
 
-// --- ESTILOS REUTILIZÁVEIS E RESPONSIVOS (Corrigidos) ---
-const cardStyle = {
-    backgroundColor: '#fff',
-    padding: '24px',
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-    borderTop: '4px solid #6c0464',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    boxSizing: 'border-box', // Garante que o padding não estica o card
-    width: '100%'
-};
-
-const cardLabelStyle = {
-    fontSize: '13px',
-    color: '#6c757d',
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    margin: '0 0 8px 0',
-    letterSpacing: '0.5px'
-};
-
-const cardValueStyle = {
-    fontSize: '32px',
-    color: '#6c0464',
-    fontWeight: 'bold',
-    margin: 0,
-    wordBreak: 'break-word' // Evita que números muito grandes quebrem o card
-};
-
-const sectionStyle = {
-    backgroundColor: '#fff',
-    padding: '20px', 
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-    boxSizing: 'border-box', // Garante que a secção respeita o tamanho da tela
-    width: '100%',
-    maxWidth: '100%',
-    overflowX: 'hidden' // Impede que elementos internos estraguem o layout
-};
-
-const sectionTitleStyle = {
-    color: '#6c0464',
-    fontSize: '18px',
-    borderBottom: '2px solid #fbf0fa',
-    paddingBottom: '15px',
-    marginTop: 0,
-    marginBottom: '20px'
-};
-
-
 // --- 🚀 COMPONENTE: RANKING GERAL PARA ADMIN ---
-const RankingAlbunsAdmin = () => {
+// Agora recebe o periodo como prop para atualizar junto com o resto da página
+const RankingAlbunsAdmin = ({ periodo, labelPeriodo }) => {
     const [ranking, setRanking] = useState([]);
+    const [loading, setLoading] = useState(true);
     
     useEffect(() => {
         const fetchRanking = async () => {
             try {
-                // No backend configuramos para puxar o top 10 geral
-                const response = await axiosInstance.get('/admin/ranking-albuns/');
+                setLoading(true);
+                const response = await axiosInstance.get(`/admin/ranking-albuns/?periodo=${periodo}`);
                 setRanking(response.data);
             } catch (error) {
                 console.error("Erro ao buscar ranking:", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchRanking();
-    }, []);
-
-    if (ranking.length === 0) return null;
+    }, [periodo]); 
 
     return (
-        <div style={sectionStyle}>
-            <h3 style={sectionTitleStyle}>Top 10 Álbuns Mais Rentáveis (Geral)</h3>
+        <div className="stats-section-card">
+            <h3 className="stats-section-title">Top 10 Álbuns Mais Rentáveis {labelPeriodo}</h3>
             
-            {/* Wrapper com scroll horizontal para telemóveis */}
-            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                {/* Min-width garante que a tabela não se esmaga, forçando o scroll na div acima */}
-                <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', fontSize: '14px' }}>
+            <div className="stats-table-responsive">
+                <table className="stats-table min-width-600">
                     <thead>
-                        <tr style={{ backgroundColor: '#f8f9fa', color: '#6c0464', textAlign: 'left' }}>
-                            <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>POSIÇÃO</th>
-                            <th style={{ padding: '12px 10px' }}>ÁLBUM</th>
-                            <th style={{ padding: '12px 10px' }}>FOTÓGRAFO(A)</th>
-                            <th style={{ padding: '12px 10px' }}>FOTOS VENDIDAS</th>
-                            <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>TOTAL ARRECADADO</th>
+                        <tr>
+                            <th className="th-left-radius">POSIÇÃO</th>
+                            <th>ÁLBUM</th>
+                            <th>FOTÓGRAFO(A)</th>
+                            <th>FOTOS VENDIDAS</th>
+                            <th className="th-right-radius">TOTAL ARRECADADO</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {ranking.map((album, index) => {
-                            const medalha = `${index + 1}º`;
-                            return (
-                                <tr key={album.album_id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', fontSize: '18px' }}>{medalha}</td>
-                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#333' }}>{album.album_titulo}</td>
-                                    <td style={{ padding: '14px 10px', color: '#555' }}>{album.fotografo_nome}</td>
-                                    <td style={{ padding: '14px 10px', color: '#555' }}>{album.qtd_vendida} mídias</td>
-                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {parseFloat(album.total_arrecadado).toFixed(2)}</td>
-                                </tr>
-                            );
-                        })}
+                        {loading ? (
+                            <tr>
+                                <td colSpan="5" className="stats-empty-row">A atualizar ranking...</td>
+                            </tr>
+                        ) : ranking.length === 0 ? (
+                            <tr>
+                                <td colSpan="5" className="stats-empty-row">Nenhum álbum vendido neste período.</td>
+                            </tr>
+                        ) : (
+                            ranking.map((album, index) => {
+                                const medalha = `${index + 1}º`;
+                                return (
+                                    <tr key={album.album_id}>
+                                        <td className="stats-bold-col txt-lg">{medalha}</td>
+                                        <td className="stats-bold-col txt-main">{album.album_titulo}</td>
+                                        <td className="stats-muted-col">{album.fotografo_nome}</td>
+                                        <td className="stats-muted-col">{album.qtd_vendida} mídias</td>
+                                        <td className="stats-success-col">R$ {parseFloat(album.total_arrecadado).toFixed(2)}</td>
+                                    </tr>
+                                );
+                            })
+                        )}
                     </tbody>
                 </table>
             </div>
         </div>
     );
 };
-// ---------------------------------------------------
 
 function AdminStatsPage() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    
     const [periodo, setPeriodo] = useState('mensal');
-
-    const corPrincipal = '#6c0464';
+    
+    // Estado para forçar a re-renderização do gráfico quando o tema muda
+    const [isDarkMode, setIsDarkMode] = useState(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -154,6 +111,14 @@ function AdminStatsPage() {
         fetchStats();
     }, [periodo]); 
 
+    // Ouve as mudanças de tema do sistema (claro/escuro) para atualizar as cores do gráfico
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e) => setIsDarkMode(e.matches);
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
+
     const topFotografosChartData = {
         labels: stats?.top_fotografos.map(f => f.nome_completo) || [],
         datasets: [
@@ -161,7 +126,7 @@ function AdminStatsPage() {
                 label: 'Total Vendido (R$)',
                 data: stats?.top_fotografos.map(f => f.total_vendido) || [],
                 backgroundColor: 'rgba(108, 4, 100, 0.7)',
-                borderColor: corPrincipal,
+                borderColor: '#6c0464',
                 borderWidth: 1,
                 borderRadius: 4,
             },
@@ -178,21 +143,21 @@ function AdminStatsPage() {
         }
     };
 
-    if (loading && !stats) return <p style={{ padding: '20px', color: '#666' }}>A carregar estatísticas do sistema...</p>;
-    if (!stats) return <p style={{ padding: '20px', color: 'red' }}>Não foi possível carregar as estatísticas.</p>;
+    if (loading && !stats) return <p className="page-subtitle" style={{ padding: '20px' }}>A carregar estatísticas do sistema...</p>;
+    if (!stats) return <p className="page-subtitle text-danger" style={{ padding: '20px' }}>Não foi possível carregar as estatísticas.</p>;
 
     return (
-        <div className="dashboard-page-content" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '15px', paddingBottom: '40px', boxSizing: 'border-box' }}>
+        <div className="dashboard-page-content stats-page-wrapper">
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px', flexWrap: 'wrap', gap: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Visão geral do sistema</h2>
+            <div className="dash-header-box">
+                <h2 className="dash-main-title">Visão geral do sistema</h2>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Filtrar por:</label>
+                <div className="stats-filter-container">
+                    <label className="stats-filter-label">Filtrar por:</label>
                     <select 
                         value={periodo} 
                         onChange={(e) => setPeriodo(e.target.value)}
-                        style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #ced4da', outline: 'none', color: corPrincipal, fontWeight: 'bold', backgroundColor: '#fdfbfe', cursor: 'pointer' }}
+                        className="stats-filter-select"
                     >
                         <option value="diario">Hoje (Diário)</option>
                         <option value="semanal">Esta semana</option>
@@ -203,31 +168,30 @@ function AdminStatsPage() {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-                <div style={cardStyle}>
-                    <p style={cardLabelStyle}>Faturação {getLabelPeriodo()}</p>
-                    <h2 style={cardValueStyle}>R$ {parseFloat(stats.geral.faturacao_total).toFixed(2)}</h2>
+            <div className="stats-cards-grid">
+                <div className="stats-data-card">
+                    <p className="stats-card-label">Faturação {getLabelPeriodo()}</p>
+                    <h2 className="stats-card-value">R$ {parseFloat(stats.geral.faturacao_total).toFixed(2)}</h2>
                 </div>
-                <div style={cardStyle}>
-                    <p style={cardLabelStyle}>Fotos vendidas {getLabelPeriodo()}</p>
-                    <h2 style={cardValueStyle}>{stats.geral.fotos_vendidas_total}</h2>
+                <div className="stats-data-card">
+                    <p className="stats-card-label">Fotos vendidas {getLabelPeriodo()}</p>
+                    <h2 className="stats-card-value">{stats.geral.fotos_vendidas_total}</h2>
                 </div>
-                <div style={cardStyle}>
-                    <p style={cardLabelStyle}>Utilizadores totais</p>
-                    <h2 style={cardValueStyle}>{stats.geral.utilizadores_total}</h2>
+                <div className="stats-data-card">
+                    <p className="stats-card-label">Utilizadores totais</p>
+                    <h2 className="stats-card-value">{stats.geral.utilizadores_total}</h2>
                 </div>
-                <div style={cardStyle}>
-                    <p style={cardLabelStyle}>Fotógrafos ativos</p>
-                    <h2 style={cardValueStyle}>{stats.geral.fotografos_total}</h2>
+                <div className="stats-data-card">
+                    <p className="stats-card-label">Fotógrafos ativos</p>
+                    <h2 className="stats-card-value">{stats.geral.fotografos_total}</h2>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px', width: '100%' }}>
+            <div className="stats-sections-container">
                 
-                <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>Top 5 Fotógrafos {getLabelPeriodo()}</h3>
-                    {/* A wrapper relativa é estritamente necessária para o Chart.js ser responsivo */}
-                    <div style={{ position: 'relative', height: '300px', width: '100%' }}>
+                <div className="stats-section-card">
+                    <h3 className="stats-section-title">Top 5 Fotógrafos {getLabelPeriodo()}</h3>
+                    <div className="chart-wrapper">
                         <Bar 
                             data={topFotografosChartData} 
                             options={{ 
@@ -235,44 +199,40 @@ function AdminStatsPage() {
                                 maintainAspectRatio: false, 
                                 plugins: { legend: { display: false } },
                                 scales: {
-                                    x: { ticks: { color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#ccc' : '#666' } },
-                                    y: { ticks: { color: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#ccc' : '#666' } }
+                                    x: { ticks: { color: isDarkMode ? '#ccc' : '#666' } },
+                                    y: { ticks: { color: isDarkMode ? '#ccc' : '#666' } }
                                 }
                             }} 
                         />
                     </div>
                 </div>
 
-                <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>Top 5 Fotos Mais Vendidas {getLabelPeriodo()}</h3>
-                    
-                    {/* Wrapper com scroll horizontal para telemóveis */}
-                    <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                        <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '14px' }}>
+                <div className="stats-section-card">
+                    <h3 className="stats-section-title">Top 5 Fotos Mais Vendidas {getLabelPeriodo()}</h3>
+                    <div className="stats-table-responsive">
+                        <table className="stats-table min-width-500">
                             <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                    <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>ID DA FOTO</th>
-                                    <th style={{ padding: '12px 10px' }}>LEGENDA</th>
-                                    <th style={{ padding: '12px 10px' }}>FOTÓGRAFO(A)</th>
-                                    <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>Nº DE VENDAS</th>
+                                <tr>
+                                    <th className="th-left-radius">ID DA FOTO</th>
+                                    <th>LEGENDA</th>
+                                    <th>FOTÓGRAFO(A)</th>
+                                    <th className="th-right-radius">Nº DE VENDAS</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {stats.top_fotos.map(foto => (
-                                    <tr key={foto.id} style={{ borderBottom: '1px solid #eee' }}>
-                                        <td style={{ padding: '14px 10px', fontWeight: '500' }}>#{foto.id}</td>
-                                        <td style={{ padding: '14px 10px', color: '#555' }}>{foto.legenda || '-'}</td>
-                                        <td style={{ padding: '14px 10px' }}>{foto.album__fotografo__nome_completo}</td>
-                                        <td style={{ padding: '14px 10px', fontWeight: 'bold', color: corPrincipal }}>
+                                    <tr key={foto.id}>
+                                        <td className="stats-bold-col txt-main">#{foto.id}</td>
+                                        <td className="stats-muted-col">{foto.legenda || '-'}</td>
+                                        <td className="stats-main-col">{foto.album__fotografo__nome_completo}</td>
+                                        <td className="stats-primary-col stats-bold-col">
                                             {foto.num_vendas} {foto.num_vendas === 1 ? 'venda' : 'vendas'}
                                         </td>
                                     </tr>
                                 ))}
                                 {stats.top_fotos.length === 0 && (
                                     <tr>
-                                        <td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                                            Nenhuma foto vendida neste período.
-                                        </td>
+                                        <td colSpan="4" className="stats-empty-row">Nenhuma foto vendida neste período.</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -280,8 +240,8 @@ function AdminStatsPage() {
                     </div>
                 </div>
 
-                {/* RANKING DE ÁLBUNS */}
-                <RankingAlbunsAdmin />
+                {/* RANKING DE ÁLBUNS COM PARÂMETROS */}
+                <RankingAlbunsAdmin periodo={periodo} labelPeriodo={getLabelPeriodo()} />
 
             </div>
         </div>

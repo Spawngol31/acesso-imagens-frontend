@@ -89,7 +89,7 @@ export function CartProvider({ children }) {
                 const payload = isVideo ? { video_id: mediaId } : { foto_id: mediaId };
                 await axiosInstance.post('carrinho/', payload);
                 fetchCart();
-                toast.success(`🛒 Sucesso! ${isVideo ? 'Vídeo' : 'Foto'} adicionado(a) ao carrinho.`); 
+                toast.success(`Sucesso! ${isVideo ? 'Vídeo' : 'Foto'} adicionado(a) ao carrinho.`); 
             } catch (error) {
                 console.error("Erro ao adicionar ao carrinho:", error);
                 toast.error("Erro ao adicionar. O item pode já estar no carrinho.");

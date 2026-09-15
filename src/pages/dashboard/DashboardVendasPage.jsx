@@ -1,9 +1,11 @@
+// src/pages/dashboard/DashboardVendasPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
 
-// --- 🚀 NOVO COMPONENTE: RANKING DO FOTÓGRAFO ---
+// --- COMPONENTE: RANKING DO FOTÓGRAFO ---
 const RankingAlbunsFotografo = () => {
     const [ranking, setRanking] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -25,28 +27,27 @@ const RankingAlbunsFotografo = () => {
     if (loading || ranking.length === 0) return null;
 
     return (
-        <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '20px', borderTop: '4px solid #6c0464' }}>
-            <h3 style={{ marginTop: 0, color: '#6c0464', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Top 5 álbuns mais vendidos</h3>
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+        <div className="finance-ranking-box">
+            <h3 className="finance-ranking-title">Top 5 álbuns mais vendidos</h3>
+            <div className="finance-table-responsive">
+                <table className="finance-table">
                     <thead>
-                        <tr style={{ backgroundColor: '#f8f9fa', color: '#6c0464', textAlign: 'left' }}>
-                            <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>POSIÇÃO</th>
-                            <th style={{ padding: '12px 10px' }}>ÁLBUM</th>
-                            <th style={{ padding: '12px 10px' }}>FOTOS VENDIDAS</th>
-                            <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>TOTAL ARRECADADO</th>
+                        <tr>
+                            <th className="th-left-radius">POSIÇÃO</th>
+                            <th>ÁLBUM</th>
+                            <th>FOTOS VENDIDAS</th>
+                            <th className="th-right-radius">TOTAL ARRECADADO</th>
                         </tr>
                     </thead>
                     <tbody>
                         {ranking.map((album, index) => {
-                            /* const medalhas = ['🥇', '🥈', '🥉'];*/
-                            const medalha = /*index < 3 ? medalhas[index] : */ `${index + 1}º`;
+                            const medalha = `${index + 1}º`;
                             return (
-                                <tr key={album.album_id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', fontSize: '18px' }}>{medalha}</td>
-                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#333' }}>{album.album_titulo}</td>
-                                    <td style={{ padding: '14px 10px', color: '#555' }}>{album.qtd_vendida} mídias</td>
-                                    <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {parseFloat(album.total_arrecadado).toFixed(2)}</td>
+                                <tr key={album.album_id}>
+                                    <td className="ranking-medal-col">{medalha}</td>
+                                    <td className="ranking-title-col">{album.album_titulo}</td>
+                                    <td className="ranking-qtd-col">{album.qtd_vendida} mídias</td>
+                                    <td className="ranking-price-col">R$ {parseFloat(album.total_arrecadado).toFixed(2)}</td>
                                 </tr>
                             );
                         })}
@@ -56,7 +57,6 @@ const RankingAlbunsFotografo = () => {
         </div>
     );
 };
-// ------------------------------------------------
 
 function DashboardVendasPage() {
     const [activeTab, setActiveTab] = useState('vendas'); 
@@ -70,7 +70,10 @@ function DashboardVendasPage() {
     const [filtros, setFiltros] = useState({ data_inicio: '', data_fim: '', status_repasse: '' });
     const [historicoRecibos, setHistoricoRecibos] = useState([]);
 
-    const corPrincipal = '#6c0464';
+    const [currentPageVendas, setCurrentPageVendas] = useState(1);
+    const [currentPageHistorico, setCurrentPageHistorico] = useState(1);
+    const itemsPerPageVendas = 30; 
+    const itemsPerPageHistorico = 20; 
 
     useEffect(() => {
         const handleResize = () => setLarguraJanela(window.innerWidth);
@@ -88,6 +91,7 @@ function DashboardVendasPage() {
 
     const buscarVendas = async () => {
         setLoading(true);
+        setCurrentPageVendas(1); 
         try {
             const params = new URLSearchParams();
             if (filtros.data_inicio) params.append('data_inicio', filtros.data_inicio);
@@ -107,6 +111,7 @@ function DashboardVendasPage() {
 
     const buscarHistorico = async () => {
         setLoading(true);
+        setCurrentPageHistorico(1); 
         try {
             const response = await axiosInstance.get('/dashboard/meus-recibos/');
             setHistoricoRecibos(response.data);
@@ -128,8 +133,8 @@ function DashboardVendasPage() {
                 <title>Meu Recibo - #${recibo.id}</title>
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-                    .header { border-bottom: 3px solid ${corPrincipal}; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; alignItems: center; }
-                    .title { color: ${corPrincipal}; margin: 0; font-size: 28px; }
+                    .header { border-bottom: 3px solid #6c0464; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+                    .title { color: #6c0464; margin: 0; font-size: 28px; }
                     .info-box { background: #f8f9fa; border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
                     .value-box { background: #d4edda; color: #155724; padding: 20px; text-align: center; border-radius: 8px; border: 1px solid #c3e6cb; }
                     .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
@@ -166,13 +171,70 @@ function DashboardVendasPage() {
         setTimeout(() => janela.print(), 250);
     };
 
-    const inputStyle = { width: '100%', padding: '10px 12px', border: '1px solid #ced4da', borderRadius: '6px', boxSizing: 'border-box', fontSize: '14px', outline: 'none', marginBottom: '15px', backgroundColor: '#fff', color: '#414141' };
-    
+    const indexOfLastVenda = currentPageVendas * itemsPerPageVendas;
+    const indexOfFirstVenda = indexOfLastVenda - itemsPerPageVendas;
+    const currentVendas = dados.slice(indexOfFirstVenda, indexOfLastVenda);
+    const totalPagesVendas = Math.ceil(dados.length / itemsPerPageVendas);
+
+    const indexOfLastHistorico = currentPageHistorico * itemsPerPageHistorico;
+    const indexOfFirstHistorico = indexOfLastHistorico - itemsPerPageHistorico;
+    const currentHistorico = historicoRecibos.slice(indexOfFirstHistorico, indexOfLastHistorico);
+    const totalPagesHistorico = Math.ceil(historicoRecibos.length / itemsPerPageHistorico);
+
+    const renderPagination = (currentPage, totalPages, setCurrentPage) => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
+    };
+
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content finance-page-wrapper">
             
-            <div className="page-header" style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >Meu financeiro</h2>
+            <div className="dash-header-box">
+                <h2 className="dash-main-title">Meu financeiro</h2>
             </div>
 
             <div className="finance-tabs-container">
@@ -186,84 +248,85 @@ function DashboardVendasPage() {
 
             {activeTab === 'vendas' && (
                 <>
-                    <div style={{ backgroundColor: '#fff', borderLeft: `5px solid #28a745`, padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '1rem' }}>
+                    <div className="finance-balance-box">
                         <div>
-                            <p style={{ margin: 0, color: '#666', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>Saldo pendente (A Receber)</p>
-                            <h2 style={{ margin: '10px 0 0 0', color: '#28a745', fontSize: '32px' }}>R$ {parseFloat(resumo.saldo_pendente).toFixed(2)}</h2>
+                            <p className="balance-label">Saldo pendente (A Receber)</p>
+                            <h2 className="balance-value">R$ {parseFloat(resumo.saldo_pendente).toFixed(2)}</h2>
                         </div>
-                        <Link to="/dashboard/saques" className="create-button" >
+                        <Link to="/dashboard/saques" className="create-button">
                             Solicitar saque
                         </Link>
                     </div>
 
-                    {/* 🚀 O RANKING APARECE AQUI */}
                     <RankingAlbunsFotografo />
 
-                    <div style={{ display: 'flex', gap: '20px', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start' }}>
+                    <div className={`finance-split-layout ${isMobile ? 'mobile-layout' : ''}`}>
                         
-                        <div style={{ flex: 1, backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box', order: isMobile ? 2 : 1 }}>
-                            <h3 style={{ marginTop: 0, color: corPrincipal, marginBottom: '20px' }}>Lista de vendas confirmadas</h3>
+                        <div className="finance-main-content">
+                            <h3 className="finance-section-title">Lista de vendas confirmadas</h3>
 
-                            {loading ? <p style={{ color: '#666' }}>A carregar vendas...</p> : (
-                                <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '600px' }}>
+                            {loading ? <p className="finance-loading-text">A carregar vendas...</p> : (
+                                <div className="finance-table-responsive no-border-shadow">
+                                    <table className="finance-table min-width-600">
                                         <thead>
-                                            <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                                <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>FOTO ID</th>
-                                                <th style={{ padding: '12px 10px' }}>CLIENTE</th> 
-                                                <th style={{ padding: '12px 10px' }}>DATA DA VENDA</th>
-                                                <th style={{ padding: '12px 10px' }}>STATUS DO REPASSE</th>
-                                                <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0' }}>MINHA COMISSÃO</th>
+                                            <tr>
+                                                <th className="th-left-radius">FOTO ID</th>
+                                                <th>CLIENTE</th> 
+                                                <th>DATA DA VENDA</th>
+                                                <th>STATUS DO REPASSE</th>
+                                                <th className="th-right-radius">MINHA COMISSÃO</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {dados.map((venda, index) => (
-                                                <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                                                    <td style={{ padding: '14px 10px', fontWeight: '500' }}>
+                                            {currentVendas.map((venda, index) => (
+                                                <tr key={index}>
+                                                    <td className="col-photo-id">
                                                         <button 
                                                             onClick={() => setVendaSelecionada(venda)}
-                                                            style={{ background: 'none', border: 'none', color: corPrincipal, fontWeight: 'bold', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: '14px' }}
+                                                            className="photo-id-btn"
                                                             title="Ver detalhes da foto"
                                                         >
                                                             #{venda.foto_id}
                                                         </button>
                                                     </td>
-                                                    <td style={{ padding: '14px 10px', color: '#555' }}>{venda.cliente}</td>
-                                                    <td style={{ padding: '14px 10px' }}>{venda.data}</td>
-                                                    <td style={{ padding: '14px 10px' }}>
+                                                    <td className="col-client">{venda.cliente}</td>
+                                                    <td className="col-date">{venda.data}</td>
+                                                    <td className="col-status">
                                                         {venda.pago_ao_fotografo 
-                                                            ? <span style={{color: '#28a745', fontWeight: 'bold'}}>✓ Já Recebido</span> 
-                                                            : <span style={{color: '#dc3545', fontWeight: 'bold'}}>⏳ A Receber</span>}
+                                                            ? <span className="status-badge-paid">✓ Já Recebido</span> 
+                                                            : <span className="status-badge-pending">⏳ A Receber</span>}
                                                     </td>
-                                                    <td style={{ padding: '14px 10px', fontWeight: 'bold' }}>R$ {venda.comissao.toFixed(2)}</td>
+                                                    <td className="col-comission">R$ {venda.comissao.toFixed(2)}</td>
                                                 </tr>
                                             ))}
-                                            {dados.length === 0 && <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>Nenhuma venda encontrada com estes filtros.</td></tr>}
+                                            {dados.length === 0 && <tr><td colSpan="5" className="finance-empty-row">Nenhuma venda encontrada com estes filtros.</td></tr>}
                                         </tbody>
                                     </table>
+
+                                    {renderPagination(currentPageVendas, totalPagesVendas, setCurrentPageVendas)}
                                 </div>
                             )}
                         </div>
 
-                        <div style={{ width: isMobile ? '100%' : '260px', backgroundColor: '#fdfbfe', padding: '20px', borderRadius: '10px', border: `1px solid #e1bce0`, boxSizing: 'border-box', order: isMobile ? 1 : 2 }}>
-                            <h3 style={{ marginTop: 0, backgroundColor: corPrincipal, color: 'white', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '15px' }}>FILTROS</h3>
-                            <div style={{ marginTop: '25px' }}>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Inicial</label>
-                                <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} style={inputStyle} />
+                        <div className="finance-sidebar">
+                            <h3 className="sidebar-filter-title">FILTROS</h3>
+                            <div className="sidebar-filter-form">
+                                <label className="filter-label">Data Inicial</label>
+                                <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} className="filter-input" />
                                 
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Data Final</label>
-                                <input type="date" name="data_fim" value={filtros.data_fim} onChange={handleChange} style={inputStyle} />
+                                <label className="filter-label">Data Final</label>
+                                <input type="date" name="data_fim" value={filtros.data_fim} onChange={handleChange} className="filter-input" />
                                 
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px' }}>Status do Repasse</label>
-                                <select name="status_repasse" value={filtros.status_repasse} onChange={handleChange} style={inputStyle}>
+                                <label className="filter-label">Status do Repasse</label>
+                                <select name="status_repasse" value={filtros.status_repasse} onChange={handleChange} className="filter-input">
                                     <option value="">Todos</option>
                                     <option value="PENDENTE">A Receber (Pendentes)</option>
                                     <option value="PAGO">Já Recebidos (Pagos)</option>
                                 </select>
                                 
-                                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                    <button onClick={buscarVendas} className='create-button'>Filtrar</button>
-                                    <button onClick={() => { setFiltros({data_inicio:'', data_fim:'', status_repasse:''}); setTimeout(buscarVendas, 100); }} className='create-button'>Limpar</button>
+                                <div className="filter-actions">
+                                    <button onClick={buscarVendas} className='create-button filter-btn'>Filtrar</button>
+                                    <button onClick={() => { setFiltros({data_inicio:'', data_fim:'', status_repasse:''}); setTimeout(buscarVendas, 100); }} className='create-button filter-btn filter-btn-clear'>Limpar</button>
                                 </div>
                             </div>
                         </div>
@@ -272,50 +335,52 @@ function DashboardVendasPage() {
             )}
 
             {activeTab === 'historico' && (
-                <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box' }}>
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Meus recibos da plataforma</h3>
+                <div className="finance-main-content">
+                    <h3 className="finance-section-title">Meus recibos da plataforma</h3>
                     
-                    {loading ? <p style={{ color: '#666' }}>A carregar recibos...</p> : (
-                        <div className="table-wrapper" style={{ overflowX: 'auto', border: 'none', boxShadow: 'none' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '600px' }}>
+                    {loading ? <p className="finance-loading-text">A carregar recibos...</p> : (
+                        <div className="finance-table-responsive no-border-shadow">
+                            <table className="finance-table min-width-600">
                                 <thead>
-                                    <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                        <th style={{ padding: '12px 10px', borderRadius: '6px 0 0 0' }}>Nº DO RECIBO</th>
-                                        <th style={{ padding: '12px 10px' }}>DATA DO PGTO</th>
-                                        <th style={{ padding: '12px 10px' }}>PERÍODO APURADO</th>
-                                        <th style={{ padding: '12px 10px' }}>VALOR RECEBIDO</th>
-                                        <th style={{ padding: '12px 10px', borderRadius: '0 6px 0 0', textAlign: 'center' }}>AÇÃO</th>
+                                    <tr>
+                                        <th className="th-left-radius">Nº DO RECIBO</th>
+                                        <th>DATA DO PGTO</th>
+                                        <th>PERÍODO APURADO</th>
+                                        <th>VALOR RECEBIDO</th>
+                                        <th className="th-right-radius text-center">AÇÃO</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {historicoRecibos.map((recibo) => (
-                                        <tr key={recibo.id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '14px 10px', fontWeight: 'bold' }}>#{recibo.id.toString().padStart(5, '0')}</td>
-                                            <td style={{ padding: '14px 10px' }}>{recibo.data_pagamento}</td>
-                                            <td style={{ padding: '14px 10px', fontSize: '12px', color: '#666' }}>
+                                    {currentHistorico.map((recibo) => (
+                                        <tr key={recibo.id}>
+                                            <td className="col-receipt-id">#{recibo.id.toString().padStart(5, '0')}</td>
+                                            <td className="col-receipt-date">{recibo.data_pagamento}</td>
+                                            <td className="col-receipt-period">
                                                 {recibo.referencia_inicio} até {recibo.referencia_fim}
                                             </td>
-                                            <td style={{ padding: '14px 10px', fontWeight: 'bold', color: '#28a745' }}>R$ {recibo.valor_pago.toFixed(2)}</td>
-                                            <td style={{ padding: '14px 10px', textAlign: 'center' }}>
-                                                <button onClick={() => imprimirRecibo(recibo)} style={{ padding: '6px 12px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                                            <td className="col-comission">R$ {recibo.valor_pago.toFixed(2)}</td>
+                                            <td className="col-receipt-action">
+                                                <button onClick={() => imprimirRecibo(recibo)} className="print-receipt-btn">
                                                     Ver / Imprimir
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {historicoRecibos.length === 0 && <tr><td colSpan="5" style={{ padding: '30px', textAlign: 'center', color: '#888' }}>Você ainda não possui recebimentos registados na plataforma.</td></tr>}
+                                    {historicoRecibos.length === 0 && <tr><td colSpan="5" className="finance-empty-row">Você ainda não possui recebimentos registados na plataforma.</td></tr>}
                                 </tbody>
                             </table>
+
+                            {renderPagination(currentPageHistorico, totalPagesHistorico, setCurrentPageHistorico)}
                         </div>
                     )}
                 </div>
             )}
 
             {vendaSelecionada && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
-                    <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '450px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', maxHeight: '90vh', overflowY: 'auto' }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content sale-detail-modal">
                         
-                        <h3 style={{ color: '#6c0464', marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                        <h3 className="sale-detail-title">
                             Detalhes da Venda
                         </h3>
                         
@@ -323,31 +388,28 @@ function DashboardVendasPage() {
                             <img 
                                 src={vendaSelecionada.foto_url} 
                                 alt={`Foto ${vendaSelecionada.foto_id}`} 
-                                style={{ width: '100%', borderRadius: '8px', maxHeight: '350px', objectFit: 'contain', backgroundColor: '#f8f9fa', border: '1px solid #ddd' }} 
+                                className="sale-detail-image" 
                             />
                         ) : (
-                            <div style={{ height: '200px', backgroundColor: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px dashed #ccc' }}>
-                                <p style={{ color: '#888', fontWeight: 'bold' }}>Opa! Imagem temporariamente indisponível no servidor.</p>
+                            <div className="sale-detail-no-image">
+                                <p>Opa! Imagem temporariamente indisponível no servidor.</p>
                             </div>
                         )}
 
-                        <div style={{ textAlign: 'left', marginTop: '20px', fontSize: '14px', color: '#444' }}>
-                            <p style={{ margin: '5px 0' }}><strong>📸 ID da Foto:</strong> #{vendaSelecionada.foto_id}</p>
-                            <p style={{ margin: '5px 0' }}><strong>📁 Álbum:</strong> {vendaSelecionada.album_nome}</p>
-                            <p style={{ margin: '5px 0' }}><strong>👤 Cliente:</strong> {vendaSelecionada.cliente}</p>
-                            <p style={{ margin: '5px 0' }}><strong>📅 Data da Venda:</strong> {vendaSelecionada.data}</p>
+                        <div className="sale-detail-info">
+                            <p><strong>📸 ID da Foto:</strong> #{vendaSelecionada.foto_id}</p>
+                            <p><strong>📁 Álbum:</strong> {vendaSelecionada.album_nome}</p>
+                            <p><strong>👤 Cliente:</strong> {vendaSelecionada.cliente}</p>
+                            <p><strong>📅 Data da Venda:</strong> {vendaSelecionada.data}</p>
                             
-                            <div style={{ backgroundColor: '#fbf0fa', padding: '15px', borderRadius: '6px', marginTop: '20px', border: '1px solid #e1bce0' }}>
-                                <p style={{ margin: 0, color: '#6c0464', fontWeight: 'bold', fontSize: '16px', textAlign: 'center' }}>
-                                    Sua Comissão: R$ {vendaSelecionada.comissao.toFixed(2)}
-                                </p>
+                            <div className="sale-comission-highlight">
+                                <p>Sua Comissão: R$ {vendaSelecionada.comissao.toFixed(2)}</p>
                             </div>
                         </div>
 
                         <button 
                             onClick={() => setVendaSelecionada(null)} 
-                            className="create-button" 
-                            style={{ width: '100%', marginTop: '20px', padding: '12px' }}
+                            className="create-button sale-detail-close-btn" 
                         >
                             Fechar Imagem
                         </button>

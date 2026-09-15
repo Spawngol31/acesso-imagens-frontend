@@ -19,7 +19,8 @@ function DashboardAlbunsPage() {
     const [albumParaMudar, setAlbumParaMudar] = useState(null);
     const [albumParaExcluir, setAlbumParaExcluir] = useState(null); 
 
-    const corPrincipal = '#6c0464';
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     const fetchAlbuns = useCallback(async () => {
         try {
@@ -103,6 +104,10 @@ function DashboardAlbunsPage() {
             await axiosInstance.delete(`/dashboard/albuns/${albumParaExcluir.id}/`);
             toast.success("Álbum excluído definitivamente com sucesso!");
             fetchAlbuns();
+            
+            if (currentAlbuns.length === 1 && currentPage > 1) {
+                setCurrentPage(prev => prev - 1);
+            }
         } catch (error) {
             console.error("Erro ao excluir álbum:", error);
             toast.error("Erro ao excluir o álbum. Pode já ter vendas atreladas a ele.");
@@ -112,13 +117,7 @@ function DashboardAlbunsPage() {
         }
     };
 
-    const btnAcaoStyle = {
-        padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', 
-        cursor: 'pointer', border: 'none', transition: 'all 0.2s', textDecoration: 'none',
-        display: 'inline-block', textAlign: 'center'
-    };
-
-    if (loading) return <p style={{ padding: '20px', color: '#666' }}>A carregar os seus álbuns...</p>;
+    if (loading) return <p className="page-subtitle" style={{ padding: '20px' }}>A carregar os seus álbuns...</p>;
 
     const albunsProcessados = albuns
     .filter(album => {
@@ -129,102 +128,167 @@ function DashboardAlbunsPage() {
         return b.id - a.id; 
     });
 
+    const indexOfLastAlbum = currentPage * itemsPerPage;
+    const indexOfFirstAlbum = indexOfLastAlbum - itemsPerPage;
+    const currentAlbuns = albunsProcessados.slice(indexOfFirstAlbum, indexOfLastAlbum);
+    const totalPages = Math.ceil(albunsProcessados.length / itemsPerPage);
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === number ? 'bold' : 'normal' }}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
+    };
+
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content dash-albuns-wrapper">
             
-            <div style={{ 
-                marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
-            }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Meus álbuns</h2>
+            <div className="dash-albuns-header">
+                <h2 className="dash-albuns-title">Meus álbuns</h2>
                 
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <div className="dash-albuns-actions">
                     <Link to="/dashboard/upload" className='create-button'>Upar mídias</Link>
                     <Link to="/dashboard/albuns/novo" className='create-button'>Criar novo álbum +</Link>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                <div style={{ flex: 1, maxWidth: '400px' }}>
+            <div className="dash-search-wrapper">
+                <div className="dash-search-input-box">
                     <input 
                         type="text" 
                         placeholder="Pesquisar álbum por título..." 
                         value={termoPesquisa}
-                        onChange={(e) => setTermoPesquisa(e.target.value)}
-                        style={{ 
-                            backgroundColor: '#fff',
-                            width: '100%', 
-                            padding: '12px 15px', 
-                            borderRadius: '8px', 
-                            border: '1px solid #e1bce0', 
-                            outline: 'none',
-                            color: '#333'
+                        onChange={(e) => {
+                            setTermoPesquisa(e.target.value);
+                            setCurrentPage(1);
                         }}
+                        className="dash-search-input"
                     />
                 </div>
             </div>
 
-            <div style={{ backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '950px' }}>
+            <div className="dash-table-card">
+                <div className="dash-table-responsive">
+                    <table className="dash-table">
                         <thead>
-                            <tr style={{ backgroundColor: '#ebddea', color: corPrincipal, textAlign: 'left' }}>
-                                <th style={{ padding: '15px 10px' }}>TÍTULO</th>
-                                <th style={{ padding: '15px 10px' }}>DATA DO EVENTO</th>
-                                <th style={{ padding: '15px 10px' }}>QTD VENDIDA</th>
-                                <th style={{ padding: '15px 10px' }}>ARRECADADO</th>
-                                <th className="hide-mobile" style={{ padding: '15px 10px' }}>STATUS</th>
-                                <th style={{ padding: '15px 10px', textAlign: 'center' }}>AÇÕES</th>
+                            <tr>
+                                <th>ÁLBUM</th>
+                                <th>DATA DO EVENTO</th>
+                                <th>QTD VENDIDA</th>
+                                <th>ARRECADADO</th>
+                                <th className="hide-mobile">STATUS</th>
+                                <th style={{ textAlign: 'center' }}>AÇÕES</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {albunsProcessados.map(album => (
-                                <tr key={album.id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '15px 10px', fontWeight: 'bold' }}>
-                                        <Link to={`/dashboard/albuns/${album.id}`} style={{ color: corPrincipal, textDecoration: 'none' }}>
-                                            {album.titulo}
-                                        </Link>
+                            {currentAlbuns.length === 0 && (
+                                <tr>
+                                    <td colSpan="6" className="dash-table-empty">
+                                        Nenhum álbum encontrado.
                                     </td>
-                                    <td style={{ padding: '15px 10px', color: '#555' }}>
+                                </tr>
+                            )}
+                            {currentAlbuns.map(album => (
+                                <tr key={album.id}>
+                                    <td>
+                                        <div className="dash-album-info">
+                                            {album.capa ? (
+                                                <img 
+                                                    src={album.capa} 
+                                                    alt={`Capa do álbum ${album.titulo}`} 
+                                                    className="dash-album-cover"
+                                                />
+                                            ) : (
+                                                <div className="dash-album-placeholder">
+                                                    Sem Capa
+                                                </div>
+                                            )}
+                                            <Link to={`/dashboard/albuns/${album.id}`} className="dash-album-link">
+                                                {album.titulo}
+                                            </Link>
+                                        </div>
+                                    </td>
+                                    <td className="dash-td-text">
                                         {new Date(album.data_evento).toLocaleDateString()}
                                     </td>
-                                    
-                                    {/* NOVAS COLUNAS */}
-                                    <td style={{ padding: '15px 10px', color: '#555', fontWeight: 'bold' }}>
+                                    <td className="dash-td-text dash-td-bold">
                                         {album.qtd_vendida || 0} mídias
                                     </td>
-                                    <td style={{ padding: '15px 10px', color: '#28a745', fontWeight: 'bold' }}>
+                                    <td className="dash-td-success">
                                         R$ {parseFloat(album.total_arrecadado || 0).toFixed(2)}
                                     </td>
-                                    {/* ------------- */}
-
-                                    <td className="hide-mobile" style={{ padding: '15px 10px' }}>
+                                    <td className="hide-mobile">
                                         {album.is_arquivado ? (
-                                            <span style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Arquivado</span>
+                                            <span className="dash-badge dash-badge-archived">Arquivado</span>
                                         ) : (
-                                            <span style={{ backgroundColor: '#d4edda', color: '#155724', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Público</span>
+                                            <span className="dash-badge dash-badge-public">Público</span>
                                         )}
                                     </td>
-                                    <td style={{ padding: '15px 10px', textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                        <button 
-                                            onClick={() => { setEditingAlbum(album); setIsEditModalOpen(true); }} 
-                                            style={{ ...btnAcaoStyle, backgroundColor: '#fbf0fa', color: corPrincipal, border: `1px solid ${corPrincipal}` }}
-                                        >
-                                            Editar
-                                        </button>
-                                        <button 
-                                            onClick={() => handleToggleArchiveClick(album)} 
-                                            style={{ ...btnAcaoStyle, backgroundColor: album.is_arquivado ? '#28a745' : '#dc3545', color: 'white' }}
-                                        >
-                                            {album.is_arquivado ? 'Desarquivar' : 'Arquivar'}
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDeleteClick(album)} 
-                                            style={{ ...btnAcaoStyle, backgroundColor: '#343a40', color: 'white' }}
-                                            title="Excluir Álbum Definitivamente"
-                                        >
-                                            Excluir
-                                        </button>
+                                    <td>
+                                        <div className="dash-action-buttons">
+                                            <button 
+                                                onClick={() => { setEditingAlbum(album); setIsEditModalOpen(true); }} 
+                                                className="btn-acao btn-acao-edit"
+                                            >
+                                                Editar
+                                            </button>
+                                            <button 
+                                                onClick={() => handleToggleArchiveClick(album)} 
+                                                className={`btn-acao ${album.is_arquivado ? 'btn-acao-unarchive' : 'btn-acao-archive'}`}
+                                            >
+                                                {album.is_arquivado ? 'Desarquivar' : 'Arquivar'}
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteClick(album)} 
+                                                className="btn-acao btn-acao-delete"
+                                                title="Excluir Álbum Definitivamente"
+                                            >
+                                                Excluir
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -233,10 +297,12 @@ function DashboardAlbunsPage() {
                 </div>
             </div>
 
+            {renderPagination()}
+
             {/* MODAL DE EDIÇÃO */}
             {isEditModalOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
-                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content">
                         <AlbumForm 
                             onSubmit={handleEditSubmit} 
                             initialData={editingAlbum} 
@@ -248,19 +314,19 @@ function DashboardAlbunsPage() {
 
             {/* MODAL DE CONFIRMAÇÃO DE ARQUIVAR */}
             {isConfirmModalOpen && albumParaMudar && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', maxWidth: '450px', width: '90%', textAlign: 'center' }}>
-                        <h3 style={{ color: corPrincipal, marginTop: 0 }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content dash-modal-small">
+                        <h3 className="dash-modal-title">
                             {albumParaMudar.is_arquivado ? 'Desarquivar Álbum?' : 'Arquivar Álbum?'}
                         </h3>
-                        <p style={{ color: '#555', fontSize: '16px' }}>
+                        <p className="dash-modal-text">
                             {albumParaMudar.is_arquivado 
                                 ? "Tem certeza que deseja desarquivar este álbum? Ele voltará a ficar público."
                                 : "Tem certeza que deseja arquivar este álbum? Ele será removido da loja."}
                         </p>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
-                            <button onClick={() => setIsConfirmModalOpen(false)} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #ccc', cursor: 'pointer', backgroundColor: '#fff', color: '#333' }}>Cancelar</button>
-                            <button onClick={confirmarAcao} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: albumParaMudar.is_arquivado ? '#28a745' : '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
+                        <div className="dash-modal-actions">
+                            <button onClick={() => setIsConfirmModalOpen(false)} className="modal-btn-cancel">Cancelar</button>
+                            <button onClick={confirmarAcao} className={`modal-btn-confirm ${albumParaMudar.is_arquivado ? 'btn-success' : 'btn-danger'}`}>
                                 Confirmar
                             </button>
                         </div>
@@ -268,22 +334,22 @@ function DashboardAlbunsPage() {
                 </div>
             )}
 
-            {/* NOVO: MODAL DE EXCLUSÃO DEFINITIVA */}
+            {/* MODAL DE EXCLUSÃO DEFINITIVA */}
             {isDeleteModalOpen && albumParaExcluir && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(3px)' }}>
-                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '20px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
-                        <h3 style={{ color: '#dc3545', marginTop: 0, fontSize: '1.5rem' }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content dash-modal-small">
+                        <h3 className="dash-modal-title text-danger">
                             ⚠️ Excluir Álbum?
                         </h3>
-                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                        <p className="dash-modal-text">
                             Tem certeza que deseja excluir o álbum <strong>{albumParaExcluir.titulo}</strong>?
                         </p>
-                        <p style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>
+                        <p className="dash-modal-warning">
                             Atenção: Esta ação é permanente e apagará todas as mídias dentro dele.
                         </p>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
-                            <button onClick={() => setIsDeleteModalOpen(false)} style={{ padding: '10px 20px', borderRadius: '20px', border: '1px solid #ccc', cursor: 'pointer', backgroundColor: '#fff', color: '#333', fontWeight: 'bold' }}>Cancelar</button>
-                            <button onClick={confirmarExclusao} style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
+                        <div className="dash-modal-actions">
+                            <button onClick={() => setIsDeleteModalOpen(false)} className="modal-btn-cancel">Cancelar</button>
+                            <button onClick={confirmarExclusao} className="modal-btn-confirm btn-danger">
                                 Sim, Excluir Definitivamente
                             </button>
                         </div>

@@ -1,7 +1,6 @@
 // src/pages/SearchPage.jsx
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import Lightbox from '../components/Lightbox';
 import { useAuth } from '../contexts/AuthContext'; 
@@ -111,8 +110,8 @@ function SearchPage() {
 
     return (
         <div className="page-container">
-            <h1>Busca facial</h1>
-            <p style={{textAlign: 'center', maxWidth: '600px', margin: '0 auto 2rem auto'}}>
+            <h1 className="page-title">Busca facial</h1>
+            <p className="page-subtitle facial-subtitle">
                 Envie uma selfie nítida para que o nosso sistema possa encontrar e reunir todas as suas fotos com mais precisão.
             </p>
 
@@ -135,17 +134,16 @@ function SearchPage() {
 
             {error && <p className="error-message" style={{textAlign: 'center'}}>{error}</p>}
 
-
-            <hr style={{margin: '3rem 0', border: '1px solid #eee'}} />
+            <hr className="divider" />
 
             <div className="search-results">
                 {isLoading ? (
-                    <p style={{textAlign: 'center'}}>Aguarde, a busca facial pode demorar alguns segundos...</p>
+                    <p className="page-subtitle">Aguarde, a busca facial pode demorar alguns segundos...</p>
                 ) : searched && (
                     <>
-                        <h2>Resultados da busca</h2>
+                        <h2 className="section-title">Resultados da busca</h2>
                         {searchResults.length === 0 ? (
-                            <p style={{textAlign: 'center'}}>Nenhuma foto foi encontrada com este rosto.</p>
+                            <p className="page-subtitle">Nenhuma foto foi encontrada com este rosto.</p>
                         ) : (
                             <div className="purchase-grid">
                                 {searchResults.map(foto => (

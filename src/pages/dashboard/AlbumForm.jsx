@@ -59,7 +59,6 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             if (!dadosFormatados[campo]) dadosFormatados[campo] = 0;
         });
 
-        // Se estiver editando, passa o capaFile. Se estiver criando, passa apenas os dados puros.
         if (isEditing) {
             onSubmit(dadosFormatados, capaFile);
         } else {
@@ -67,77 +66,60 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
         }
     };
 
-    // --- ESTILOS VISUAIS BLINDADOS ---
-    const corPrincipal = '#6c0464';
-    
-    const inputStyle = { 
-        width: '100%', padding: '10px 12px', marginBottom: '15px', 
-        borderRadius: '6px', border: '1px solid #ced4da', 
-        backgroundColor: '#ffffff', color: '#333333', 
-        fontSize: '14px', boxSizing: 'border-box', outline: 'none', 
-        colorScheme: 'light'
-    };
-
-    const labelStyle = {
-        display: 'block', fontWeight: '600', fontSize: '12px', color: '#555', marginBottom: '4px', textTransform: 'uppercase'
-    };
-
-    const gridDuplo = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 15px' };
-
     return (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+        <form onSubmit={handleSubmit} className="album-form-container">
             
             {/* TÍTULO DO MODAL */}
-            <h2 style={{ color: corPrincipal, marginTop: 0, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '20px' }}>
+            <h2 className="album-form-title">
                 {isEditing ? 'Editar álbum' : 'Criar novo álbum'}
             </h2>
             
-            <label style={labelStyle}>Título do Álbum</label>
-            <input name="titulo" value={albumData.titulo} onChange={handleChange} style={inputStyle} placeholder="Ex: Casamento João e Maria" required />
+            <label className="album-form-label">Título do Álbum</label>
+            <input name="titulo" value={albumData.titulo} onChange={handleChange} className="album-form-input" placeholder="Ex: Casamento João e Maria" required />
             
-            <label style={labelStyle}>Descrição</label>
-            <textarea name="descricao" value={albumData.descricao} onChange={handleChange} style={{...inputStyle, minHeight: '80px', resize: 'vertical'}} placeholder="Detalhes sobre o evento..." />
+            <label className="album-form-label">Descrição</label>
+            <textarea name="descricao" value={albumData.descricao} onChange={handleChange} className="album-form-input album-form-textarea" placeholder="Detalhes sobre o evento..." />
             
             {/* ORGANIZAÇÃO EM COLUNAS PARA POUPAR ESPAÇO */}
-            <div style={gridDuplo}>
+            <div className="album-form-grid">
                 <div>
-                    <label style={labelStyle}>Data do Evento</label>
-                    <input name="data_evento" type="date" value={albumData.data_evento} onChange={handleChange} style={inputStyle} required />
+                    <label className="album-form-label">Data do Evento</label>
+                    <input name="data_evento" type="date" value={albumData.data_evento} onChange={handleChange} className="album-form-input" required />
                 </div>
                 <div>
-                    <label style={labelStyle}>Categoria</label>
-                    <select name="categoria" value={albumData.categoria} onChange={handleChange} style={inputStyle}>
+                    <label className="album-form-label">Categoria</label>
+                    <select name="categoria" value={albumData.categoria} onChange={handleChange} className="album-form-input">
                         {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat.replace(/_/g, ' ')}</option>)}
                     </select>
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                    <label style={labelStyle}>Local do Evento</label>
-                    <input name="local" value={albumData.local} onChange={handleChange} style={inputStyle} placeholder="Ex: Quinta das Flores" />
+                <div className="album-form-full-width">
+                    <label className="album-form-label">Local do Evento</label>
+                    <input name="local" value={albumData.local} onChange={handleChange} className="album-form-input" placeholder="Ex: Quinta das Flores" />
                 </div>
             </div>
 
-            {/* --- SESSÃO DE DESCONTOS COM NOVO VISUAL --- */}
-            <div style={{ marginTop: '5px', padding: '15px', border: '1px solid #e1bce0', borderRadius: '8px', backgroundColor: '#fdfbfe' }}>
-                <h3 style={{ margin: '0 0 5px 0', fontSize: '14px', color: corPrincipal }}>Descontos por quantidade (opcional)</h3>
-                <p style={{ fontSize: '12px', color: '#666', marginBottom: '15px' }}>
+            {/* --- SESSÃO DE DESCONTOS --- */}
+            <div className="album-form-discount-box">
+                <h3 className="album-form-discount-title">Descontos por quantidade (opcional)</h3>
+                <p className="album-form-discount-desc">
                     Incentive os clientes a comprarem mais fotos deste álbum. Deixe em branco se não quiser dar desconto.
                 </p>
 
                 {[1, 2, 3].map(nivel => (
-                    <div key={nivel} style={{ display: 'flex', gap: '10px', marginBottom: nivel === 3 ? '0' : '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 'bold', color: '#555', width: '50px', fontSize: '12px' }}>Nível {nivel}:</span>
-                        <input type="number" name={`qtd_desconto_${nivel}`} value={albumData[`qtd_desconto_${nivel}`]} onChange={handleChange} placeholder="Qtd. Fotos (Ex: 5)" min="0" style={{...inputStyle, marginBottom: 0, flex: 1, minWidth: '120px'}} />
-                        <input type="number" step="0.01" name={`pct_desconto_${nivel}`} value={albumData[`pct_desconto_${nivel}`]} onChange={handleChange} placeholder="Desconto % (Ex: 10)" min="0" max="100" style={{...inputStyle, marginBottom: 0, flex: 1, minWidth: '120px'}} />
+                    <div key={nivel} className={`album-form-discount-row ${nivel === 3 ? 'last-row' : ''}`}>
+                        <span className="album-form-discount-label">Nível {nivel}:</span>
+                        <input type="number" name={`qtd_desconto_${nivel}`} value={albumData[`qtd_desconto_${nivel}`]} onChange={handleChange} placeholder="Qtd. Fotos (Ex: 5)" min="0" className="album-form-input discount-input" />
+                        <input type="number" step="0.01" name={`pct_desconto_${nivel}`} value={albumData[`pct_desconto_${nivel}`]} onChange={handleChange} placeholder="Desconto % (Ex: 10)" min="0" max="100" className="album-form-input discount-input" />
                     </div>
                 ))}
             </div>
 
             {/* UPLOAD DA IMAGEM DE CAPA COM BOTÃO PERSONALIZADO (APENAS APARECE SE ESTIVER A EDITAR) */}
             {isEditing && (
-                <div style={{ marginTop: '20px', padding: '15px', border: '2px dashed #e1bce0', borderRadius: '8px', backgroundColor: '#ffffff' }}>
-                    <label style={{ ...labelStyle, marginBottom: '8px' }}>Imagem de Capa do Álbum</label>
+                <div className="album-form-cover-box">
+                    <label className="album-form-label">Imagem de Capa do Álbum</label>
                     
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div className="album-form-cover-actions">
                         <input 
                             id="album-cover-upload" 
                             type="file" 
@@ -146,16 +128,13 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                             style={{ display: 'none' }} 
                         />
                         
-                        <label 
-                            htmlFor="album-cover-upload" 
-                            style={{ padding: '8px 15px', backgroundColor: 'transparent', color: corPrincipal, border: `1px solid ${corPrincipal}`, borderRadius: '20px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'inline-block', textAlign: 'center', transition: 'all 0.2s' }}
-                        >
+                        <label htmlFor="album-cover-upload" className="album-form-cover-btn">
                             Escolher imagem...
                         </label>
                         
-                        <div style={{ fontSize: '12px', color: '#555' }}>
+                        <div className="album-form-cover-status">
                             {capaFile ? (
-                                <span style={{color: '#28a745', fontWeight: 'bold'}}>✅ {capaFile.name}</span>
+                                <span className="cover-status-success">✅ {capaFile.name}</span>
                             ) : (
                                 initialData.capa && <span>Atual: {initialData.capa.split('/').pop()}</span>
                             )}
@@ -164,17 +143,17 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                 </div>
             )}
             
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginTop: '20px', fontSize: '14px', fontWeight: 'bold', color: '#444' }}>
-                <input name="is_publico" type="checkbox" checked={albumData.is_publico} onChange={handleChange} style={{ width: '18px', height: '18px', accentColor: corPrincipal }} />
+            <label className="album-form-checkbox-wrapper">
+                <input name="is_publico" type="checkbox" checked={albumData.is_publico} onChange={handleChange} className="album-form-checkbox" />
                 Tornar este álbum público (visível para os clientes)
             </label>
             
             {/* BOTÕES DE AÇÃO */}
-            <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
-                <button type="button" onClick={onCancel} className='create-button' style={{ flex: 1, padding: '12px' }}>
+            <div className="album-form-actions">
+                <button type="button" onClick={onCancel} className="create-button btn-cancel">
                     Cancelar
                 </button>
-                <button type="submit" className='create-button' style={{ flex: 1, padding: '12px' }}>
+                <button type="submit" className="create-button">
                     {isEditing ? 'Salvar alterações' : 'Criar Álbum'}
                 </button>
             </div>

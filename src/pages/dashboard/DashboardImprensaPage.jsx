@@ -1,7 +1,6 @@
 // src/pages/dashboard/DashboardImprensaPage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
 
@@ -13,6 +12,10 @@ function DashboardImprensaPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingId, setEditingId] = useState(null); 
 
+    // 🚀 ESTADOS PARA O MODAL DE EXCLUSÃO PERSONALIZADO
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [materiaParaExcluir, setMateriaParaExcluir] = useState(null);
+
     const [formData, setFormData] = useState({
         titulo: '',
         veiculo: '',
@@ -20,7 +23,6 @@ function DashboardImprensaPage() {
         data_publicacao: ''
     });
     
-    // ESTADO PARA O FICHEIRO DE IMAGEM
     const [capaFile, setCapaFile] = useState(null); 
 
     useEffect(() => {
@@ -48,7 +50,7 @@ function DashboardImprensaPage() {
     const openCreateModal = () => {
         setEditingId(null);
         setFormData({ titulo: '', veiculo: '', link: '', data_publicacao: '' });
-        setCapaFile(null); // Limpa o ficheiro
+        setCapaFile(null); 
         setIsModalOpen(true);
     };
 
@@ -60,7 +62,7 @@ function DashboardImprensaPage() {
             link: materia.link,
             data_publicacao: materia.data_publicacao
         });
-        setCapaFile(null); // Limpa o ficheiro
+        setCapaFile(null); 
         setIsModalOpen(true);
     };
 
@@ -68,7 +70,6 @@ function DashboardImprensaPage() {
         e.preventDefault();
         setIsSubmitting(true);
         
-        // PREPARAMOS OS DADOS PARA ENVIO COM FICHEIRO
         const formPayload = new FormData();
         formPayload.append('titulo', formData.titulo);
         formPayload.append('veiculo', formData.veiculo);
@@ -100,14 +101,23 @@ function DashboardImprensaPage() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Tem a certeza que deseja APAGAR definitivamente esta matéria?")) return;
+    // Abre o modal personalizado em vez do window.confirm
+    const abrirModalExclusao = (materia) => {
+        setMateriaParaExcluir(materia);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmarExclusao = async () => {
+        if (!materiaParaExcluir) return;
         try {
-            await axiosInstance.delete(`/imprensa/${id}/`);
+            await axiosInstance.delete(`/imprensa/${materiaParaExcluir.id}/`);
             toast.success("Matéria excluída com sucesso!");
             fetchMaterias();
         } catch (error) {
             toast.error("Erro ao excluir matéria.");
+        } finally {
+            setIsDeleteModalOpen(false);
+            setMateriaParaExcluir(null);
         }
     };
 
@@ -116,93 +126,91 @@ function DashboardImprensaPage() {
         return `${day}/${month}/${year}`;
     };
 
-    const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, backdropFilter: 'blur(3px)' };
-
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+        <div className="dashboard-page-content imprensa-page-wrapper">
             
-            <header className="dashboard-header-card">
-                <div style={{ textAlign: 'center' }}>
+            <header className="dashboard-header-card imprensa-header-card">
+                <div className="imprensa-header-inner">
                     <h1 className="dashboard-header-title">Gestão de Imprensa (Clipping)</h1>
                     <p className="dashboard-header-text">
                         Adicione, edite ou remova as publicações que aparecem na página pública "Na Mídia".
                     </p>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem', gap: '15px', flexWrap: 'wrap' }}>
-                    <button onClick={openCreateModal} className="create-button" style={{ padding: '10px 15px', fontSize: '15px' }}>
+                <div className="imprensa-header-btn-row">
+                    <button onClick={openCreateModal} className="create-button imprensa-create-btn">
                         Nova Matéria
                     </button>
                 </div>
             </header>
 
             {loading ? (
-                <p style={{ textAlign: 'center', color: '#888' }}>A carregar dados...</p>
+                <p className="page-subtitle" style={{ textAlign: 'center' }}>A carregar dados...</p>
             ) : (
-                <div className="table-wrapper">
-                    <table className="dashboard-table">
-                        <thead>
-                            <tr>
-                                <th>Capa</th>
-                                <th>Data</th>
-                                <th>Veículo</th>
-                                <th>Título da Matéria</th>
-                                <th style={{ textAlign: 'center' }}>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {materias.map(materia => (
-                                <tr key={materia.id}>
-                                    <td style={{ width: '60px' }}>
-                                        <img 
-                                            src={materia.imagem_capa || '/images/default-news.png'} 
-                                            alt="Capa" 
-                                            style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }} 
-                                        />
-                                    </td>
-                                    <td style={{ whiteSpace: 'nowrap' }}>{formatDate(materia.data_publicacao)}</td>
-                                    <td style={{ fontWeight: 'bold' }}>{materia.veiculo}</td>
-                                    <td>
-                                        <a href={materia.link} target="_blank" rel="noopener noreferrer" className="table-link">
-                                            {materia.titulo} ↗
-                                        </a>
-                                    </td>
-                                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                                        <button onClick={() => openEditModal(materia)} className="button-outline table-action-btn">Editar</button>
-                                        <button onClick={() => handleDelete(materia.id)} className="button-outline table-action-btn btn-danger">Excluir</button>
-                                    </td>
-                                </tr>
-                            ))}
-                            {materias.length === 0 && (
+                <div className="dash-table-card">
+                    <div className="dash-table-responsive">
+                        <table className="dash-table min-width-700">
+                            <thead>
                                 <tr>
-                                    <td colSpan="5" className="table-empty-state">
-                                        Nenhuma matéria registada no sistema.
-                                    </td>
+                                    <th className="th-left-radius">Capa</th>
+                                    <th>Data</th>
+                                    <th>Veículo</th>
+                                    <th>Título da Matéria</th>
+                                    <th className="th-right-radius text-center">Ações</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {materias.map(materia => (
+                                    <tr key={materia.id}>
+                                        <td className="col-thumb-td">
+                                            <img 
+                                                src={materia.imagem_capa || '/images/default-news.png'} 
+                                                alt="Capa" 
+                                                className="table-thumb-img" 
+                                            />
+                                        </td>
+                                        <td className="nowrap-col">{formatDate(materia.data_publicacao)}</td>
+                                        <td className="dash-td-bold">{materia.veiculo}</td>
+                                        <td>
+                                            <a href={materia.link} target="_blank" rel="noopener noreferrer" className="imprensa-external-link">
+                                                {materia.titulo} ↗
+                                            </a>
+                                        </td>
+                                        <td className="text-center nowrap-col">
+                                            <button onClick={() => openEditModal(materia)} className="btn-acao btn-acao-edit">Editar</button>
+                                            <button onClick={() => abrirModalExclusao(materia)} className="btn-acao btn-acao-archive">Excluir</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {materias.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" className="dash-table-empty">
+                                            Nenhuma matéria registada no sistema.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
             {/* MODAL DE ADICIONAR / EDITAR */}
             {isModalOpen && (
-                <div style={overlayStyle}>
-                    <div className="dashboard-modal-card" style={{ maxWidth: '500px' }}>
-                        <div className="dashboard-modal-divider" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '15px', marginBottom: '20px' }}>
-                            <h3 className="dashboard-modal-title" style={{ margin: 0 }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content imprensa-modal-width">
+                        <div className="dash-modal-header">
+                            <h3 className="dash-modal-title">
                                 {editingId ? 'Editar matéria' : 'Nova matéria'}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}>✖</button>
+                            <button onClick={() => setIsModalOpen(false)} className="dash-modal-close">✖</button>
                         </div>
                         
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <form onSubmit={handleSubmit} className="modal-form-flex">
                             
-                            {/* 🚀 BOTÃO DE UPLOAD DE IMAGEM BONITO E FUNCIONAL */}
-                            <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '5px' }}>Imagem de capa (Opcional)</label>
-                                
-                                <div style={{ padding: '15px', border: '1px dashed #666', borderRadius: '6px', textAlign: 'center', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                                    <label htmlFor="capa-upload" className="button-outline" style={{ display: 'inline-block', cursor: 'pointer', margin: 0, padding: '8px 16px', fontSize: '13px' }}>
+                            <div className="modal-input-group">
+                                <label className="modal-label">Imagem de capa (Opcional)</label>
+                                <div className="imprensa-upload-box">
+                                    <label htmlFor="capa-upload" className="button-outline imprensa-upload-label-btn">
                                         {capaFile ? 'Trocar imagem' : 'Escolher imagem'}
                                     </label>
                                     <input 
@@ -212,35 +220,34 @@ function DashboardImprensaPage() {
                                         onChange={(e) => setCapaFile(e.target.files[0])} 
                                         style={{ display: 'none' }} 
                                     />
-                                    {capaFile && <p style={{ color: '#4dd0e1', margin: '10px 0 0 0', fontSize: '12px', fontWeight: 'bold' }}>{capaFile.name}</p>}
+                                    {capaFile && <p className="imprensa-filename-success">{capaFile.name}</p>}
                                 </div>
-                                
-                                {editingId && !capaFile && <small style={{color: '#888', display: 'block', marginTop: '5px'}}>Deixe em branco para manter a imagem atual.</small>}
+                                {editingId && !capaFile && <small className="imprensa-small-hint">Deixe em branco para manter a imagem atual.</small>}
                             </div>
 
-                            <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '5px' }}>Título da matéria</label>
-                                <input name="titulo" value={formData.titulo} onChange={handleChange} required className="dashboard-input" placeholder="Ex: Goleiro defende pênalti..." />
+                            <div className="modal-input-group">
+                                <label className="modal-label">Título da matéria</label>
+                                <input name="titulo" value={formData.titulo} onChange={handleChange} required className="modal-input" placeholder="Ex: Goleiro defende pênalti..." />
                             </div>
                             
-                            <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '5px' }}>Veículo de comunicação</label>
-                                <input name="veiculo" value={formData.veiculo} onChange={handleChange} required className="dashboard-input" placeholder="Ex: Globo Esporte" />
+                            <div className="modal-input-group">
+                                <label className="modal-label">Veículo de comunicação</label>
+                                <input name="veiculo" value={formData.veiculo} onChange={handleChange} required className="modal-input" placeholder="Ex: Globo Esporte" />
                             </div>
                             
-                            <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '5px' }}>Link (URL)</label>
-                                <input name="link" type="url" value={formData.link} onChange={handleChange} required className="dashboard-input" placeholder="https://..." />
+                            <div className="modal-input-group">
+                                <label className="modal-label">Link (URL)</label>
+                                <input name="link" type="url" value={formData.link} onChange={handleChange} required className="modal-input" placeholder="https://..." />
                             </div>
                             
-                            <div>
-                                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#ccc', marginBottom: '5px' }}>Data de publicação</label>
-                                <input name="data_publicacao" type="date" value={formData.data_publicacao} onChange={handleChange} required className="dashboard-input" />
+                            <div className="modal-input-group">
+                                <label className="modal-label">Data de publicação</label>
+                                <input name="data_publicacao" type="date" value={formData.data_publicacao} onChange={handleChange} required className="modal-input" />
                             </div>
 
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="button-outline" style={{ flex: 1 }}>Cancelar</button>
-                                <button type="submit" disabled={isSubmitting} className="create-button" style={{ flex: 1, opacity: isSubmitting ? 0.7 : 1 }}>
+                            <div className="modal-actions-row" style={{ marginTop: '20px' }}>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="button-outline modal-btn-half">Cancelar</button>
+                                <button type="submit" disabled={isSubmitting} className="create-button modal-btn-half" style={{ opacity: isSubmitting ? 0.7 : 1 }}>
                                     {isSubmitting ? 'A salvar...' : 'Salvar matéria'}
                                 </button>
                             </div>
@@ -249,47 +256,34 @@ function DashboardImprensaPage() {
                 </div>
             )}
 
-            <style>{`
-                .dashboard-header-card { background-color: #fff; border: 1px solid #e1bce0; border-radius: 8px; padding: 30px 20px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(108, 4, 100, 0.05); }
-                .dashboard-header-title { color: #6c0464; margin-top: 0; margin-bottom: 10px; font-size: 28px; }
-                .dashboard-header-text { color: #555; }
-                
-                .table-wrapper { background-color: #fff; border-radius: 8px; overflow: auto; border: 1px solid #e1bce0; }
-                .dashboard-table { width: 100%; border-collapse: collapse; text-align: left; }
-                .dashboard-table th, .dashboard-table td { padding: 15px; }
-                .dashboard-table thead tr { background-color: rgba(108, 4, 100, 0.05); color: #6c0464; border-bottom: 2px solid #e1bce0; }
-                .dashboard-table tbody tr { border-bottom: 1px solid #eee; transition: background-color 0.2s; }
-                .dashboard-table tbody tr:hover { background-color: #fbf0fa; }
-                .table-link { color: #17a2b8; text-decoration: none; font-weight: 500; }
-                .table-link:hover { text-decoration: underline; }
-                .table-action-btn { padding: 6px 12px; font-size: 12px; margin: 0 3px; }
-                .btn-danger { border-color: #dc3545; color: #dc3545; }
-                .btn-danger:hover { background-color: #dc3545; color: #fff; }
-                .table-empty-state { padding: 30px; text-align: center; color: #888; }
-
-                .dashboard-modal-card { background-color: #fff; padding: 30px; border-radius: 12px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); box-sizing: border-box; }
-                .dashboard-modal-title { color: #6c0464; margin-top: 0; margin-bottom: 15px; }
-                .dashboard-modal-divider { border-bottom: 2px solid #fbf0fa; }
-                .dashboard-input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; background-color: #fff; color: #333; }
-
-                @media (prefers-color-scheme: dark) {
-                    .dashboard-header-card { background-color: #2a2a2a; border-color: #444; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-                    .dashboard-header-title { color: #f794f7; }
-                    .dashboard-header-text { color: #ccc; }
-                    
-                    .table-wrapper { background-color: #2a2a2a; border-color: #444; }
-                    .dashboard-table thead tr { background-color: #111; color: #f794f7; border-bottom: 1px solid #444; }
-                    .dashboard-table tbody tr { background-color: #2a2a2a; border-bottom: 1px solid #666; color: #ccc; }
-                    .dashboard-table tbody tr:hover { background-color: #333; }
-                    .table-link { color: #4dd0e1; }
-                    .table-empty-state { color: #888; }
-
-                    .dashboard-modal-card { background-color: #2a2a2a; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-                    .dashboard-modal-title { color: #fff; }
-                    .dashboard-modal-divider { border-bottom: 1px solid #444; }
-                    .dashboard-input { background-color: #111; color: #eee; border-color: #444; color-scheme: dark; }
-                }
-            `}</style>
+            {/* 🚀 MODAL DE CONFIRMAÇÃO DE EXCLUSÃO PERSONALIZADO */}
+            {isDeleteModalOpen && materiaParaExcluir && (
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content dash-modal-small text-center">
+                        <div className="users-block-icon">⚠️</div>
+                        <h3 className="dash-modal-title text-danger">Excluir Matéria?</h3>
+                        
+                        <p className="dash-modal-text">
+                            Tem a certeza que deseja APAGAR definitivamente a matéria <strong>"{materiaParaExcluir.titulo}"</strong>? Esta ação é permanente e não pode ser desfeita.
+                        </p>
+                        
+                        <div className="dash-modal-actions">
+                            <button 
+                                onClick={() => { setIsDeleteModalOpen(false); setMateriaParaExcluir(null); }} 
+                                className="modal-btn-cancel"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={confirmarExclusao} 
+                                className="modal-btn-confirm btn-danger"
+                            >
+                                Sim, Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,13 +1,12 @@
 // src/pages/CheckoutPage.jsx
 
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { initMercadoPago, Payment } from '@mercadopago/sdk-react';
 import { useCart } from '../contexts/CartContext';
 import { toast } from 'react-toastify';
 
-// 1. Inicializa o Mercado Pago
 const mpPublicKey = import.meta.env.VITE_MP_PUBLIC_KEY;
 
 if (mpPublicKey) {
@@ -17,39 +16,74 @@ if (mpPublicKey) {
 function CheckoutPage() {
     const [preferenceId, setPreferenceId] = useState(null);
     const [orderId, setOrderId] = useState(null);
+    const [total, setTotal] = useState(0.00); 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [paymentResult, setPaymentResult] = useState(null);
     
+    // 🚀 Lemos o tema diretamente do HTML para garantir que bate certo com o fundo
+    const [appTheme, setAppTheme] = useState(() => {
+        return document.documentElement.getAttribute('data-theme') || localStorage.getItem('theme') || 'light';
+    });
+    
     const location = useLocation();
-    const { total } = location.state || { total: 0.00 };
+    const { id: pedidoIdFromUrl } = useParams(); 
+    const navigate = useNavigate();
 
-    // Importa a função para atualizar o carrinho
     const { fetchCart } = useCart();
 
     useEffect(() => {
-        const createPreference = async () => {
-            if (total > 0) {
-                try {
-                    setIsLoading(true);
+        // Escuta ativamente as mudanças de tema no documento (quando clica no Sol/Lua)
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    setAppTheme(document.documentElement.getAttribute('data-theme') || 'light');
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, { attributes: true });
+        
+        // Garante a leitura correta no momento da montagem
+        setAppTheme(document.documentElement.getAttribute('data-theme') || localStorage.getItem('theme') || 'light');
+
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        const initCheckout = async () => {
+            try {
+                setIsLoading(true);
+
+                if (pedidoIdFromUrl) {
+                    const response = await axiosInstance.get(`/compras/${pedidoIdFromUrl}/retomar/`); 
+                    setPreferenceId(response.data.preference_id);
+                    setOrderId(response.data.order_id || pedidoIdFromUrl);
+                    setTotal(parseFloat(response.data.total));
+                } 
+                else {
+                    const totalCarrinho = location.state?.total || 0.00;
+                    if (totalCarrinho <= 0) {
+                        setError("O total do carrinho não pode ser zero.");
+                        setIsLoading(false);
+                        return;
+                    }
+                    setTotal(totalCarrinho);
                     const response = await axiosInstance.post('/checkout/mp/');
                     setPreferenceId(response.data.preference_id);
                     setOrderId(response.data.order_id);
-                } catch (error) {
-                    console.error("Erro ao criar preferência:", error);
-                    setError("Não foi possível carregar o pagamento.");
-                } finally {
-                    setIsLoading(false);
                 }
-            } else {
-                setError("O total do carrinho não pode ser zero.");
+            } catch (error) {
+                console.error("Erro ao inicializar checkout:", error);
+                setError("Não foi possível carregar os dados do pagamento.");
+            } finally {
                 setIsLoading(false);
             }
         };
-        createPreference();
-    }, [total]);
 
-    // --- NOVO: POLLING PARA ATUALIZAR CARRINHO E STATUS ---
+        initCheckout();
+    }, [pedidoIdFromUrl, location.state]);
+
     useEffect(() => {
         let interval;
         if (paymentResult) {
@@ -59,18 +93,15 @@ function CheckoutPage() {
         }
         return () => clearInterval(interval); 
     }, [paymentResult, fetchCart]);
-    // -----------------------------------------------------
 
     const initialization = { amount: total, preferenceId: preferenceId };
     
-    // Deteta automaticamente se o utilizador prefere o Modo Escuro
-    const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
+    // Configura o tema do Mercado Pago baseado na nossa variável de estado
     const customization = {
         paymentMethods: { bankTransfer: 'all', creditCard: 'all', debitCard: 'all', ticket: 'all' },
         visual: { 
             style: { 
-                theme: isDarkMode ? 'dark' : 'default' // Muda o tema do Mercado Pago dinamicamente!
+                theme: appTheme === 'dark' ? 'dark' : 'default'
             } 
         },
     };
@@ -100,7 +131,6 @@ function CheckoutPage() {
     const onError = async (error) => { console.error("Erro Brick:", error); };
     const onReady = async () => { setIsLoading(false); };
 
-    // --- FUNÇÃO PARA COPIAR O PIX ---
     const handleCopiarPix = (codigoPix) => {
         if (!codigoPix) return;
         
@@ -110,11 +140,10 @@ function CheckoutPage() {
             })
             .catch((err) => {
                 console.error("Erro ao copiar o Pix: ", err);
-                toast.error("Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.");
+                toast.error("Não foi possível copiar automaticamente.");
             });
     };
 
-    // --- TELA DE SUCESSO ---
     if (paymentResult) {
         const isPix = paymentResult.payment_type_id === 'bank_transfer' || paymentResult.payment_method_id === 'pix';
         const isTicket = paymentResult.payment_type_id === 'ticket' || paymentResult.payment_method_id === 'bolbradesco' || paymentResult.payment_method_id === 'pec';
@@ -125,33 +154,29 @@ function CheckoutPage() {
 
         return (
             <div className="checkout-page-container">
-                <div className="checkout-card" style={{ textAlign: 'center', maxWidth: '600px', width: '100%', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
-                    <h2 className="checkout-title" style={{color: '#6c0464'}}>Pedido Recebido!</h2>
-                    <div style={{margin: '20px 0', color: '#555'}}>
+                <div className="checkout-card success-checkout-card">
+                    <h2 className="checkout-title">Pedido Recebido!</h2>
+                    <div className="checkout-subtitle-box">
                         <p>Obrigado por sua compra.</p>
-                        <p style={{fontSize: '0.9rem', marginTop: '5px'}}>ID do Pedido: #{paymentResult.external_reference || paymentResult.id}</p>
+                        <p className="checkout-order-id">ID do Pedido: #{paymentResult.external_reference || paymentResult.id}</p>
                     </div>
 
                     {isPix && qrCodeBase64 && (
-                        <div className="pix-container" style={{marginTop: '20px', padding: '25px', background: '#ffffffff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-                            <h3 style={{color: '#5a0354', marginBottom: '15px'}}>Pagamento via Pix</h3>
-                            <p style={{marginBottom: '15px'}}>Abra o app do seu banco e escaneie o código:</p>
-                            <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code Pix" style={{maxWidth: '220px', margin: '0 auto 20px', display: 'block', border: '1px solid #ddd', borderRadius: '8px'}} />
+                        <div className="pix-container">
+                            <h3 className="pix-title">Pagamento via Pix</h3>
+                            <p className="pix-instruction">Abra o app do seu banco e escaneie o código:</p>
+                            <img src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code Pix" className="pix-qrcode-img" />
                             
-                            <p style={{fontSize: '0.9rem', marginBottom: '5px', fontWeight: 'bold'}}>Ou copie e cole este código:</p>
-                            <div style={{position: 'relative'}}>
-                                {/* Mantive o campo readOnly para a pessoa conseguir ver o código, mas tirei o evento onClick pra evitar confusão */}
+                            <p className="pix-instruction-bold">Ou copie e cole este código:</p>
+                            <div className="pix-copy-wrapper">
                                 <textarea 
                                     readOnly 
                                     value={qrCodeCopy} 
-                                    style={{width: '100%', height: '60px', fontSize: '0.8rem', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', resize: 'none', backgroundColor: '#f8f9fa', color: '#555', cursor: 'not-allowed'}} 
+                                    className="pix-textarea"
                                 />
-                                
-                                {/* O NOVO BOTÃO DE COPIAR PIX */}
                                 <button 
                                     onClick={() => handleCopiarPix(qrCodeCopy)}
-                                    className="create-button">
-                                    
+                                    className="create-button pix-copy-btn-large">
                                     Copiar código Pix
                                 </button>
                             </div>
@@ -159,22 +184,22 @@ function CheckoutPage() {
                     )}
 
                     {isTicket && ticketUrl && (
-                        <div style={{marginTop: '30px'}}>
-                            <h3 style={{marginBottom: '15px'}}>Boleto Bancário</h3>
-                            <p style={{marginBottom: '20px'}}>Clique no botão abaixo para visualizar e imprimir o seu boleto.</p>
-                            <a href={ticketUrl} target="_blank" rel="noopener noreferrer" className="create-button" style={{textDecoration: 'none', display: 'inline-block', padding: '10px 20px'}}>Abrir Boleto</a>
+                        <div className="ticket-container">
+                            <h3 className="ticket-title">Boleto Bancário</h3>
+                            <p className="ticket-instruction">Clique no botão abaixo para visualizar e imprimir o seu boleto.</p>
+                            <a href={ticketUrl} target="_blank" rel="noopener noreferrer" className="create-button ticket-btn">Abrir Boleto</a>
                         </div>
                     )}
 
                     {status === 'approved' && !isPix && !isTicket && (
-                        <div style={{marginTop: '30px', padding: '20px', background: '#e8f5e9', borderRadius: '8px'}}>
-                            <h3 style={{color: '#2e7d32'}}>Pagamento Aprovado!</h3>
-                            <p>O seu pagamento foi confirmado. As suas fotos já estão disponíveis.</p>
+                        <div className="payment-approved-box">
+                            <h3 className="payment-approved-title">Pagamento Aprovado!</h3>
+                            <p className="payment-approved-text">O seu pagamento foi confirmado. As suas fotos já estão disponíveis.</p>
                         </div>
                     )}
 
-                    <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '1.5rem' }}>
-                        <Link to="/minhas-compras" className="button-outline" style={{textDecoration: 'none'}}>Ir para Meus Pedidos</Link>
+                    <div className="checkout-footer-actions">
+                        <Link to="/minhas-compras" className="button-outline checkout-link-btn">Ir para Minhas compras</Link>
                     </div>
                 </div>
             </div>
@@ -186,11 +211,18 @@ function CheckoutPage() {
             <div className="checkout-card">
                 <h2 className="checkout-title">Finalizar Compra</h2>
                 <p className="checkout-total">Valor Total: <strong>R$ {total.toFixed(2)}</strong></p>
-                {isLoading && !preferenceId && <p style={{textAlign: 'center'}}>A preparar o pagamento...</p>}
+                {isLoading && !preferenceId && <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>A preparar o pagamento...</p>}
                 {error && <p className="error-message">{error}</p>}
                 {preferenceId && !error && (
                     <div className="payment-brick-container">
-                        <Payment initialization={initialization} customization={customization} onSubmit={onSubmit} onError={onError} onReady={onReady} />
+                        <Payment 
+                            key={`mp-brick-${preferenceId}-${appTheme}`}
+                            initialization={initialization} 
+                            customization={customization} 
+                            onSubmit={onSubmit} 
+                            onError={onError} 
+                            onReady={onReady} 
+                        />
                     </div>
                 )}
             </div>

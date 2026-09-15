@@ -5,15 +5,13 @@ import React, { useState, useEffect } from 'react';
 function ServicesPage() {
     const [activeTab, setActiveTab] = useState('atletas'); // 'atletas' ou 'clubes'
     
-    // 🚀 DETETA O MODO ESCURO DO SISTEMA
+    // 🚀 DETETA O MODO ESCURO DO SISTEMA PARA OS IFRAMES DO IG/YOUTUBE
     const [isDarkMode, setIsDarkMode] = useState(() => {
         if (typeof window !== 'undefined' && window.matchMedia) {
             return window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
         return false;
     }); 
-
-    const corPrincipal = '#6c0464';
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -26,12 +24,18 @@ function ServicesPage() {
         return () => matchMedia.removeEventListener('change', handler);
     }, []);
 
-    // 🚀 GERA OS IFRAMES (Com correção para o fundo do YouTube e a tentativa de forçar o IG)
+    const scrollToContent = () => {
+        const contentArea = document.getElementById("main-services-content");
+        if (contentArea) {
+            contentArea.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    // 🚀 GERA OS IFRAMES
     const renderIframe = (url, title) => {
         let finalUrl = url;
         
         if (url.includes('instagram.com')) {
-            // Limpa qualquer embed anterior e força o formato exato da Meta
             const baseUrl = url.split('/embed')[0];
             finalUrl = isDarkMode ? `${baseUrl}/embed/?theme=dark` : `${baseUrl}/embed/`;
         } else if (url.includes('youtube.com')) {
@@ -50,11 +54,6 @@ function ServicesPage() {
                 allowtransparency="true" 
                 allow="encrypted-media; accelerometer; autoplay; clipboard-write; gyroscope; picture-in-picture" 
                 allowFullScreen
-                style={{ 
-                    // Garante que o buraco atrás do vídeo seja escuro no modo noturno
-                    backgroundColor: isDarkMode ? '#1a1a1a' : '#fff',
-                    colorScheme: isDarkMode ? 'dark' : 'light' 
-                }}
             ></iframe>
         );
     };
@@ -74,11 +73,16 @@ function ServicesPage() {
                     <p className="services-description-text">
                         Cada cliente possui uma necessidade diferente. Por isso, nossa assessoria é construída de forma personalizada, reunindo as ferramentas e profissionais necessários para transformar <strong>posicionamento em presença</strong>, <strong>presença em relacionamento</strong> e <strong>relacionamento em oportunidades</strong>.
                     </p>
+                    
+                    {/* Botão de Rolagem */}
+                    <button onClick={scrollToContent} className="scroll-down-btn" title="Descer para ver serviços">
+                        ↓
+                    </button>
                 </div>
             </section>
 
             {/* --- 2. NAVEGAÇÃO DE ABAS (ATLETAS vs CLUBES) --- */}
-            <div className="services-tabs-wrapper">
+            <div id="main-services-content" className="services-tabs-wrapper">
                 <div className="services-tabs-container">
                     <button 
                         className={`services-tab ${activeTab === 'atletas' ? 'active' : ''}`}
@@ -95,7 +99,7 @@ function ServicesPage() {
                 </div>
             </div>
 
-            <div className="container" style={{ padding: '60px 20px' }}>
+            <div className="container services-container">
 
                 {/* ========================================================= */}
                 {/*                       ABA: ATLETAS                        */}
@@ -103,15 +107,15 @@ function ServicesPage() {
                 {activeTab === 'atletas' && (
                     <div className="tab-content fade-in">
 
-                        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                            <h2 className="section-main-title" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', marginBottom: '15px' }}>Construção e Gestão de Imagem Profissional</h2>
-                            <p className="section-main-desc" style={{ fontSize: '1.1rem', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
+                        <div className="services-section-header">
+                            <h2 className="section-main-title">Construção e Gestão de Imagem Profissional</h2>
+                            <p className="section-main-desc">
                                 A sua carreira dentro e fora das quatro linhas. Trabalhamos para transformar o atleta em uma <strong>marca profissional</strong>, cuidando da imagem, comunicação, conteúdo e relacionamento ao longo da carreira.
                             </p>
                         </div>
 
                         {/* GRID DE FERRAMENTAS ATLETAS */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', marginBottom: '60px' }}>
+                        <div className="services-grid">
 
                             {/* 1. Fotografia Esportiva */}
                             <div className="service-card">
@@ -160,7 +164,7 @@ function ServicesPage() {
 
                             {/* 4. Relacionamento & Mercado */}
                             <div className="service-card highlight-card">
-                                <h3 style={{ color: corPrincipal }}> Relacionamento & Mercado</h3>
+                                <h3> Relacionamento & Mercado</h3>
                                 <p className="service-desc">Criamos conexões que podem gerar novas oportunidades para a carreira. Trabalhamos a aproximação com marcas, patrocinadores, profissionais do futebol e comunidades, ampliando a presença do atleta no mercado esportivo.</p>
 
                                 <div className="preview-wrapper">
@@ -183,16 +187,17 @@ function ServicesPage() {
                 {activeTab === 'clubes' && (
                     <div className="tab-content fade-in">
 
-                        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                            <h2 className="section-main-title" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', marginBottom: '15px' }}>Do campo à comunidade</h2>
-                            <p className="section-main-desc" style={{ fontSize: '1.1rem', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
+                        <div className="services-section-header">
+                            <h2 className="section-main-title">Do campo à comunidade</h2>
+                            <p className="section-main-desc">
                                 Construímos a comunicação, a imagem e a presença do seu clube <strong>dentro e fora do estádio</strong>. Transformamos a sua marca numa potência de engajamento e negócios.
                             </p>
                         </div>
 
                         {/* GRID DE SERVIÇOS CLUBES */}
-                        <h3 className="section-sub-title" style={{ textAlign: 'center', fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '40px' }}>Nossas Soluções para Clubes</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '25px', marginBottom: '60px' }}>
+                        <h3 className="section-sub-title">Nossas Soluções para Clubes</h3>
+                        
+                        <div className="services-grid">
 
                             {/* 1. Ativação de Marca */}
                             <div className="service-card">
@@ -200,8 +205,8 @@ function ServicesPage() {
                                 <p className="service-desc">Transformamos o clube em uma marca presente também fora das quatro linhas, criando experiências que aproximam torcedores, comunidade e parceiros. Desenvolvemos ações em escolas, experiências em dias de jogo e ativações com mascotes, fortalecendo o vínculo entre clube e público.</p>
 
                                 <div className="case-box">
-                                    <h4 className="case-title" style={{ margin: '0 0 5px 0', fontSize: '0.95rem' }}>🐻 Mascote Mateusz</h4>
-                                    <p className="case-text" style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4' }}>Criado em parceria com a Secretaria de Educação de São Mateus. Baseado no Urso, com forte influência da cultura polonesa enraizada no município, acompanhado de seu Erva-Mate, simbolizando união, comunicação e educação.</p>
+                                    <h4 className="case-title">🐻 Mascote Mateusz</h4>
+                                    <p className="case-text">Criado em parceria com a Secretaria de Educação de São Mateus. Baseado no Urso, com forte influência da cultura polonesa enraizada no município, acompanhado de seu Erva-Mate, simbolizando união, comunicação e educação.</p>
                                 </div>
 
                                 <div className="preview-wrapper">
@@ -216,10 +221,10 @@ function ServicesPage() {
                                 <p className="service-desc">Construímos a identidade visual e a comunicação do clube de forma profissional e padronizada. Planejamos e produzimos Media Days, materiais institucionais e conteúdos que valorizam atletas e comissão técnica.</p>
 
                                 <div className="case-box">
-                                    <h4 className="case-title" style={{ margin: '0 0 5px 0', fontSize: '0.95rem' }}>Presskit Passo Fundo</h4>
-                                    <p className="case-text" style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '10px' }}>Uma construção completa da identidade do clube preparada exclusivamente para a imprensa.</p>
+                                    <h4 className="case-title">Presskit Passo Fundo</h4>
+                                    <p className="case-text" style={{ marginBottom: '10px' }}>Uma construção completa da identidade do clube preparada exclusivamente para a imprensa.</p>
 
-                                    <a href="/PRESSKIT  ECPF X SANTACRUZ-RS.pdf" target="_blank" rel="noopener noreferrer" className="link-tag" style={{ backgroundColor: corPrincipal, color: 'white', border: 'none', padding: '8px 15px', display: 'inline-flex' }}>
+                                    <a href="/PRESSKIT  ECPF X SANTACRUZ-RS.pdf" target="_blank" rel="noopener noreferrer" className="link-tag">
                                         📄 Acessar Presskit Completo
                                     </a>
                                 </div>
@@ -246,7 +251,7 @@ function ServicesPage() {
                                 <h3> Gestão de Redes Sociais</h3>
                                 <p className="service-desc">Gerimos a redes sociais do clube, desde o Instagram ao YouTube, com planejamento de postagens sobre o calendário do time na temporada atual, vídeos de atualizações do dia a dia no clube.</p>
 
-                                <ul className="custom-list check-list" style={{ marginTop: '10px', marginBottom: '15px' }}>
+                                <ul className="custom-list check-list">
                                     <li>Clube, Período e Métricas</li>
                                     <li>Relacionamento direto com a torcida</li>
                                 </ul>
@@ -302,9 +307,9 @@ function ServicesPage() {
                 {/*               RODAPÉ (CONCLUSÃO FORTE E CTA)              */}
                 {/* ========================================================= */}
 
-                <div className="cta-section" style={{ textAlign: 'center', padding: '40px 20px', borderRadius: '16px', borderStyle: 'solid', borderWidth: '1px' }}>
-                    <h3 className="cta-title" style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', marginBottom: '20px' }}>Não fazemos tudo igual para todos.</h3>
-                    <p className="cta-desc" style={{ fontSize: '1rem', maxWidth: '700px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
+                <div className="cta-section">
+                    <h3 className="cta-title">Não fazemos tudo igual para todos.</h3>
+                    <p className="cta-desc">
                         Cada projeto possui uma realidade diferente. Partimos de um diagnóstico rigoroso para reunir as ferramentas exatas para construir a sua imagem.
                     </p>
 
@@ -322,312 +327,12 @@ function ServicesPage() {
 
                     <a href="https://wa.me/5592984840065?text=Olá!%20Gostaria%20de%20saber%20como%20a%20Acesso%20Imagens%20pode%20ajudar%20o%20meu%20projeto." 
                         target="_blank" rel="noopener noreferrer" 
-                        style={{ display: 'inline-block', backgroundColor: '#25D366', color: 'white', padding: '15px 30px', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: '50px', textDecoration: 'none', boxShadow: '0 4px 15px rgba(37, 211, 102, 0.3)', transition: '0.3s' }}>
+                        className="whatsapp-service-btn">
                          Falar com a nossa equipe
                     </a>
                 </div>
 
             </div>
-
-            {/* --- ESTILOS CSS INJETADOS (Responsividade & Modo Escuro) --- */}
-            <style>{`
-                /* Estilos da Capa (Hero Section) */
-                .services-hero-section {
-                    width: 100%;
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;
-                    background-image: url('/images/capa_site.jpg'); 
-                }
-                .services-hero-overlay {
-                    background-color: rgba(0, 0, 0, 0.6);
-                    min-height: 60vh; 
-                    padding: 60px 20px 80px 20px; 
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    text-align: center;
-                }
-                .services-title {
-                    color: white;
-                    font-size: clamp(2rem, 6vw, 3.5rem); 
-                    margin-bottom: 20px;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
-                    font-weight: 800;
-                    line-height: 1.1;
-                }
-                .services-subtitle-text {
-                    color: #eee;
-                    font-size: clamp(1rem, 2.5vw, 1.25rem);
-                    max-width: 800px;
-                    line-height: 1.6;
-                    margin: 0 auto 20px auto;
-                }
-                .services-description-text {
-                    color: #ccc;
-                    font-size: clamp(0.9rem, 2vw, 1.1rem);
-                    max-width: 800px;
-                    line-height: 1.6;
-                    margin: 0 auto;
-                }
-
-                /* Estilos das Abas (Navegação) */
-                .services-tabs-wrapper {
-                    display: flex;
-                    justify-content: center;
-                    margin-top: -35px; 
-                    position: relative;
-                    z-index: 10;
-                    padding: 0 15px;
-                }
-                .services-tabs-container {
-                    display: flex;
-                    flex-direction: row;
-                    background-color: #fff;
-                    border-radius: 50px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-                    overflow: hidden;
-                    width: 100%;
-                    max-width: 600px;
-                }
-                .services-tab {
-                    flex: 1;
-                    padding: 20px 10px;
-                    font-size: clamp(0.85rem, 3vw, 1.2rem);
-                    font-weight: bold;
-                    border: none;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    background-color: transparent;
-                    color: #555;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                }
-                .services-tab.active {
-                    background-color: ${corPrincipal};
-                    color: #fff;
-                }
-
-                /* ======================================= */
-                /* CORES BASE (MODO CLARO)                 */
-                /* ======================================= */
-                .section-main-title { color: ${corPrincipal}; }
-                .section-main-desc { color: #666; }
-                .section-sub-title { color: #333; }
-
-                .service-card {
-                    background: #fff;
-                    padding: 30px;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-                    transition: transform 0.3s ease;
-                    border-bottom: 4px solid transparent;
-                }
-                .service-card:hover {
-                    transform: translateY(-5px);
-                    border-bottom-color: ${corPrincipal};
-                }
-                .service-card h3 { margin-top: 0; font-size: 1.3rem; color: #333; }
-                .service-subtitle { font-size: 0.95rem; color: ${corPrincipal}; font-weight: bold; margin-bottom: 20px; }
-                .service-desc { font-size: 0.95rem; color: #555; line-height: 1.6; margin-bottom: 15px; }
-                .service-card ul { padding-left: 20px; color: #555; font-size: 0.95rem; line-height: 1.6; }
-
-                .highlight-card { background-color: #fbf0fa; border: 2px solid ${corPrincipal}; }
-                .highlight-card h3 { color: ${corPrincipal}; }
-
-                /* Caixas de Destaque (Cases) */
-                .case-box {
-                    background-color: #fbf0fa;
-                    padding: 15px;
-                    border-radius: 8px;
-                    border-left: 4px solid ${corPrincipal};
-                    margin-top: 15px;
-                    margin-bottom: 15px;
-                }
-                .case-title { color: ${corPrincipal}; }
-                .case-text { color: #555; }
-
-                /* Botões/Tags de Links das Redes Sociais */
-                .link-tag {
-                    display: inline-flex;
-                    align-items: center;
-                    padding: 6px 12px;
-                    background-color: #fdf5fc;
-                    color: ${corPrincipal};
-                    border-radius: 20px;
-                    font-size: 0.8rem;
-                    text-decoration: none;
-                    font-weight: 600;
-                    transition: all 0.2s ease;
-                    border: 1px solid #e1bce0;
-                }
-                .link-tag:hover {
-                    background-color: ${corPrincipal};
-                    color: white;
-                    border-color: ${corPrincipal};
-                    transform: translateY(-2px);
-                }
-
-                /* 🚀 Estilos para o Carrossel Vertical de Previews 1:1 */
-                .preview-wrapper {
-                    display: flex;
-                    flex-direction: column; 
-                    gap: 15px;
-                    padding: 10px 0 15px 0;
-                    margin-top: 15px;
-                }
-                .preview-iframe {
-                    width: 100%;
-                    max-width: 320px; 
-                    aspect-ratio: 3 / 5; 
-                    height: auto; 
-                    border-radius: 12px;
-                    border: 1px solid #eee;
-                    background-color: #fafafa;
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-                    margin: 0 auto; 
-                }
-
-                /* Listas Customizadas & Equipe */
-                .custom-list li { margin-bottom: 10px; }
-                .check-list li { list-style: none; position: relative; padding-left: 25px; }
-                .check-list li::before { content: '✓'; position: absolute; left: 0; color: ${corPrincipal}; }
-
-                /* Estilos da Equipe no Modo Claro */
-                .team-section {
-                    background-color: #f8f9fa;
-                    color: #333;
-                    padding: 40px 20px;
-                    border-radius: 16px;
-                    margin: 40px 0;
-                    text-align: center;
-                    border: 1px solid #eee;
-                }
-                .team-title { font-size: clamp(1.5rem, 3vw, 2.2rem); margin-bottom: 15px; color: #333; }
-                .team-desc { font-size: 1rem; color: #555; margin-bottom: 40px; line-height: 1.5; }
-                .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-
-                .team-role { 
-                    background: #fff; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    font-size: 0.95rem; 
-                    color: #555; 
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
-                    border: 1px solid #eee; 
-                }
-                .team-role-highlight { background-color: ${corPrincipal}; color: #fff; }
-
-                /* CTA Section */
-                .cta-section { background-color: #fcfcfc; border-color: #eee; }
-                .cta-title { color: #333; }
-                .cta-desc { color: #555; }
-                .cta-strong { color: ${corPrincipal}; }
-                .cta-list-container {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 20px;
-                    max-width: 600px;
-                    margin: 0 auto 40px auto;
-                    text-align: left;
-                }
-
-                .fade-in { animation: fadeIn 0.5s ease-in-out; }
-                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-                /* ======================================= */
-                /* DARK MODE (MODO ESCURO)                 */
-                /* ======================================= */
-                @media (prefers-color-scheme: dark) {
-                    .section-main-title { color: #f794f7; }
-                    .section-main-desc { color: #ccc; }
-                    .section-sub-title { color: #eee; }
-
-                    .services-tabs-container { background-color: #222; }
-                    .services-tab { color: #aaa; }
-                    .services-tab.active { background-color: #b832ce; color: #fff; }
-
-                    .service-card {
-                        background: #2a2a2a;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                    }
-                    .service-card h3 { color: #f794f7; }
-                    .service-subtitle { color: #e1bce0; }
-                    .service-desc, .service-card ul { color: #ccc; }
-
-                    .highlight-card {
-                        background-color: rgba(247, 148, 247, 0.05);
-                        border-color: #f794f7;
-                    }
-                    .highlight-card h3 { color: #f794f7; }
-
-                    /* Correção das Caixas e Tags para o Modo Escuro */
-                    .case-box {
-                        background-color: rgba(255, 255, 255, 0.05);
-                        border-left-color: #f794f7;
-                    }
-                    .case-title { color: #f794f7; }
-                    .case-text { color: #aaa; }
-
-                    .link-tag {
-                        background-color: rgba(247, 148, 247, 0.1);
-                        color: #f794f7;
-                        border-color: rgba(247, 148, 247, 0.3);
-                    }
-                    .link-tag:hover {
-                        background-color: #f794f7;
-                        color: #111;
-                    }
-
-                    /* 🚀 Ajustes das Previews no Dark Mode */
-                    .preview-iframe {
-                        border-color: #444;
-                        /* O YouTube ficará perfeitamente preto agora! */
-                    }
-
-                    .check-list li::before { color: #f794f7; }
-
-                    /* Estilos da Equipe no Modo Escuro */
-                    .team-section { background-color: #111; border-color: #222; }
-                    .team-title { color: #fff; }
-                    .team-desc { color: #aaa; }
-                    .team-role { background: rgba(255,255,255,0.05); color: #ddd; border-color: transparent; box-shadow: none; }
-                    .team-role-highlight { background-color: #b832ce; color: #fff; }
-
-                    .cta-section { background-color: #222; border-color: #444; }
-                    .cta-title { color: #eee; }
-                    .cta-desc { color: #ccc; }
-                    .cta-strong { color: #f794f7; }
-                }
-
-                /* REGRAS ESPECÍFICAS PARA TELEMÓVEL */
-                @media (max-width: 768px) {
-                    .services-hero-section {
-                        background-image: url('/images/capa_site_mobile.png'); 
-                    }
-                    .services-tabs-container {
-                        border-radius: 40px;
-                    }
-                    .services-tab {
-                        flex-direction: column;
-                        padding: 12px 5px;
-                        gap: 4px;
-                        text-align: center;
-                    }
-                    .tab-icon {
-                        font-size: 1.2rem;
-                    }
-                    .cta-list-container {
-                        grid-template-columns: 1fr;
-                        gap: 0;
-                    }
-                }
-            `}</style>
-
         </div>
     );
 }

@@ -1,4 +1,5 @@
 // src/pages/ResetPasswordPage.jsx
+
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
@@ -23,7 +24,6 @@ function ResetPasswordPage() {
         setMessage('');
 
         try {
-            // --- CORREÇÃO AQUI ---
             // 1. O endpoint correto é '/password-reset/confirm/'
             // 2. Os dados a enviar são uidb64, token, e a nova password
             const response = await axiosInstance.post('/password-reset/confirm/', {
@@ -31,7 +31,6 @@ function ResetPasswordPage() {
                 token,
                 password
             });
-            // ---------------------
             
             setMessage(response.data.message);
             // Redireciona para o login após 3 segundos
@@ -46,24 +45,41 @@ function ResetPasswordPage() {
     return (
         <div className="auth-page-container">
             <div className="auth-card">
-                <h2>Redefinir senha</h2>
+                <h2 className="auth-card-title">Redefinir senha</h2>
+                
                 {message ? (
-                    <div style={{textAlign: 'center'}}>
-                        <p className="success-message">{message}</p>
-                        {/* --- BOTÃO MODIFICADO --- */}
+                    <div className="auth-success-box">
+                        <p style={{ margin: 0 }}>{message}</p>
                         <Link 
                             to="/login" 
-                            className="create-button"
-                            style={{ textDecoration: 'none', marginTop: '1rem', display: 'inline-block' }}
+                            className="create-button auth-action-btn"
                         >
                             Ir para o Login
                         </Link>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="auth-form">
-                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Nova senha" required />
-                        <input type="password" value={password2} onChange={(e) => setPassword2(e.target.value)} placeholder="Confirmar nova senha" required />
-                        {error && <p className="error-message">{error}</p>}
+                        <input 
+                            type="password" 
+                            value={password} 
+                            onChange={(e) => setPassword(e.target.value)} 
+                            placeholder="Nova senha" 
+                            required 
+                        />
+                        <input 
+                            type="password" 
+                            value={password2} 
+                            onChange={(e) => setPassword2(e.target.value)} 
+                            placeholder="Confirmar nova senha" 
+                            required 
+                        />
+                        
+                        {error && (
+                            <div className="auth-error-box">
+                                ❌ {error}
+                            </div>
+                        )}
+                        
                         <button type="submit">Redefinir Senha</button>
                     </form>
                 )}

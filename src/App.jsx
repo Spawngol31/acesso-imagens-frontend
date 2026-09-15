@@ -26,6 +26,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
 import MinhasPropostasPage from './pages/MinhasPropostasPage';
 import MinhasComprasPage from './pages/MinhasComprasPage';
+import ComprasEmAbertoPage from './pages/ComprasEmAbertoPage';
 import AdminUserPage from './pages/admin/AdminUserPage';
 import AdminJornaisPage from './pages/admin/AdminJornaisPage';
 import AdminStatsPage from './pages/admin/AdminStatsPage';
@@ -74,6 +75,7 @@ function App() {
           <Route path="busca" element={<SearchPage />} />
           <Route path="carrinho" element={<CartPage />} />
           <Route path="minhas-compras" element={<MinhasComprasPage />} />
+          <Route path="minhas-compras-abertas" element={<ComprasEmAbertoPage />} />
           <Route path="minhas-propostas" element={<MinhasPropostasPage />} />
           <Route path="perfil" element={<DashboardPerfilPage />} />
           <Route path="contato" element={<ContactPage />} />
@@ -98,6 +100,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registrar" element={<RegisterPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout/:id" element={<CheckoutPage />} />
         <Route path="/pedido/sucesso" element={<SuccessPage />} />
         <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
         <Route path="/resetar-senha/:uidb64/:token" element={<ResetPasswordPage />} />

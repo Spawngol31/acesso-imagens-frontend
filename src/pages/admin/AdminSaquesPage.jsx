@@ -16,8 +16,6 @@ function AdminSaquesPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     // ------------------------------------
 
-    const corPrincipal = '#6c0464';
-
     const fetchSaques = async () => {
         setLoading(true);
         try {
@@ -47,20 +45,17 @@ function AdminSaquesPage() {
     };
     // --------------------------------------
 
-    // Ao clicar nos botões da tabela, apenas abrimos o modal com os dados
     const abrirModal = (id, acao) => {
         setModalConfig({ isOpen: true, acao: acao, saqueId: id });
-        setObservacao(''); // Limpa o campo de texto
+        setObservacao(''); 
         setComprovante(null);
     };
 
-    // Função real que envia os dados para o Django
     const confirmarAcao = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         
         try {
-            // MÁGICA: Se houver arquivo, usamos FormData em vez de JSON simples
             let data;
             let headers = {};
             
@@ -90,20 +85,20 @@ function AdminSaquesPage() {
     };
 
     const getStatusStyle = (status) => {
-        if (status === 'PAGO') return { bg: '#d4edda', color: '#155724' };
-        if (status === 'RECUSADA') return { bg: '#f8d7da', color: '#721c24' };
-        return { bg: '#fff3cd', color: '#856404' }; // PENDENTE
+        if (status === 'PAGO') return 'status-badge-paid';
+        if (status === 'RECUSADA') return 'status-badge-rejected';
+        return 'status-badge-pending'; // PENDENTE
     };
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 0' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal, minWidth: '200px' }}>Gestão de saques</h2>
+        <div className="dashboard-page-content saques-admin-wrapper">
+            <div className="dash-header-box header-flex-between">
+                <h2 className="dash-main-title margin-0">Gestão de saques</h2>
                 
                 <select 
                     value={filtroStatus} 
                     onChange={(e) => setFiltroStatus(e.target.value)}
-                    style={{ backgroundColor: '#fff', color:'#666', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', outline: 'none', flex: '1 1 auto', maxWidth: '300px' }}
+                    className="saques-admin-filter"
                 >
                     <option value="">Todos os Status</option>
                     <option value="PENDENTE">Pendentes</option>
@@ -112,75 +107,63 @@ function AdminSaquesPage() {
                 </select>
             </div>
 
-            <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                {loading ? <p>A carregar dados...</p> : saques.length === 0 ? (
-                    <p style={{ color: '#888', textAlign: 'center', padding: '30px' }}>Nenhuma solicitação encontrada para este filtro.</p>
+            <div className="dash-table-card">
+                {loading ? <p className="page-subtitle" style={{ padding: '20px' }}>A carregar dados...</p> : saques.length === 0 ? (
+                    <p className="dash-table-empty">Nenhuma solicitação encontrada para este filtro.</p>
                 ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '900px' }}>
+                    <div className="dash-table-responsive">
+                        <table className="dash-table min-width-900">
                             <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                    <th style={{ padding: '12px', borderRadius: '6px 0 0 0' }}>DATA</th>
-                                    <th style={{ padding: '12px' }}>FOTÓGRAFO</th>
-                                    <th style={{ padding: '12px' }}>VALOR</th>
-                                    <th style={{ padding: '12px' }}>CHAVE PIX</th>
-                                    <th style={{ padding: '12px' }}>STATUS</th>
-                                    <th style={{ padding: '12px', borderRadius: '0 6px 0 0', textAlign: 'center' }}>AÇÕES ADMIN</th>
+                                <tr>
+                                    <th className="th-left-radius">DATA</th>
+                                    <th>FOTÓGRAFO</th>
+                                    <th>VALOR</th>
+                                    <th>CHAVE PIX</th>
+                                    <th>STATUS</th>
+                                    <th className="th-right-radius text-center">AÇÕES ADMIN</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {saques.map((saque) => {
-                                    const style = getStatusStyle(saque.status);
                                     return (
-                                        <tr key={saque.id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '12px', color: '#555' }}>{new Date(saque.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-                                            <td style={{ padding: '12px', fontWeight: 'bold' }}>
-                                                {saque.fotografo_nome}<br/>
-                                                <span style={{fontWeight: 'normal', fontSize: '12px', color: '#888'}}>{saque.fotografo_email}</span>
+                                        <tr key={saque.id}>
+                                            <td className="col-date">
+                                                {new Date(saque.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </td>
-                                            <td style={{ padding: '12px', fontWeight: 'bold', color: '#28a745', fontSize: '16px' }}>R$ {parseFloat(saque.valor).toFixed(2)}</td>
-                                            <td style={{ padding: '12px', color: '#333' }}>
-                                                {/* --- BOTÃO DE COPIAR ADICIONADO AQUI --- */}
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <div style={{ backgroundColor: '#f8f9fa', padding: '6px 10px', borderRadius: '4px', fontFamily: 'monospace', color: '#333' }}>
+                                            <td className="col-client-bold">
+                                                {saque.fotografo_nome}<br/>
+                                                <span className="client-email-muted">{saque.fotografo_email}</span>
+                                            </td>
+                                            <td className="col-comission txt-lg">
+                                                R$ {parseFloat(saque.valor).toFixed(2)}
+                                            </td>
+                                            <td className="col-pix-copy">
+                                                <div className="pix-copy-box">
+                                                    <div className="pix-key-text">
                                                         {saque.chave_pix}
                                                     </div>
                                                     <button 
                                                         onClick={() => handleCopiarPix(saque.chave_pix)}
                                                         title="Copiar Chave PIX"
-                                                        style={{
-                                                            background: 'none',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                            fontSize: '18px',
-                                                            padding: '4px',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            color: corPrincipal,
-                                                            transition: 'transform 0.2s',
-                                                            opacity: 0.8
-                                                        }}
-                                                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.opacity = '1'; }}
-                                                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.opacity = '0.8'; }}
+                                                        className="pix-copy-btn"
                                                     >
                                                         📋
                                                     </button>
                                                 </div>
                                             </td>
-                                            <td style={{ padding: '12px' }}>
-                                                <span style={{ backgroundColor: style.bg, color: style.color, padding: '5px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
+                                            <td>
+                                                <span className={`status-badge-lg ${getStatusStyle(saque.status)}`}>
                                                     {saque.status}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '12px', textAlign: 'center' }}>
+                                            <td className="text-center">
                                                 {saque.status === 'PENDENTE' ? (
-                                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                                        <button onClick={() => abrirModal(saque.id, 'recusar')} style={{ padding: '6px 12px', backgroundColor: 'transparent', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Recusar</button>
-                                                        <button onClick={() => abrirModal(saque.id, 'aprovar')} style={{ padding: '6px 12px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>✅ Confirmar PIX</button>
+                                                    <div className="admin-saque-actions">
+                                                        <button onClick={() => abrirModal(saque.id, 'recusar')} className="btn-acao-outline-danger">Recusar</button>
+                                                        <button onClick={() => abrirModal(saque.id, 'aprovar')} className="btn-acao-success">✅ Confirmar PIX</button>
                                                     </div>
                                                 ) : (
-                                                    <span style={{ fontSize: '12px', color: '#888' }}>{saque.observacao || 'Finalizado'}</span>
+                                                    <span className="saque-obs-muted">{saque.observacao || 'Finalizado'}</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -194,18 +177,18 @@ function AdminSaquesPage() {
 
             {/* 🚀 MODAL ELEGANTE */}
             {modalConfig.isOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(3px)' }}>
-                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-                        <h3 style={{ color: modalConfig.acao === 'aprovar' ? '#28a745' : '#dc3545', margin: '0 0 20px 0' }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content dash-modal-small">
+                        <h3 className={`dash-modal-title ${modalConfig.acao === 'aprovar' ? 'text-success' : 'text-danger'}`}>
                             {modalConfig.acao === 'aprovar' ? 'Confirmar Pagamento' : 'Recusar Saque'}
                         </h3>
                         
-                        <form onSubmit={confirmarAcao} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <form onSubmit={confirmarAcao} className="modal-form-flex">
                             
                             {modalConfig.acao === 'aprovar' && (
-                                <div style={{ backgroundColor: '#fbf0fa', padding: '20px', borderRadius: '8px', border: '2px dashed #e1bce0', textAlign: 'center' }}>
+                                <div className="saque-comprovante-box">
                                     
-                                    <label style={{ display: 'inline-block', backgroundColor: '#6c0464', color: 'white', padding: '10px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                                    <label className="create-button comprovante-btn">
                                         📎 Procurar Ficheiro (Opcional)
                                         <input 
                                             type="file" 
@@ -215,9 +198,9 @@ function AdminSaquesPage() {
                                         />
                                     </label>
 
-                                    <div style={{ marginTop: '10px', fontSize: '12px', color: '#555' }}>
+                                    <div className="comprovante-status-text">
                                         {comprovante ? (
-                                            <span style={{ color: '#28a745', fontWeight: 'bold' }}>
+                                            <span className="text-success-bold">
                                                 Selecionado: {comprovante.name}
                                             </span>
                                         ) : (
@@ -227,8 +210,8 @@ function AdminSaquesPage() {
                                 </div>
                             )}
 
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '5px' }}>
+                            <div className="modal-input-group">
+                                <label className="modal-label">
                                     {modalConfig.acao === 'aprovar' ? 'ID da Transação Bancária (Opcional)' : 'Motivo da Recusa (Obrigatório)'}
                                 </label>
                                 <textarea 
@@ -237,15 +220,15 @@ function AdminSaquesPage() {
                                     value={observacao} 
                                     onChange={(e) => setObservacao(e.target.value)}
                                     placeholder={modalConfig.acao === 'aprovar' ? 'Ex: ID E000000002024...' : 'Ex: A chave PIX informada não está cadastrada...'}
-                                    style={{ backgroundColor: '#fff', color: '#666', width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }} 
+                                    className="modal-input modal-textarea" 
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                <button type="button" onClick={() => setModalConfig({ isOpen: false, acao: null, saqueId: null })} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: 'transparent', cursor: 'pointer', fontWeight: 'bold', color: '#555' }}>
+                            <div className="dash-modal-actions">
+                                <button type="button" onClick={() => setModalConfig({ isOpen: false, acao: null, saqueId: null })} className="modal-btn-cancel">
                                     Cancelar
                                 </button>
-                                <button type="submit" disabled={isSubmitting} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', backgroundColor: modalConfig.acao === 'aprovar' ? '#28a745' : '#dc3545', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>
+                                <button type="submit" disabled={isSubmitting} className={`modal-btn-confirm ${modalConfig.acao === 'aprovar' ? 'btn-success' : 'btn-danger'}`}>
                                     {isSubmitting ? 'Aguarde...' : 'Confirmar'}
                                 </button>
                             </div>

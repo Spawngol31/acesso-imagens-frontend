@@ -17,7 +17,9 @@ function DashboardCuponsPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [cupomToDelete, setCupomToDelete] = useState(null);
 
-    const corPrincipal = '#6c0464';
+    // 🚀 ESTADOS DE PAGINAÇÃO
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     const fetchCupons = async () => {
         try {
@@ -46,6 +48,7 @@ function DashboardCuponsPage() {
             setIsModalOpen(false);
             setEditingCupom(null);
             fetchCupons();
+            setCurrentPage(1); // 🚀 Volta para a primeira página ao criar/editar para ver as alterações
             toast.success(isEditing ? "Cupom atualizado com sucesso!" : "Cupom criado com sucesso!");
         } catch (error) {
             console.error("Erro ao salvar cupom:", error.response?.data);
@@ -66,6 +69,11 @@ function DashboardCuponsPage() {
             await axiosInstance.delete(`/dashboard/cupons/${cupomToDelete.id}/`);
             fetchCupons();
             toast.success("Cupom apagado com sucesso!");
+            
+            // 🚀 Volta para a página anterior se a última linha for apagada
+            if (currentCupons.length === 1 && currentPage > 1) {
+                setCurrentPage(prev => prev - 1);
+            }
         } catch (error) {
             console.error("Erro ao apagar cupom:", error);
             toast.error("Erro ao tentar apagar o cupom.");
@@ -74,115 +82,162 @@ function DashboardCuponsPage() {
             setCupomToDelete(null);
         }
     };
-    // ----------------------------------------
 
-    const btnAcaoStyle = {
-        padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', 
-        cursor: 'pointer', border: 'none', transition: 'all 0.2s', textDecoration: 'none',
-        display: 'inline-block', textAlign: 'center', marginLeft: '5px'
+    // 🚀 LÓGICA DE FATIAMENTO (SLICE) PARA PAGINAÇÃO
+    const indexOfLastCupom = currentPage * itemsPerPage;
+    const indexOfFirstCupom = indexOfLastCupom - itemsPerPage;
+    const currentCupons = cupons.slice(indexOfFirstCupom, indexOfLastCupom);
+    const totalPages = Math.ceil(cupons.length / itemsPerPage);
+
+    // 🚀 COMPONENTE DE UI DA PAGINAÇÃO MINIMALISTA
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === number ? 'bold' : 'normal' }}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
     };
 
-    if (loading) return <p style={{ padding: '20px', color: '#666' }}>A carregar os seus cupons...</p>;
+    if (loading) return <p className="page-subtitle" style={{ padding: '20px' }}>A carregar os seus cupons...</p>;
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content cupons-page-wrapper">
             
             {/* CABEÇALHO */}
-            <div className="page-header" style={{ 
-                marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
-            }}>
-                <h2 style={{ margin: 0, fontSize: '24px', color: corPrincipal }} >Meus cupons</h2>
+            <div className="dash-header-box">
+                <h2 className="dash-main-title">Meus cupons</h2>
                 <button className="create-button" onClick={() => { setEditingCupom({}); setIsModalOpen(true); }}>
-                    Criar novo cupom +
+                    Novo cupom +
                 </button>
             </div>
             
             {/* TABELA DE CUPONS */}
-            <div className="table-wrapper" style={{ backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '600px' }}>
-                    <thead>
-                        <tr style={{ backgroundColor: '#ebddea', color: corPrincipal, textAlign: 'left' }}>
-                            <th style={{ padding: '15px 10px', borderRadius: '6px 0 0 0' }}>Código</th>
-                            <th style={{ padding: '15px 10px' }}>Desconto (%)</th>
-                            <th style={{ padding: '15px 10px' }}>Validade</th>
-                            <th style={{ padding: '15px 10px' }}>Status</th>
-                            <th style={{ padding: '15px 10px', borderRadius: '0 6px 0 0', textAlign: 'center' }}>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {cupons.length > 0 ? cupons.map(cupom => (
-                            <tr key={cupom.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '15px 10px', fontWeight: 'bold' }}>{cupom.codigo}</td>
-                                <td style={{ padding: '15px 10px', color: '#28a745', fontWeight: 'bold' }}>{parseFloat(cupom.desconto_percentual).toFixed(2)}%</td>
-                                <td style={{ padding: '15px 10px', color: '#555' }}>{cupom.data_validade ? new Date(cupom.data_validade).toLocaleDateString() : 'Sem validade'}</td>
-                                <td style={{ padding: '15px 10px' }}>
-                                    <span style={{ 
-                                        backgroundColor: cupom.ativo ? '#d4edda' : '#f8d7da', 
-                                        color: cupom.ativo ? '#155724' : '#721c24', 
-                                        padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' 
-                                    }}>
-                                        {cupom.ativo ? 'Ativo' : 'Inativo'}
-                                    </span>
-                                </td>
-                                <td className="action-cell" style={{ padding: '15px 10px', textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                    <button 
-                                        onClick={() => { setEditingCupom(cupom); setIsModalOpen(true); }} 
-                                        style={{ ...btnAcaoStyle, backgroundColor: '#fbf0fa', color: corPrincipal, border: `1px solid ${corPrincipal}` }}
-                                    >
-                                        Editar
-                                    </button>
-                                    <button 
-                                        onClick={() => handleDeleteClick(cupom)} 
-                                        style={{ ...btnAcaoStyle, backgroundColor: '#dc3545', color: 'white' }}
-                                    >
-                                        Apagar
-                                    </button>
-                                </td>
-                            </tr>
-                        )) : (
+            <div className="dash-table-card">
+                <div className="dash-table-responsive">
+                    <table className="dash-table">
+                        <thead>
                             <tr>
-                                <td colSpan="5" style={{ padding: '30px', textAlign: 'center', color: '#888' }}>Você ainda não criou nenhum cupom.</td>
+                                <th>Código</th>
+                                <th>Desconto (%)</th>
+                                <th>Validade</th>
+                                <th>Status</th>
+                                <th style={{ textAlign: 'center' }}>Ações</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {currentCupons.length > 0 ? currentCupons.map(cupom => (
+                                <tr key={cupom.id} >
+                                    <td className="dash-td-bold">{cupom.codigo}</td>
+                                    <td className="dash-td-success">{parseFloat(cupom.desconto_percentual).toFixed(2)}%</td>
+                                    <td className="dash-td-text">{cupom.data_validade ? new Date(cupom.data_validade).toLocaleDateString() : 'Sem validade'}</td>
+                                    <td>
+                                        {cupom.ativo ? (
+                                            <span className="dash-badge dash-badge-public">Ativo</span>
+                                        ) : (
+                                            <span className="dash-badge dash-badge-archived">Inativo</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <div className="dash-action-buttons">
+                                            <button 
+                                                onClick={() => { setEditingCupom(cupom); setIsModalOpen(true); }} 
+                                                className="btn-acao btn-acao-edit"
+                                            >
+                                                Editar
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteClick(cupom)} 
+                                                className="btn-acao btn-acao-archive"
+                                            >
+                                                Apagar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="5" className="dash-table-empty">Você ainda não criou nenhum cupom.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            {/* MODAL DE CRIAÇÃO/EDIÇÃO */}
+            {/* 🚀 RENDERIZA A PAGINAÇÃO AQUI */}
+            {renderPagination()}
+
+            {/* MODAL DE CRIAÇÃO/EDIÇÃO (Reutiliza as classes de CupomForm) */}
             {isModalOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
-                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '90%', maxWidth: '500px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', overflowY: 'auto' }}>
-                        <CupomForm 
-                            onSubmit={handleFormSubmit}
-                            initialData={editingCupom}
-                            onCancel={() => { setIsModalOpen(false); setEditingCupom(null); }}
-                        />
-                    </div>
-                </div>
+                <CupomForm 
+                    onSubmit={handleFormSubmit}
+                    initialData={editingCupom}
+                    onCancel={() => { setIsModalOpen(false); setEditingCupom(null); }}
+                />
             )}
 
             {/* --- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO --- */}
             {isDeleteModalOpen && cupomToDelete && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-                    <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '450px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-                        <h3 style={{ color: '#dc3545', marginTop: 0 }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content dash-modal-small">
+                        <h3 className="dash-modal-title text-danger">
                             Excluir Cupom?
                         </h3>
-                        <p style={{ color: '#555', fontSize: '16px', lineHeight: '1.5' }}>
+                        <p className="dash-modal-text">
                             Tem a certeza que deseja APAGAR o cupom <strong>{cupomToDelete.codigo}</strong>? Esta ação é permanente e não pode ser desfeita.
                         </p>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px' }}>
+                        <div className="dash-modal-actions">
                             <button 
                                 onClick={() => { setIsDeleteModalOpen(false); setCupomToDelete(null); }} 
-                                className='create_button'
-                                style={{ padding: '10px 20px'}}
+                                className="modal-btn-cancel"
                             >
                                 Cancelar
                             </button>
                             <button 
                                 onClick={confirmDelete} 
-                                style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#dc3545', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}
+                                className="modal-btn-confirm btn-danger"
                             >
                                 Sim, Excluir
                             </button>
@@ -190,8 +245,7 @@ function DashboardCuponsPage() {
                     </div>
                 </div>
             )}
-            {/* ---------------------------------------- */}
-
+            
         </div>
     );
 }

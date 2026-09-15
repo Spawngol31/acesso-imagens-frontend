@@ -21,10 +21,10 @@ function AdminJornaisPage() {
         ativo: true
     });
     
-    // Lista de utilizadores para o dropdown (apenas Jornalistas e Assessores)
     const [usuariosDisponiveis, setUsuariosDisponiveis] = useState([]);
 
-    const corPrincipal = '#6c0464';
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const fetchJornais = async () => {
         try {
@@ -40,18 +40,14 @@ function AdminJornaisPage() {
     };
 
     const fetchUsuarios = async () => {
-        try {
-            // Pedimos ao servidor APENAS os usuários com o papel FOTOGRAFO
-            const response = await axiosInstance.get('admin/users/?papel=FOTOGRAFO');
-            
-            // Mantemos o filtro extra por segurança, caso a API devolva algo a mais
-            const fotografos = response.data.filter(u => u.papel === 'FOTOGRAFO');
-            
-            setUsuariosDisponiveis(fotografos);
-        } catch (error) {
-            console.error("Erro ao buscar usuários:", error);
-        }
-    };
+        try {
+            const response = await axiosInstance.get('admin/users/?papel=FOTOGRAFO');
+            const fotografos = response.data.filter(u => u.papel === 'FOTOGRAFO');
+            setUsuariosDisponiveis(fotografos);
+        } catch (error) {
+            console.error("Erro ao buscar usuários:", error);
+        }
+    };
 
     useEffect(() => {
         fetchJornais();
@@ -64,29 +60,26 @@ function AdminJornaisPage() {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (formData.id) {
-                // Se tem ID, estamos a EDITAR (Usamos PUT ou PATCH)
-                await axiosInstance.put(`admin/jornais-parceiros/${formData.id}/`, formData);
-                toast.success("Jornal atualizado com sucesso!");
-            } else {
-                // Se não tem ID, estamos a CRIAR (Usamos POST)
-                await axiosInstance.post('admin/jornais-parceiros/', formData);
-                toast.success("Jornal cadastrado com sucesso!");
-            }
-            
-            setIsModalOpen(false);
-            fetchJornais();
-            // Resetar form limpo
-            setFormData({
-                id: null, nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true
-            });
-        } catch (error) {
-            toast.error(error.response?.data?.error || "Erro ao salvar jornal.");
-            console.error(error);
-        }
-    };
+        e.preventDefault();
+        try {
+            if (formData.id) {
+                await axiosInstance.put(`admin/jornais-parceiros/${formData.id}/`, formData);
+                toast.success("Jornal atualizado com sucesso!");
+            } else {
+                await axiosInstance.post('admin/jornais-parceiros/', formData);
+                toast.success("Jornal cadastrado com sucesso!");
+            }
+            
+            setIsModalOpen(false);
+            fetchJornais();
+            setFormData({
+                id: null, nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true
+            });
+        } catch (error) {
+            toast.error(error.response?.data?.error || "Erro ao salvar jornal.");
+            console.error(error);
+        }
+    };
 
     const toggleStatus = async (jornalId, statusAtual) => {
         try {
@@ -98,141 +91,205 @@ function AdminJornaisPage() {
         }
     };
 
-    // 1. Função que apenas abre a janela e guarda qual jornal foi clicado
     const abrirModalExclusao = (jornalId, nomeJornal) => {
         setJornalParaExcluir({ id: jornalId, nome: nomeJornal });
         setIsDeleteModalOpen(true);
     };
 
-    // 2. Função que realmente apaga o jornal (acionada pelo botão do modal)
     const confirmarExclusao = async () => {
         if (!jornalParaExcluir) return;
 
         try {
             await axiosInstance.delete(`admin/jornais-parceiros/${jornalParaExcluir.id}/`);
             toast.success("Jornal excluído com sucesso!");
-            fetchJornais(); // Atualiza a lista na tela
-            setIsDeleteModalOpen(false); // Fecha o modal
-            setJornalParaExcluir(null); // Limpa a memória
+            fetchJornais(); 
+            setIsDeleteModalOpen(false); 
+            setJornalParaExcluir(null); 
+            
+            if (currentJornais.length === 1 && currentPage > 1) {
+                setCurrentPage(prev => prev - 1);
+            }
         } catch (error) {
             toast.error("Erro ao excluir o jornal.");
             console.error(error);
         }
     };
 
-    // 3. Função que prepara o formulário para edição
-    const abrirModalEdicao = (jornal) => {
-        setFormData({
-            id: jornal.id,
-            nome_jornal: jornal.nome_jornal,
-            usuario: jornal.usuario || '', // Garante que pega o ID do fotógrafo
-            ftp_host: jornal.ftp_host,
-            ftp_user: jornal.ftp_user,
-            ftp_password: '', // Deixamos vazio por segurança, para você digitar a nova se quiser
-            ftp_pasta: jornal.ftp_pasta,
-            ativo: jornal.ativo
-        });
-        setIsModalOpen(true);
-    };
+    const abrirModalEdicao = (jornal) => {
+        setFormData({
+            id: jornal.id,
+            nome_jornal: jornal.nome_jornal,
+            usuario: jornal.usuario || '', 
+            ftp_host: jornal.ftp_host,
+            ftp_user: jornal.ftp_user,
+            ftp_password: '', 
+            ftp_pasta: jornal.ftp_pasta,
+            ativo: jornal.ativo
+        });
+        setIsModalOpen(true);
+    };
 
-    // Estilos
-    const inputStyle = { padding: '10px', width: '100%', marginBottom: '15px', borderRadius: '5px', border: '1px solid #ccc', backgroundColor: 'white', color: '#666' };
-    const btnNovoStyle = { padding: '10px 20px', backgroundColor: corPrincipal, color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' };
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentJornais = jornais.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(jornais.length / itemsPerPage);
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
+    };
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0 }}>Distribuição via FTP (Jornais)</h2>
+        <div className="dashboard-page-content jornais-admin-wrapper">
+            <div className="dash-header-box header-flex-between">
+                <h2 className="dash-main-title margin-0">Distribuição via FTP (Jornais)</h2>
                 <button onClick={() => {
                     setFormData({ id: null, nome_jornal: '', usuario: '', ftp_host: '', ftp_user: '', ftp_password: '', ftp_pasta: '/', ativo: true });
                     setIsModalOpen(true);
-                }} className='create_buttom'>+ Adicionar jornal parceiro</button>
+                }} className='create-button'>+ Adicionar jornal parceiro</button>
             </div>
 
-            {loading ? <p>Carregando parceiros...</p> : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                    {jornais.length === 0 && <p>Nenhum jornal parceiro cadastrado.</p>}
-                    
-                    {jornais.map((jornal) => (
-                        <div key={jornal.id} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderLeft: `5px solid ${jornal.ativo ? '#28a745' : '#dc3545'}` }}>
-                            <h3 style={{ margin: '0 0 10px 0', color: corPrincipal }}>{jornal.nome_jornal}</h3>
-                            <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Host:</strong> {jornal.ftp_host}</p>
-                            <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Pasta:</strong> {jornal.ftp_pasta}</p>
-                            <p style={{ margin: '5px 0', fontSize: '14px' }}><strong>Usuário FTP:</strong> {jornal.ftp_user}</p>
-                            <div style={{ 
-                                marginTop: '15px', 
-                                display: 'flex', 
-                                gap: '8px', 
-                                flexWrap: 'nowrap',
-                                overflowX: 'auto',
-                                paddingBottom: '5px' // Dá um espacinho caso apareça a barra de rolagem em telas muito pequenas
-                            }}>
-                                <button 
-                                    onClick={() => abrirModalEdicao(jornal)}
-                                    style={{ padding: '5px 10px', borderRadius: '4px', fontSize: '12px', border: '1px solid #ccc', backgroundColor: '#f8f9fa', cursor: 'pointer', color: '#333', whiteSpace: 'nowrap' }}
-                                    title="Editar Jornal"
-                                >
-                                    Editar
-                                </button>
+            {loading ? <p className="page-subtitle" style={{ padding: '20px' }}>Carregando parceiros...</p> : (
+                <>
+                    <div className="jornais-grid">
+                        {jornais.length === 0 && <p className="dash-table-empty">Nenhum jornal parceiro cadastrado.</p>}
+                        
+                        {currentJornais.map((jornal) => (
+                            <div key={jornal.id} className={`jornal-card ${jornal.ativo ? 'active-border' : 'inactive-border'}`}>
+                                <h3 className="jornal-card-title">{jornal.nome_jornal}</h3>
+                                <p className="jornal-card-info"><strong>Host:</strong> {jornal.ftp_host}</p>
+                                <p className="jornal-card-info"><strong>Pasta:</strong> {jornal.ftp_pasta}</p>
+                                <p className="jornal-card-info"><strong>Usuário FTP:</strong> {jornal.ftp_user}</p>
+                                
+                                <div className="jornal-card-actions">
+                                    <button 
+                                        onClick={() => abrirModalEdicao(jornal)}
+                                        className="btn-acao btn-acao-edit"
+                                        title="Editar Jornal"
+                                    >
+                                        Editar
+                                    </button>
 
-                                <button 
-                                    onClick={() => toggleStatus(jornal.id, jornal.ativo)}
-                                    style={{ padding: '5px 10px', fontSize: '12px', borderRadius: '4px', cursor: 'pointer', border: 'none', backgroundColor: jornal.ativo ? '#f8d7da' : '#d4edda', color: jornal.ativo ? '#721c24' : '#155724', whiteSpace: 'nowrap' }}
-                                >
-                                    {jornal.ativo ? 'Pausar Envios' : 'Retomar Envios'}
-                                </button>
+                                    <button 
+                                        onClick={() => toggleStatus(jornal.id, jornal.ativo)}
+                                        className={`btn-acao ${jornal.ativo ? 'btn-acao-archive' : 'btn-acao-unarchive'}`}
+                                    >
+                                        {jornal.ativo ? 'Pausar Envios' : 'Retomar Envios'}
+                                    </button>
 
-                                <button 
-                                    onClick={() => abrirModalExclusao(jornal.id, jornal.nome_jornal)}
-                                    className= 'delete-button-pill'
-                                    style={{ padding: '5px 10px', borderRadius: '4px', fontSize: '12px', whiteSpace: 'nowrap' }}
-                                    title="Excluir Jornal"
-                                >
-                                    Excluir
-                                </button>
+                                    <button 
+                                        onClick={() => abrirModalExclusao(jornal.id, jornal.nome_jornal)}
+                                        className="btn-acao btn-acao-archive"
+                                        title="Excluir Jornal"
+                                    >
+                                        Excluir
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+
+                    {renderPagination()}
+                </>
             )}
 
             {/* Modal de Cadastro */}
             {isModalOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', width: '400px', maxHeight: '90vh', overflowY: 'auto' }}>
-                        <h3 style={{ color: corPrincipal, marginTop: 0 }}>
-                            {formData.id ? 'Editar Jornal Parceiro' : 'Novo Jornal Parceiro'}
-                        </h3>
-                        <form onSubmit={handleSubmit}>
-                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Nome do Veículo (Jornal)</label>
-                            <input name="nome_jornal" value={formData.nome_jornal} onChange={handleInputChange} style={inputStyle} required />
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content">
+                        <div className="dash-modal-header">
+                            <h3 className="dash-modal-title">
+                                {formData.id ? 'Editar Jornal Parceiro' : 'Novo Jornal Parceiro'}
+                            </h3>
+                            <button onClick={() => setIsModalOpen(false)} className="dash-modal-close">✖</button>
+                        </div>
 
-                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Vincular a Conta de Usuário</label>
-                            <select name="usuario" value={formData.usuario} onChange={handleInputChange} style={inputStyle} required>
-                                <option value="">Selecione um Fotógrafo(a)...</option>
-                                {usuariosDisponiveis.map(u => (
-                                    <option key={u.id} value={u.id}>{u.nome_completo} ({u.email})</option>
-                                ))}
-                            </select>
+                        <form onSubmit={handleSubmit} className="modal-form-flex">
+                            <div className="modal-input-group">
+                                <label className="modal-label">Nome do Veículo (Jornal)</label>
+                                <input name="nome_jornal" value={formData.nome_jornal} onChange={handleInputChange} className="modal-input" required />
+                            </div>
 
-                            <hr style={{ margin: '20px 0', borderColor: '#eee' }} />
-                            <p style={{ fontSize: '12px', color: '#888', marginBottom: '15px' }}>Dados do Servidor FTP (fornecidos pelo jornal)</p>
+                            <div className="modal-input-group">
+                                <label className="modal-label">Vincular a Conta de Usuário</label>
+                                <select name="usuario" value={formData.usuario} onChange={handleInputChange} className="modal-input" required>
+                                    <option value="">Selecione um Fotógrafo(a)...</option>
+                                    {usuariosDisponiveis.map(u => (
+                                        <option key={u.id} value={u.id}>{u.nome_completo} ({u.email})</option>
+                                    ))}
+                                </select>
+                            </div>
 
-                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Host FTP (ex: ftp.oglobo.com.br)</label>
-                            <input name="ftp_host" value={formData.ftp_host} onChange={handleInputChange} style={inputStyle} required />
+                            <hr className="modal-separator" />
+                            <p className="modal-subtitle-desc">Dados do Servidor FTP (fornecidos pelo jornal)</p>
 
-                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Usuário FTP</label>
-                            <input name="ftp_user" value={formData.ftp_user} onChange={handleInputChange} style={inputStyle} required />
+                            <div className="modal-input-group">
+                                <label className="modal-label">Host FTP (ex: ftp.oglobo.com.br)</label>
+                                <input name="ftp_host" value={formData.ftp_host} onChange={handleInputChange} className="modal-input" required />
+                            </div>
 
-                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Senha FTP</label>
-                            <input type="password" name="ftp_password" value={formData.ftp_password} onChange={handleInputChange} style={inputStyle} required />
+                            <div className="modal-input-group">
+                                <label className="modal-label">Usuário FTP</label>
+                                <input name="ftp_user" value={formData.ftp_user} onChange={handleInputChange} className="modal-input" required />
+                            </div>
 
-                            <label style={{ fontSize: '12px', fontWeight: 'bold' }}>Pasta de Destino (padrão é /)</label>
-                            <input name="ftp_pasta" value={formData.ftp_pasta} onChange={handleInputChange} style={inputStyle} />
+                            <div className="modal-input-group">
+                                <label className="modal-label">Senha FTP</label>
+                                <input type="password" name="ftp_password" value={formData.ftp_password} onChange={handleInputChange} className="modal-input" required />
+                            </div>
 
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                <button type="button" onClick={() => setIsModalOpen(false)} className='create_buttom' style={{ flex: 1, padding: '10px' }}>Cancelar</button>
-                                <button type="submit" className='create_buttom' style={{ flex: 1, padding: '10px' }}>
+                            <div className="modal-input-group">
+                                <label className="modal-label">Pasta de Destino (padrão é /)</label>
+                                <input name="ftp_pasta" value={formData.ftp_pasta} onChange={handleInputChange} className="modal-input" />
+                            </div>
+
+                            <div className="modal-actions-row">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className='button-outline modal-btn-half'>Cancelar</button>
+                                <button type="submit" className='create-button modal-btn-half'>
                                     {formData.id ? 'Atualizar Jornal' : 'Salvar Jornal'}
                                 </button>
                             </div>
@@ -242,29 +299,26 @@ function AdminJornaisPage() {
             )}
 
             {isDeleteModalOpen && jornalParaExcluir && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(108, 4, 100, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(3px)' }}>
-                    <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '90%', maxWidth: '400px', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+                <div className="dash-modal-overlay">
+                    <div className="dash-modal-content dash-modal-small text-center">
+                        <div className="users-block-icon">⚠️</div>
+                        <h3 className="dash-modal-title text-danger">Confirmar Exclusão</h3>
                         
-                        <div style={{ fontSize: '40px', marginBottom: '15px' }}>⚠️</div>
-                        <h3 style={{ color: '#dc3545', marginTop: 0, marginBottom: '15px' }}>Confirmar Exclusão</h3>
-                        
-                        <p style={{ color: '#555', fontSize: '15px', marginBottom: '30px' }}>
+                        <p className="dash-modal-text">
                             Tem a certeza que deseja excluir permanentemente a ligação de envio para o <strong>"{jornalParaExcluir.nome}"</strong>?<br/><br/>
-                            <span style={{ fontSize: '13px', color: '#888' }}>Esta ação não pode ser desfeita.</span>
+                            <span className="text-muted-small">Esta ação não pode ser desfeita.</span>
                         </p>
 
-                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                        <div className="dash-modal-actions">
                             <button 
                                 onClick={() => setIsDeleteModalOpen(false)} 
-                                className='create_buttom'
-                                style={{ flex: 1, padding: '10px'}}
+                                className="modal-btn-cancel"
                             >
                                 Cancelar
                             </button>
                             <button 
                                 onClick={confirmarExclusao} 
-                                className= 'delete-button-pill'
-                                style={{ flex: 1, padding: '10px', fontSize: '16px'}}
+                                className="modal-btn-confirm btn-danger"
                             >
                                 Sim, Excluir
                             </button>

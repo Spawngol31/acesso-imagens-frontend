@@ -1,3 +1,5 @@
+// src/pages/dashboard/FotografoSaquesPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
@@ -9,10 +11,11 @@ function FotografoSaquesPage() {
     
     // --- NOVO: Estado para guardar o saldo real que vem do banco ---
     const [saldoPendente, setSaldoPendente] = useState(0);
-    
     const [chavePix, setChavePix] = useState('');
 
-    const corPrincipal = '#6c0464';
+    // 🚀 ESTADOS DE PAGINAÇÃO
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     const fetchData = async () => {
         setLoading(true);
@@ -46,10 +49,10 @@ function FotografoSaquesPage() {
 
         setIsSubmitting(true);
         try {
-            // O valor não é mais enviado daqui. O backend calcula sozinho!
             await axiosInstance.post('/dashboard/saques/', { chave_pix: chavePix });
             toast.success("Solicitação enviada com sucesso! O Admin analisará o seu pedido.");
             setChavePix('');
+            setCurrentPage(1); // 🚀 Volta para a página 1 para ver o novo pedido
             fetchData(); // Recarrega tudo para atualizar o saldo para zero
         } catch (error) {
             toast.error(error.response?.data?.error || "Erro ao solicitar saque.");
@@ -59,97 +62,171 @@ function FotografoSaquesPage() {
     };
 
     const getStatusStyle = (status) => {
-        if (status === 'PAGO') return { bg: '#d4edda', color: '#155724' };
-        if (status === 'RECUSADA') return { bg: '#f8d7da', color: '#721c24' };
-        return { bg: '#fff3cd', color: '#856404' }; // PENDENTE
+        if (status === 'PAGO') return 'status-badge-paid';
+        if (status === 'RECUSADA') return 'status-badge-rejected';
+        return 'status-badge-pending'; // PENDENTE
+    };
+
+    // 🚀 LÓGICA DE FATIAMENTO (SLICE) PARA PAGINAÇÃO
+    const indexOfLastSaque = currentPage * itemsPerPage;
+    const indexOfFirstSaque = indexOfLastSaque - itemsPerPage;
+    const currentSaques = saques.slice(indexOfFirstSaque, indexOfLastSaque);
+    const totalPages = Math.ceil(saques.length / itemsPerPage);
+
+    // 🚀 COMPONENTE DE UI DA PAGINAÇÃO MINIMALISTA
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === number ? 'bold' : 'normal' }}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
     };
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '40px' }}>
-            <h2 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px', marginBottom: '25px' }}>
+        <div className="dashboard-page-content saques-dash-wrapper">
+            <h2 className="dash-main-title border-bottom-title">
                 Meus saques
             </h2>
 
             {/* FORMULÁRIO DE SOLICITAÇÃO */}
-            <div style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '30px', borderLeft: `5px solid ${corPrincipal}` }}>
-                <h3 style={{ marginTop: 0, color: '#333' }}>Solicitar repasse de vendas</h3>
-                <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+            <div className="saque-form-card">
+                <h3 className="saque-form-title">Solicitar repasse de vendas</h3>
+                <p className="saque-form-desc">
                     O sistema transfere automaticamente todo o seu saldo disponível em uma única transação.
                 </p>
                 
-                <form onSubmit={handleSolicitarSaque} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <form onSubmit={handleSolicitarSaque} className="saque-form-flex">
                     
                     {/* --- CAIXA DE SALDO BLOQUEADA --- */}
-                    <div style={{ flex: '1 1 200px' }}>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>Valor do saque (R$)</label>
-                        <div style={{ backgroundColor: '#2a2a2a', color: saldoPendente > 0 ? '#4caf50' : '#888', width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #444', boxSizing: 'border-box', fontWeight: 'bold', fontSize: '16px' }}>
+                    <div className="saque-col-balance">
+                        <label className="saque-label">Valor do saque (R$)</label>
+                        <div className={`saque-balance-display ${saldoPendente > 0 ? 'balance-positive' : 'balance-zero'}`}>
                             R$ {parseFloat(saldoPendente).toFixed(2)}
                         </div>
                     </div>
 
-                    <div style={{ flex: '2 1 300px' }}>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '5px' }}>Sua chave PIX</label>
-                        <input type="text" required value={chavePix} onChange={(e) => setChavePix(e.target.value)} placeholder="CPF, E-mail, Telefone ou Chave Aleatória" style={{ backgroundColor: '#fff', color: '#666', width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
+                    <div className="saque-col-pix">
+                        <label className="saque-label">Sua chave PIX</label>
+                        <input 
+                            type="text" 
+                            required 
+                            value={chavePix} 
+                            onChange={(e) => setChavePix(e.target.value)} 
+                            placeholder="CPF, E-mail, Telefone ou Chave Aleatória" 
+                            className="saque-input-pix" 
+                        />
                     </div>
                     
-                    <button type="submit" disabled={isSubmitting || saldoPendente <= 0} className="create-button" style={{ height: '43px', flex: '1 1 150px', opacity: (isSubmitting || saldoPendente <= 0) ? 0.6 : 1 }}>
+                    <button 
+                        type="submit" 
+                        disabled={isSubmitting || saldoPendente <= 0} 
+                        className="create-button saque-submit-btn" 
+                        style={{ opacity: (isSubmitting || saldoPendente <= 0) ? 0.6 : 1 }}
+                    >
                         {isSubmitting ? 'Enviando...' : 'Pedir saque total'}
                     </button>
                 </form>
             </div>
 
             {/* HISTÓRICO DE SAQUES */}
-            <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ marginTop: 0, color: corPrincipal, marginBottom: '20px' }}>Histórico de solicitações</h3>
+            <div className="saque-history-card">
+                <h3 className="saque-history-title">Histórico de solicitações</h3>
                 
-                {loading ? <p>A carregar histórico...</p> : saques.length === 0 ? (
-                    <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>Nenhuma solicitação de saque realizada até o momento.</p>
+                {loading ? <p className="page-subtitle">A carregar histórico...</p> : saques.length === 0 ? (
+                    <div className="empty-state-message">
+                        <p>Nenhuma solicitação de saque realizada até o momento.</p>
+                    </div>
                 ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', minWidth: '700px' }}>
-                            <thead>
-                                <tr style={{ backgroundColor: '#f8f9fa', color: corPrincipal, textAlign: 'left' }}>
-                                    <th style={{ padding: '12px', borderRadius: '6px 0 0 0' }}>DATA DO PEDIDO</th>
-                                    <th style={{ padding: '12px' }}>VALOR</th>
-                                    <th style={{ padding: '12px' }}>CHAVE PIX</th>
-                                    <th style={{ padding: '12px' }}>STATUS</th>
-                                    <th style={{ padding: '12px', borderRadius: '0 6px 0 0' }}>OBSERVAÇÃO DO ADMIN</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {saques.map((saque) => {
-                                    const style = getStatusStyle(saque.status);
-                                    return (
-                                        <tr key={saque.id} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={{ padding: '12px' }}>{new Date(saque.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-                                            <td style={{ padding: '12px', fontWeight: 'bold' }}>R$ {parseFloat(saque.valor).toFixed(2)}</td>
-                                            <td style={{ padding: '12px', color: '#555' }}>{saque.chave_pix}</td>
-                                            <td style={{ padding: '12px' }}>
-                                                <span style={{ backgroundColor: style.bg, color: style.color, padding: '5px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
+                    <>
+                        <div className="finance-table-responsive no-border-shadow">
+                            <table className="finance-table">
+                                <thead>
+                                    <tr>
+                                        <th className="th-left-radius">DATA DO PEDIDO</th>
+                                        <th>VALOR</th>
+                                        <th>CHAVE PIX</th>
+                                        <th>STATUS</th>
+                                        <th className="th-right-radius">OBSERVAÇÃO DO ADMIN</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {currentSaques.map((saque) => (
+                                        <tr key={saque.id}>
+                                            <td className="col-saque-date">
+                                                {new Date(saque.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                            </td>
+                                            <td className="col-saque-value">R$ {parseFloat(saque.valor).toFixed(2)}</td>
+                                            <td className="col-saque-pix">{saque.chave_pix}</td>
+                                            <td>
+                                                <span className={`status-badge-lg ${getStatusStyle(saque.status)}`}>
                                                     {saque.status}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '12px', color: '#666', fontSize: '13px' }}>
+                                            <td className="col-saque-obs">
                                                 {saque.comprovante && (
                                                     <a 
                                                         href={saque.comprovante} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer" 
-                                                        style={{ display: 'inline-block', marginBottom: '5px', color: '#f794f7', textDecoration: 'none', fontWeight: 'bold', backgroundColor: 'rgba(247, 148, 247, 0.15)', padding: '6px 12px', borderRadius: '6px', border: '1px solid #f794f7' }}
+                                                        className="saque-receipt-link"
                                                     >
                                                         Ver Comprovante
                                                     </a>
                                                 )}
-                                                <div style={{ marginTop: saque.comprovante ? '5px' : '0' }}>
+                                                <div className="saque-obs-text">
                                                     {saque.observacao || '-'}
                                                 </div>
                                             </td>
                                         </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {renderPagination()}
+                    </>
                 )}
             </div>
         </div>

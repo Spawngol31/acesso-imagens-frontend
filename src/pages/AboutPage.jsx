@@ -42,19 +42,19 @@ function AboutPage() {
 
     return (
         <div className="page-container">
-            <h1 style={{ color: '#6c0464' }}>Quem somos</h1>
+            <h1 className="page-title">Quem somos</h1>
             
             <div className="about-section">
                 <h2>Nossa história</h2>
-                <p style={{ textAlign: 'justify', lineHeight: '1.8', marginBottom: '20px' }}> A Acesso Imagens nasceu em 2023 do olhar e da paixão de uma mulher amazonense pelo futebol e pela comunicação.</p>
-                <p style={{ textAlign: 'justify', lineHeight: '1.8', marginBottom: '20px' }}> Nosso propósito é fortalecer a imagem de clubes,
+                <p className="about-text"> A Acesso Imagens nasceu em 2023 do olhar e da paixão de uma mulher amazonense pelo futebol e pela comunicação.</p>
+                <p className="about-text"> Nosso propósito é fortalecer a imagem de clubes,
                    atletas e eventos esportivos por meio de soluções criativas e estratégias que conectam o esporte ao público.
                    Unimos experiência em jornalismo, marketing e produção audiovisual para entregar resultados que valorizam cada projeto.
                    Atuamos em diferentes frentes, como assessoria de imprensa, gestão de redes sociais, fotografia esportiva,
                    produção audiovisual e cobertura de eventos, sempre com foco em qualidade, credibilidade e visibilidade para nossos clientes.</p>
                 
                 <h2>Nosso objetivo</h2>
-                <p style={{ textAlign: 'justify', lineHeight: '1.8', marginBottom: '20px' }}> Na Acesso Imagens, trabalhamos com o propósito de impulsionar a visibilidade e o reconhecimento de clubes, atletas e projetos esportivos. Nossos objetivos estão voltados para fortalecer a comunicação, ampliar o alcance das marcas e transformar a forma como o esporte é contado e percebido pelo público.
+                <p className="about-text"> Na Acesso Imagens, trabalhamos com o propósito de impulsionar a visibilidade e o reconhecimento de clubes, atletas e projetos esportivos. Nossos objetivos estão voltados para fortalecer a comunicação, ampliar o alcance das marcas e transformar a forma como o esporte é contado e percebido pelo público.
 
                    Buscamos oferecer estratégias eficazes que gerem engajamento, credibilidade e resultados reais. Cada ação é planejada para destacar histórias, consolidar identidades e aproximar o esporte de quem o vive e de quem o acompanha.
 
@@ -63,9 +63,9 @@ function AboutPage() {
                    Nosso foco é construir uma comunicação que inspire, conecte e gere impacto, dentro e fora de campo, do Norte ao Sul do Brasil.</p>
             </div>
 
-            <h1 style={{ color: '#6c0464', marginTop: '4rem', fontSize: '1.5rem' }}>Nossos Colaboradores</h1>
+            <h1 className="page-title" style={{ marginTop: '4rem', fontSize: '1.5rem' }}>Nossos Colaboradores</h1>
             
-            {loading ? <p style={{textAlign: 'center'}}>A carregar...</p> : (
+            {loading ? <p className="loading-text">A carregar...</p> : (
                 <div className="collaborator-grid">
                     {Array.isArray(colaboradores) && colaboradores.length > 0 ? (
                         colaboradores.map(colaborador => (
@@ -96,7 +96,7 @@ function AboutPage() {
                             </div>
                         ))
                     ) : (
-                        <p style={{textAlign: 'center'}}>Nenhum colaborador encontrado.</p>
+                        <p className="loading-text">Nenhum colaborador encontrado.</p>
                     )}
                 </div>
             )}

@@ -6,79 +6,15 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 
-// --- COMPONENTE DE PAGINAÇÃO ---
-const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
-    if (totalPages <= 1) return null;
-
-    const getPaginationRange = () => {
-        const delta = 1;
-        const range = [];
-        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-            range.push(i);
-        }
-        if (currentPage - delta > 2) range.unshift("...");
-        if (currentPage + delta < totalPages - 1) range.push("...");
-
-        range.unshift(1);
-        if (totalPages > 1) range.push(totalPages);
-        return range;
-    };
-
-    const pages = getPaginationRange();
-
-    return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '2rem', padding: '1rem' }}>
-            <button 
-                onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
-                style={{ border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
-            >
-                &lt;
-            </button>
-
-            {pages.map((page, index) => (
-                <React.Fragment key={index}>
-                    {page === "..." ? (
-                        <span style={{ padding: '5px', color: '#888', letterSpacing: '2px' }}>...</span>
-                    ) : (
-                        <button
-                            onClick={() => onPageChange(page)}
-                            style={{
-                                width: '40px', height: '40px', border: 'none', borderRadius: '8px',
-                                backgroundColor: currentPage === page ? '#6c0464' : 'transparent',
-                                color: currentPage === page ? 'white' : '#333',
-                                cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
-                                fontSize: '1rem', transition: 'all 0.2s'
-                            }}
-                        >
-                            {page}
-                        </button>
-                    )}
-                </React.Fragment>
-            ))}
-
-            <button 
-                onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
-                style={{ border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
-            >
-                &gt;
-            </button>
-        </div>
-    );
-};
-// -------------------------------
-
 function MinhasPropostasPage() {
     const [propostas, setPropostas] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    
+    const [filtroStatus, setFiltroStatus] = useState('TODAS');
     const { fetchCart } = useCart();
 
-    // --- ESTADOS DE PAGINAÇÃO ---
     const [currentPage, setCurrentPage] = useState(1);
-    const itensPorPagina = 10;
-    // ----------------------------
-
-    const corPrincipal = '#6c0464';
+    const itensPorPagina = 20;
 
     const fetchPropostas = async () => {
         try {
@@ -100,95 +36,177 @@ function MinhasPropostasPage() {
             toast.success("Resposta enviada com sucesso!");
             fetchPropostas();
             
-            // --- A MÁGICA ACONTECE AQUI ---
-            // Se o cliente aceitou, mandamos o carrinho recalcular tudo imediatamente
             if (acao === 'aceitar') {
                 fetchCart();
             }
-            // ------------------------------
-            
         } catch (error) {
             toast.error(error.response?.data?.error || "Erro ao responder.");
         }
     };
 
     const getStatusInfo = (status) => {
-        if (status === 'ACEITA' || status === 'CONTRAPROPOSTA_ACEITA') return { bg: '#d4edda', color: '#155724', texto: 'Aprovada!' };
-        if (status === 'RECUSADA' || status === 'CONTRAPROPOSTA_RECUSADA') return { bg: '#f8d7da', color: '#721c24', texto: 'Recusada' };
-        if (status === 'CONTRAPROPOSTA') return { bg: '#cce5ff', color: '#004085', texto: 'Nova Oferta Recebida' };
-        return { bg: '#fff3cd', color: '#856404', texto: 'Em Análise' };
+        if (status === 'ACEITA' || status === 'CONTRAPROPOSTA_ACEITA') return { classe: 'status-aceita', texto: 'Aprovada!' };
+        if (status === 'RECUSADA' || status === 'CONTRAPROPOSTA_RECUSADA') return { classe: 'status-recusada', texto: 'Recusada' };
+        if (status === 'CONTRAPROPOSTA') return { classe: 'status-contra', texto: 'Nova Oferta Recebida' };
+        return { classe: 'status-pendente', texto: 'Em Análise' };
     };
 
-    // --- LÓGICA MATEMÁTICA DA PAGINAÇÃO ---
-    const totalPages = Math.ceil(propostas.length / itensPorPagina);
+    const propostasFiltradas = propostas.filter(proposta => {
+        if (filtroStatus === 'TODAS') return true;
+        if (filtroStatus === 'PENDENTE') return proposta.status === 'PENDENTE';
+        if (filtroStatus === 'CONTRAPROPOSTA') return proposta.status === 'CONTRAPROPOSTA';
+        if (filtroStatus === 'ACEITA') return proposta.status === 'ACEITA' || proposta.status === 'CONTRAPROPOSTA_ACEITA';
+        if (filtroStatus === 'RECUSADA') return proposta.status === 'RECUSADA' || proposta.status === 'CONTRAPROPOSTA_RECUSADA';
+        return true;
+    });
+
+    const handleFiltroChange = (e) => {
+        setFiltroStatus(e.target.value);
+        setCurrentPage(1); 
+    };
+
+    const totalPages = Math.ceil(propostasFiltradas.length / itensPorPagina);
     const indexOfLastItem = currentPage * itensPorPagina;
     const indexOfFirstItem = indexOfLastItem - itensPorPagina;
-    const currentPropostas = propostas.slice(indexOfFirstItem, indexOfLastItem);
+    const currentPropostas = propostasFiltradas.slice(indexOfFirstItem, indexOfLastItem);
 
     const handlePageChange = (novaPagina) => {
         setCurrentPage(novaPagina);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    // ---------------------------------------
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => handlePageChange(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === number ? 'bold' : 'normal' }}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
+    };
 
     return (
-        <div className="page-container" style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '40px' }}>
-            <h1 style={{ color: corPrincipal, borderBottom: '2px solid #fbf0fa', paddingBottom: '15px' }}>Minhas Propostas</h1>
+        <div className="page-container page-propostas-wrapper">
+            <h1 className="page-title propostas-page-title">Minhas Propostas</h1>
 
-            {loading ? <p>A carregar as suas propostas...</p> : propostas.length === 0 ? (
-                <div style={{ backgroundColor: '#fdfbfe', padding: '40px', borderRadius: '10px', textAlign: 'center', border: '1px dashed #e1bce0' }}>
-                    <p style={{ color: '#888', fontSize: '16px' }}>Você ainda não fez nenhuma proposta.</p>
+            <div className="propostas-filter-wrapper">
+                <label className="filtro-label" htmlFor="filtro-status">
+                    Filtrar por Status
+                </label>
+                <select
+                    id="filtro-status"
+                    className="filtro-select"
+                    value={filtroStatus}
+                    onChange={handleFiltroChange}
+                >
+                    <option value="TODAS">Todas as minhas propostas</option>
+                    <option value="PENDENTE">Em análise pelo fotógrafo</option>
+                    <option value="CONTRAPROPOSTA">Novas ofertas recebidas</option>
+                    <option value="ACEITA">Aprovadas</option>
+                    <option value="RECUSADA">Recusadas</option>
+                </select>
+            </div>
+
+            {loading ? <p className="page-subtitle">A carregar as suas propostas...</p> : propostas.length === 0 ? (
+                <div className="empty-state-message propostas-empty">
+                    <p>Você ainda não fez nenhuma proposta.</p>
+                </div>
+            ) : propostasFiltradas.length === 0 ? (
+                <div className="empty-state-message propostas-empty">
+                    <p>Nenhuma proposta encontrada com este status.</p>
                 </div>
             ) : (
                 <>
-                    <div style={{ display: 'grid', gap: '20px' }}>
+                    <div className="propostas-grid">
                         {currentPropostas.map(proposta => {
                             const statusInfo = getStatusInfo(proposta.status);
                             
                             return (
-                                <div key={proposta.id} style={{ backgroundColor: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: `1px solid ${statusInfo.bg}` }}>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
+                                <div key={proposta.id} className={`proposta-card ${statusInfo.classe}-border`}>
+                                    <div className="proposta-card-header">
                                         
-                                        <div style={{ flex: '1 1 250px' }}>
-                                            <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>Álbum: {proposta.album_titulo}</h3>
-                                            <p style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#555' }}>
+                                        <div className="proposta-info-col">
+                                            <h3 className="proposta-title">Álbum: {proposta.album_titulo}</h3>
+                                            <p className="proposta-text">
                                                 <strong>Quantidade:</strong> {proposta.quantidade_fotos} Foto(s) e {proposta.quantidade_videos} Vídeo(s)
                                             </p>
-                                            <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>
-                                                <strong style={{textDecoration: proposta.status === 'CONTRAPROPOSTA' ? 'line-through' : 'none'}}>Valor Oferecido: R$ {parseFloat(proposta.valor_oferecido).toFixed(2)}</strong>
+                                            <p className="proposta-text">
+                                                <strong className={proposta.status === 'CONTRAPROPOSTA' ? 'text-strikethrough' : ''}>
+                                                    Valor Oferecido: R$ {parseFloat(proposta.valor_oferecido).toFixed(2)}
+                                                </strong>
                                             </p>
                                             {proposta.valor_contraproposta && (
-                                                <p style={{ margin: '5px 0 0 0', fontSize: '16px', color: '#004085', fontWeight: 'bold' }}>
+                                                <p className="proposta-contra-text">
                                                     Nova Oferta do Fotógrafo: R$ {parseFloat(proposta.valor_contraproposta).toFixed(2)}
                                                 </p>
                                             )}
                                         </div>
 
-                                        <div style={{ textAlign: 'center', minWidth: '150px' }}>
-                                            <div style={{ padding: '10px 20px', borderRadius: '8px', backgroundColor: statusInfo.bg, color: statusInfo.color, fontWeight: 'bold', fontSize: '16px' }}>
-                                                {statusInfo.icone} {statusInfo.texto}
+                                        <div className="proposta-badge-col">
+                                            <div className={`proposta-badge ${statusInfo.classe}`}>
+                                                {statusInfo.texto}
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Ações se for Contra-proposta */}
                                     {proposta.status === 'CONTRAPROPOSTA' && (
-                                        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                            <button onClick={() => responderContraproposta(proposta.id, 'recusar')} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #dc3545', backgroundColor: '#fff', color: '#dc3545', fontWeight: 'bold', cursor: 'pointer' }}>Recusar Nova Oferta</button>
-                                            <button onClick={() => responderContraproposta(proposta.id, 'aceitar')} style={{ padding: '8px 15px', borderRadius: '6px', border: 'none', backgroundColor: '#28a745', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Aceitar Nova Oferta</button>
+                                        <div className="proposta-contra-box">
+                                            <button onClick={() => responderContraproposta(proposta.id, 'recusar')} className="btn-recusar-oferta">Recusar Nova Oferta</button>
+                                            <button onClick={() => responderContraproposta(proposta.id, 'aceitar')} className="btn-aceitar-oferta">Aceitar Nova Oferta</button>
                                         </div>
                                     )}
 
                                     {/* Mensagem de Sucesso */}
                                     {(proposta.status === 'ACEITA' || proposta.status === 'CONTRAPROPOSTA_ACEITA') && (
-                                        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#e2f3f5', borderRadius: '8px', border: '1px solid #bee5eb', display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <div style={{ flex: '1 1 300px' }}>
-                                                <h4 style={{ margin: '0 0 5px 0', color: '#0c5460', fontSize: '16px' }}>Negociação Aprovada!</h4>
-                                                <p style={{ margin: 0, fontSize: '14px', color: '#0c5460' }}>
+                                        <div className="proposta-success-box">
+                                            <div className="proposta-success-content">
+                                                <h4 className="proposta-success-title">Negociação Aprovada!</h4>
+                                                <p className="proposta-success-text">
                                                     Para garantir este preço, coloque exatamente as quantidades combinadas no seu carrinho. O sistema aplicará o desconto automaticamente!
                                                 </p>
                                             </div>
-                                            <Link to={`/album/${proposta.album}`} className="create-button" style={{ backgroundColor: '#17a2b8', borderColor: '#17a2b8', textDecoration: 'none', padding: '10px 20px' }}>Ir para o Álbum</Link>
+                                            <Link to={`/album/${proposta.album}`} className="create-button btn-success-action">Ir para o Álbum</Link>
                                         </div>
                                     )}
                                 </div>
@@ -196,15 +214,11 @@ function MinhasPropostasPage() {
                         })}
                     </div>
 
-                    {/* --- RENDERIZA A PAGINAÇÃO --- */}
-                    <CustomPagination 
-                        currentPage={currentPage} 
-                        totalPages={totalPages} 
-                        onPageChange={handlePageChange} 
-                    />
+                    {renderPagination()}
                 </>
             )}
         </div>
     );
 }
+
 export default MinhasPropostasPage;

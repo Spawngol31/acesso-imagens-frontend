@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google'; // <-- IMPORT NOVO
+import { GoogleLogin } from '@react-oauth/google'; 
 import FacebookLogin from '@greatsumini/react-facebook-login';
-import axiosInstance from '../api/axiosInstance'; // <-- IMPORT NOVO
+import axiosInstance from '../api/axiosInstance'; 
 
 function LoginPage() {
     const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ function LoginPage() {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    const { login, setTokenEUsuario } = useAuth(); // Importamos uma função para forçar o login
+    const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const message = location.state?.message;
@@ -29,7 +29,6 @@ function LoginPage() {
         }
     };
 
-    // --- FUNÇÃO DO GOOGLE ATUALIZADA ---
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             const response = await axiosInstance.post('/auth/google/', {
@@ -38,15 +37,10 @@ function LoginPage() {
             
             const data = response.data;
             
-            // 1. Guardamos as chaves EXATAMENTE como o seu AuthContext espera:
             localStorage.setItem('authToken', data.access);
             localStorage.setItem('refreshToken', data.refresh);
-            
-            // 2. Colocamos o token no cabeçalho do Axios para pedidos futuros
             axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + data.access;
             
-            // 3. Opcional mas recomendado: forçamos o recarregamento da página para 
-            // garantir que o AuthContext acorda e lê o localStorage novo
             window.location.href = '/'; 
             
         } catch (error) {
@@ -55,7 +49,6 @@ function LoginPage() {
         }
     };
 
-    // --- FUNÇÃO DO FACEBOOK ATUALIZADA ---
     const handleFacebookSuccess = async (response) => {
         try {
             const res = await axiosInstance.post('/auth/facebook/', {
@@ -64,14 +57,10 @@ function LoginPage() {
             
             const data = res.data;
             
-            // 1. Guardamos as chaves EXATAMENTE como o seu AuthContext espera:
             localStorage.setItem('authToken', data.access);
             localStorage.setItem('refreshToken', data.refresh);
-            
-            // 2. Colocamos o token no cabeçalho do Axios para pedidos futuros
             axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + data.access;
             
-            // 3. Forçamos o recarregamento da página
             window.location.href = '/'; 
             
         } catch (error) {
@@ -118,21 +107,18 @@ function LoginPage() {
                     <button type="submit">Entrar</button>
                 </form>
 
-                {/* --- SEPARADOR E BOTÕES SOCIAIS PADRONIZADOS (FORMATO PADRÃO GOOGLE) --- */}
-                <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
-                    <span style={{ padding: '0 10px', color: '#888', fontSize: '0.9rem' }}>ou</span>
-                    <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
+                <div className="auth-separator">
+                    <div className="auth-separator-line"></div>
+                    <span className="auth-separator-text">ou</span>
+                    <div className="auth-separator-line"></div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                    
-                    {/* Botão do Google (Formato Retangular Padrão) */}
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <div className="social-login-wrapper">
+                    <div className="social-login-btn-container">
                         <GoogleLogin
                             onSuccess={handleGoogleSuccess}
                             onError={() => setError('Falha na comunicação com o Google.')}
-                            theme="filled_black" /* <-- MUDAMOS PARA O TEMA ESCURO OFICIAL */
+                            theme="filled_black" 
                             size="large"
                             text="continue_with"
                             shape="rectangular" 
@@ -140,8 +126,7 @@ function LoginPage() {
                         />
                     </div>
 
-                    {/* Botão do Facebook Mimetizando o Google */}
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <div className="social-login-btn-container">
                         <FacebookLogin
                             appId={import.meta.env.VITE_FACEBOOK_APP_ID}
                             onSuccess={handleFacebookSuccess}
@@ -149,9 +134,8 @@ function LoginPage() {
                                 console.error('Falha no Facebook', error);
                                 setError('O login com Facebook foi cancelado ou falhou.');
                             }}
-                            className="btn-facebook-mimic-google" /* <-- USA A NOVA CLASSE CSS */
+                            className="btn-facebook-mimic-google"
                         >
-                            {/* Ícone oficial do Facebook com as cores originais da Meta */}
                             <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6c1.05 0 2.05.2 2.05.2v2.2h-1.16c-1.14 0-1.39.7-1.39 1.36V12h2.58l-.41 3h-2.17v6.8c4.56-.93 8-4.96 8-9.8z" fill="#1877F2"/>
                             </svg>
@@ -159,7 +143,6 @@ function LoginPage() {
                         </FacebookLogin>
                     </div>
                 </div>
-                {/* ---------------------------------------------------------------------- */}
                 
                 <p className="auth-switch-link">
                     Não tem uma conta? <Link to="/registrar">Crie uma aqui</Link>

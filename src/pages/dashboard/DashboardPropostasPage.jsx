@@ -4,78 +4,17 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
 
-// --- COMPONENTE DE PAGINAÇÃO ---
-const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
-    if (totalPages <= 1) return null;
-
-    const getPaginationRange = () => {
-        const delta = 1;
-        const range = [];
-        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-            range.push(i);
-        }
-        if (currentPage - delta > 2) range.unshift("...");
-        if (currentPage + delta < totalPages - 1) range.push("...");
-
-        range.unshift(1);
-        if (totalPages > 1) range.push(totalPages);
-        return range;
-    };
-
-    const pages = getPaginationRange();
-
-    return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '2rem', padding: '1rem' }}>
-            <button 
-                onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
-                style={{ border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
-            >
-                &lt;
-            </button>
-
-            {pages.map((page, index) => (
-                <React.Fragment key={index}>
-                    {page === "..." ? (
-                        <span style={{ padding: '5px', color: '#888', letterSpacing: '2px' }}>...</span>
-                    ) : (
-                        <button
-                            onClick={() => onPageChange(page)}
-                            style={{
-                                width: '40px', height: '40px', border: 'none', borderRadius: '8px',
-                                backgroundColor: currentPage === page ? '#6c0464' : 'transparent',
-                                color: currentPage === page ? 'white' : '#333',
-                                cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
-                                fontSize: '1rem', transition: 'all 0.2s'
-                            }}
-                        >
-                            {page}
-                        </button>
-                    )}
-                </React.Fragment>
-            ))}
-
-            <button 
-                onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
-                style={{ border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 10px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
-            >
-                &gt;
-            </button>
-        </div>
-    );
-};
-// -------------------------------
-
 function DashboardPropostasPage() {
     const [propostas, setPropostas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [valoresContraproposta, setValoresContraproposta] = useState({});
+    
+    // --- NOVO ESTADO: FILTRO DE STATUS ---
+    const [filtroStatus, setFiltroStatus] = useState('TODAS');
 
     // --- ESTADOS DE PAGINAÇÃO ---
     const [currentPage, setCurrentPage] = useState(1);
-    const itensPorPagina = 10;
-    // ----------------------------
-
-    const corPrincipal = '#6c0464';
+    const itensPorPagina = 10; 
 
     const fetchPropostas = async () => {
         try {
@@ -109,74 +48,167 @@ function DashboardPropostasPage() {
     };
 
     const getStatusStyle = (status) => {
-        if (status.includes('ACEITA')) return { bg: '#d4edda', color: '#155724' };
-        if (status.includes('RECUSADA')) return { bg: '#f8d7da', color: '#721c24' };
-        if (status === 'CONTRAPROPOSTA') return { bg: '#cce5ff', color: '#004085' }; 
-        return { bg: '#fff3cd', color: '#856404' }; // PENDENTE
+        if (status.includes('ACEITA')) return 'status-badge-accepted';
+        if (status.includes('RECUSADA')) return 'status-badge-rejected';
+        if (status === 'CONTRAPROPOSTA') return 'status-badge-counter'; 
+        return 'status-badge-pending'; // PENDENTE
     };
 
-    // --- LÓGICA MATEMÁTICA DA PAGINAÇÃO ---
-    const totalPages = Math.ceil(propostas.length / itensPorPagina);
+    const propostasFiltradas = propostas.filter(proposta => {
+        if (filtroStatus === 'TODAS') return true;
+        if (filtroStatus === 'PENDENTE') return proposta.status === 'PENDENTE';
+        if (filtroStatus === 'CONTRAPROPOSTA') return proposta.status === 'CONTRAPROPOSTA';
+        if (filtroStatus === 'ACEITA') return proposta.status.includes('ACEITA');
+        if (filtroStatus === 'RECUSADA') return proposta.status.includes('RECUSADA');
+        return true;
+    });
+
+    const handleFiltroChange = (e) => {
+        setFiltroStatus(e.target.value);
+        setCurrentPage(1); 
+    };
+
+    const totalPages = Math.ceil(propostasFiltradas.length / itensPorPagina);
     const indexOfLastItem = currentPage * itensPorPagina;
     const indexOfFirstItem = indexOfLastItem - itensPorPagina;
-    const currentPropostas = propostas.slice(indexOfFirstItem, indexOfLastItem);
+    const currentPropostas = propostasFiltradas.slice(indexOfFirstItem, indexOfLastItem);
 
     const handlePageChange = (novaPagina) => {
         setCurrentPage(novaPagina);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    // ---------------------------------------
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pageNumbers = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pageNumbers.push(i);
+            } else if (pageNumbers[pageNumbers.length - 1] !== '...') {
+                pageNumbers.push('...');
+            }
+        }
+
+        return (
+            <div className="pagination-container">
+                <button
+                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+                >
+                    &#60;
+                </button>
+
+                {pageNumbers.map((number, index) => (
+                    number === '...' ? (
+                        <span key={index} className="pagination-ellipsis">...</span>
+                    ) : (
+                        <button
+                            key={index}
+                            onClick={() => handlePageChange(number)}
+                            className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === number ? 'bold' : 'normal' }}
+                        >
+                            {number}
+                        </button>
+                    )
+                ))}
+
+                <button
+                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-nav-btn"
+                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                >
+                    &#62;
+                </button>
+            </div>
+        );
+    };
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '40px' }}>
-            <div style={{ marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px' }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Negociações e propostas</h2>
+        <div className="dashboard-page-content propostas-dash-wrapper">
+            <div className="dash-header-box">
+                <h2 className="dash-main-title">Negociações e propostas</h2>
             </div>
 
-            {loading ? <p>A carregar propostas...</p> : propostas.length === 0 ? (
-                <div style={{ backgroundColor: '#fdfbfe', padding: '40px', borderRadius: '10px', textAlign: 'center', border: '1px dashed #e1bce0' }}>
-                    <p style={{ color: '#888', fontSize: '16px' }}>Nenhuma proposta em aberto.</p>
+            {/* --- COMPONENTE DO FILTRO VISUAL --- */}
+            <div className="propostas-filter-wrapper">
+                <label htmlFor="filtro-status" className="filtro-label">
+                    Status
+                </label>
+                <select
+                    id="filtro-status"
+                    value={filtroStatus}
+                    onChange={handleFiltroChange}
+                    className="filtro-select"
+                >
+                    <option value="TODAS">Todas as propostas</option>
+                    <option value="PENDENTE">Aguardando aprovação</option>
+                    <option value="CONTRAPROPOSTA">Aguardando resposta do cliente</option>
+                    <option value="ACEITA">Aceitas</option>
+                    <option value="RECUSADA">Recusadas</option>
+                </select>
+            </div>
+
+            {loading ? <p className="page-subtitle">A carregar propostas...</p> : propostas.length === 0 ? (
+                <div className="empty-state-message">
+                    <p>Nenhuma proposta em aberto.</p>
+                </div>
+            ) : propostasFiltradas.length === 0 ? (
+                <div className="empty-state-message">
+                    <p>Nenhuma proposta encontrada com o status selecionado.</p>
                 </div>
             ) : (
                 <>
-                    <div style={{ display: 'grid', gap: '15px' }}>
+                    <div className="propostas-dash-grid">
                         {currentPropostas.map(proposta => (
-                            <div key={proposta.id} style={{ backgroundColor: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #f0f0f0', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
+                            <div key={proposta.id} className="proposta-dash-card">
                                 
-                                <div style={{ flex: '1 1 300px' }}>
-                                    <h3 style={{ margin: '0 0 5px 0', color: '#333' }}>{proposta.cliente_nome}</h3>
-                                    <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '13px' }}>{proposta.cliente_email}</p>
-                                    <p style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#555' }}><strong>Álbum:</strong> {proposta.album_titulo}</p>
-                                    <p style={{ margin: 0, fontSize: '14px', color: '#555' }}>
+                                <div className="proposta-dash-info">
+                                    <h3 className="proposta-dash-client">{proposta.cliente_nome}</h3>
+                                    <p className="proposta-dash-email">{proposta.cliente_email}</p>
+                                    <p className="proposta-dash-detail"><strong>Álbum:</strong> {proposta.album_titulo}</p>
+                                    <p className="proposta-dash-detail">
                                         <strong>Pedido:</strong> {proposta.quantidade_fotos} Foto(s) e {proposta.quantidade_videos} Vídeo(s)
                                     </p>
+
+                                    {/* 🚀 BLOCO DO COMENTÁRIO */}
+                                    {proposta.comentario && (
+                                        <div className="proposta-dash-comment">
+                                            <strong className="comment-label">Mensagem do cliente:</strong>
+                                            "{proposta.comentario}"
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div style={{ textAlign: 'center', padding: '15px', backgroundColor: '#fbf0fa', borderRadius: '8px', border: `1px solid ${corPrincipal}`, minWidth: '150px' }}>
-                                    <span style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: corPrincipal, textTransform: 'uppercase' }}>Valor Oferecido</span>
-                                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>R$ {parseFloat(proposta.valor_oferecido).toFixed(2)}</span>
+                                <div className="proposta-dash-value-box">
+                                    <span className="value-label">Valor Oferecido</span>
+                                    <span className="value-amount">R$ {parseFloat(proposta.valor_oferecido).toFixed(2)}</span>
                                 </div>
 
-                                <div style={{ flex: '1 1 250px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
-                                    <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', backgroundColor: getStatusStyle(proposta.status).bg, color: getStatusStyle(proposta.status).color }}>
+                                <div className="proposta-dash-actions-col">
+                                    <span className={`status-badge-lg ${getStatusStyle(proposta.status)}`}>
                                         {proposta.status.replace(/_/g, ' ')}
                                     </span>
                                     
                                     {proposta.status === 'PENDENTE' && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', width: '100%' }}>
-                                            <div style={{ display: 'flex', gap: '10px' }}>
-                                                <button onClick={() => responderProposta(proposta.id, 'recusar')} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #dc3545', backgroundColor: '#fff', color: '#dc3545', fontWeight: 'bold', cursor: 'pointer' }}>Recusar</button>
-                                                <button onClick={() => responderProposta(proposta.id, 'aceitar')} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: 'none', backgroundColor: '#28a745', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>✅ Aceitar</button>
+                                        <div className="proposta-action-panel">
+                                            <div className="proposta-btn-row">
+                                                <button onClick={() => responderProposta(proposta.id, 'recusar')} className="btn-dash-reject">Recusar</button>
+                                                <button onClick={() => responderProposta(proposta.id, 'aceitar')} className="btn-dash-accept">Aceitar</button>
                                             </div>
                                             
-                                            <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                                            <div className="proposta-counter-row">
                                                 <input 
                                                     type="number" step="0.01" placeholder="R$ Nova Oferta" 
                                                     value={valoresContraproposta[proposta.id] || ''}
                                                     onChange={(e) => setValoresContraproposta({...valoresContraproposta, [proposta.id]: e.target.value})}
-                                                    style={{ backgroundColor: '#fff', color: '#666', flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ccc' }}
+                                                    className="counter-input"
                                                 />
-                                                <button onClick={() => responderProposta(proposta.id, 'contraproposta')} style={{ padding: '8px 12px', borderRadius: '6px', border: 'none', backgroundColor: '#007bff', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Enviar</button>
+                                                <button onClick={() => responderProposta(proposta.id, 'contraproposta')} className="btn-dash-counter">Enviar</button>
                                             </div>
                                         </div>
                                     )}
@@ -185,15 +217,11 @@ function DashboardPropostasPage() {
                         ))}
                     </div>
                     
-                    {/* --- RENDERIZA A PAGINAÇÃO --- */}
-                    <CustomPagination 
-                        currentPage={currentPage} 
-                        totalPages={totalPages} 
-                        onPageChange={handlePageChange} 
-                    />
+                    {renderPagination()}
                 </>
             )}
         </div>
     );
 }
+
 export default DashboardPropostasPage;

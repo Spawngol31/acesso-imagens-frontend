@@ -7,7 +7,6 @@ import { toJpeg } from 'html-to-image';
 import { toast } from 'react-toastify'; 
 
 // --- DEFINIÇÃO DOS TEMPLATES DISPONÍVEIS ---
-// Certifique-se de colocar estas imagens PNG na sua pasta 'public'
 const TEMPLATES = {
     CARD_FLOATING: { 
         id: 'card_floating', 
@@ -37,15 +36,11 @@ function PromotionalArtCreatorPage() {
     
     const cardRef = useRef(null);
 
-    // --- COR PADRÃO DO SITE ATUALIZADA ---
     const corPrincipal = '#6c0464'; 
-    // -------------------------------------
-    
     const frontendUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
 
     const [activeTemplate, setActiveTemplate] = useState(TEMPLATES.CARD_FLOATING);
 
-    // --- STATE SIMPLIFICADO: CORES E CTA AGORA SÃO FIXOS ---
     const [customSettings, setCustomSettings] = useState({
         photoUrl: '', 
         title: '',
@@ -63,10 +58,8 @@ function PromotionalArtCreatorPage() {
             
             const dataEvento = response.data.data_evento ? new Date(response.data.data_evento).toLocaleDateString() : '';
             
-            // --- AGORA ESTÁ PERFEITO! O React lê exatamente o que o Django mandou ---
             const fotografo = response.data.fotografo_nome || ''; 
             const local = response.data.local || ''; 
-            // -------------------------------------------------------------------------
 
             setCustomSettings(prev => ({
                 ...prev,
@@ -132,10 +125,8 @@ function PromotionalArtCreatorPage() {
         }
     };
 
-    const publicAlbumLink = `${frontendUrl}album/${id}`;
-
-    if (loading) return <p style={{ padding: '20px' }}>Carregando ferramenta...</p>;
-    if (!album) return <p style={{ padding: '20px', color: 'red' }}>Álbum não encontrado.</p>;
+    if (loading) return <p className="page-subtitle" style={{ padding: '20px' }}>Carregando ferramenta...</p>;
+    if (!album) return <p className="page-subtitle text-danger" style={{ padding: '20px' }}>Álbum não encontrado.</p>;
 
     const proxyPhotoUrl = customSettings.photoUrl 
         ? `${axiosInstance.defaults.baseURL}proxy-image/?url=${encodeURIComponent(customSettings.photoUrl)}`
@@ -144,6 +135,7 @@ function PromotionalArtCreatorPage() {
     const STORY_WIDTH = 320;
     const STORY_HEIGHT = 568;
 
+    /* A informação escrita na foto (Canvas interno) mantém estilos inline para funcionar no toJpeg */
     const PhotoFooterInfo = () => (
         <div style={{ 
             position: 'absolute', bottom: 0, left: 0, right: 0, 
@@ -177,91 +169,71 @@ function PromotionalArtCreatorPage() {
     const selectedImageStyle = { width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 };
 
     return (
-        <div className="dashboard-page-content" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
+        <div className="dashboard-page-content promo-art-wrapper">
             
-            <div className="page-header" style={{ 
-                marginBottom: '25px', borderBottom: `2px solid #fbf0fa`, paddingBottom: '15px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'
-            }}>
-                <h2 style={{ color: corPrincipal, margin: 0, fontSize: '24px' }}>Criar arte de divulgação</h2>
-                <Link to={`/dashboard/albuns/${id}`} className="button-outline" style={{ textDecoration: 'none' }}>
-                    Voltar para o Álbuns
+            <div className="dash-header-box">
+                <h2 className="dash-main-title">Criar arte de divulgação</h2>
+                <Link to={`/dashboard/albuns/${id}`} className="button-outline">
+                    Voltar para o Álbum
                 </Link>
             </div>
 
-            <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap' }}>
+            <div className="promo-layout-grid">
                 
-                <div style={{ flex: '1 1 350px', backgroundColor: '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+                {/* MENU LATERAL - OPÇÕES DE EDIÇÃO */}
+                <div className="promo-options-card">
                     
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>1. Escolher moldura (template)</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '15px', marginBottom: '25px' }}>
+                    <h3 className="promo-section-title">1. Escolher moldura (template)</h3>
+                    <div className="promo-template-grid">
                         {Object.values(TEMPLATES).map(tmpl => (
                             <button 
                                 key={tmpl.id}
                                 onClick={() => setActiveTemplate(tmpl)}
-                                style={{
-                                    padding: '10px',
-                                    backgroundColor: activeTemplate.id === tmpl.id ? corPrincipal : '#f0f0f0',
-                                    color: activeTemplate.id === tmpl.id ? '#fff' : '#333',
-                                    border: `2px solid ${activeTemplate.id === tmpl.id ? corPrincipal : '#ddd'}`,
-                                    borderRadius: '8px',
-                                    fontWeight: 'bold',
-                                    fontSize: '12px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
-                                }}
+                                className={`promo-template-btn ${activeTemplate.id === tmpl.id ? 'active' : ''}`}
                             >
                                 {tmpl.name}
                             </button>
                         ))}
                     </div>
 
-                    <h3 style={{ marginTop: 0, color: corPrincipal, borderBottom: '1px solid #eee', paddingBottom: '10px' }}>2. Personalizar textos e foto</h3>
+                    <h3 className="promo-section-title">2. Personalizar textos e foto</h3>
                     
-                    <form className="auth-form" style={{ marginTop: '20px', gap: '12px' }}>
+                    <form className="promo-edit-form">
                         
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Título do álbum</label>
-                        <input name="title" value={customSettings.title} onChange={handleSettingChange} placeholder="Ex: FUTEBOL 2026" style={{padding: '8px'}} />
+                        <label className="promo-label">Título do álbum</label>
+                        <input name="title" value={customSettings.title} onChange={handleSettingChange} placeholder="Ex: FUTEBOL 2026" className="promo-input" />
                         
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Fotógrafo(a)</label>
-                        <input name="photographerName" value={customSettings.photographerName} onChange={handleSettingChange} placeholder="Ex: João Silva" style={{padding: '8px'}} />
+                        <label className="promo-label">Fotógrafo(a)</label>
+                        <input name="photographerName" value={customSettings.photographerName} onChange={handleSettingChange} placeholder="Ex: João Silva" className="promo-input" />
 
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Local do evento</label>
-                        <input name="locationText" value={customSettings.locationText} onChange={handleSettingChange} placeholder="Ex: Estádio do Vale" style={{padding: '8px'}} />
+                        <label className="promo-label">Local do evento</label>
+                        <input name="locationText" value={customSettings.locationText} onChange={handleSettingChange} placeholder="Ex: Estádio do Vale" className="promo-input" />
 
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555'}}>Data / horário</label>
-                        <input name="dateText" value={customSettings.dateText} onChange={handleSettingChange} placeholder="Ex: 31/01/2026" style={{padding: '8px'}} />
+                        <label className="promo-label">Data / horário</label>
+                        <input name="dateText" value={customSettings.dateText} onChange={handleSettingChange} placeholder="Ex: 31/01/2026" className="promo-input" />
 
-                        {/* --- CAMPOS DE CORES E TEXTO CTA REMOVIDOS DAQUI --- */}
-
-                        <label style={{fontWeight: 'bold', fontSize: '12px', color: '#555', marginTop: '8px'}}>Escolher foto do álbum</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', maxHeight: '120px', overflowY: 'auto', padding: '5px', border: '1px solid #eee', borderRadius: '8px' }}>
+                        <label className="promo-label" style={{ marginTop: '8px' }}>Escolher foto do álbum</label>
+                        <div className="promo-photo-selector">
                             {album.fotos?.map(foto => (
                                 <img 
                                     key={foto.id} 
                                     src={foto.imagem_url} 
                                     alt="Capa" 
                                     onClick={() => setCustomSettings(prev => ({...prev, photoUrl: foto.imagem_url}))}
-                                    style={{ 
-                                        width: '100%', aspectRatio: '1/1', objectFit: 'cover', cursor: 'pointer', borderRadius: '4px',
-                                        // A Borda de seleção usa a cor fixa
-                                        border: customSettings.photoUrl === foto.imagem_url ? `3px solid ${corPrincipal}` : '2px solid transparent',
-                                        transition: 'all 0.1s'
-                                    }} 
+                                    className={`promo-photo-thumb ${customSettings.photoUrl === foto.imagem_url ? 'selected' : ''}`}
                                 />
                             ))}
                         </div>
                     </form>
                 </div>
 
-                <div style={{ flex: '2 1 500px', textAlign: 'center' }}>
-                    <h3 style={{ color: '#666', marginBottom: '20px', fontWeight: 'normal' }}>Pré-visualização ({activeTemplate.name})</h3>
+                {/* PREVIEW DO CANVAS */}
+                <div className="promo-preview-section">
+                    <h3 className="promo-preview-title">Pré-visualização ({activeTemplate.name})</h3>
                     
-                    <div style={{ 
-                        width: `${STORY_WIDTH}px`, height: `${STORY_HEIGHT}px`, margin: '0 auto', 
-                        borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', overflow: 'hidden' 
-                    }}>
+                    <div className="promo-canvas-container" style={{ width: `${STORY_WIDTH}px`, height: `${STORY_HEIGHT}px` }}>
                         
+                        {/* ESTE É O BLOCO GERADOR DA IMAGEM - Usa estilos inline porque o toJpeg não lê CSS externo! */}
                         <div ref={cardRef} style={{ 
                             width: `${STORY_WIDTH}px`, height: `${STORY_HEIGHT}px`, position: 'relative', 
                             backgroundColor: '#f5f7fa', boxSizing: 'border-box',
@@ -302,20 +274,15 @@ function PromotionalArtCreatorPage() {
                                 </div>
                             )}
                             
-                            {/* --- ESPAÇO RESERVADO PARA A FIGURINHA DE LINK (TEXTO E COR FIXOS) --- */}
                             <div style={{ position: 'absolute', bottom: '50px', width: '100%', textAlign: 'center', padding: '0 25px', boxSizing: 'border-box', zIndex: 10 }}>
                                 <div style={{
-                                    width: '100%', padding: '12px 10px', 
-                                    backgroundColor: 'transparent', 
-                                    color: corPrincipal, // Usa corPrincipal fixa
-                                    border: `2px solid #fff`, // Usa corPrincipal fixa
-                                    borderRadius: '8px', fontWeight: 'bold', fontSize: '13px',
-                                    textTransform: 'uppercase'
+                                    width: '100%', padding: '12px 10px', backgroundColor: 'transparent', 
+                                    color: corPrincipal, border: `2px solid #fff`, 
+                                    borderRadius: '8px', fontWeight: 'bold', fontSize: '13px', textTransform: 'uppercase'
                                 }}>
-                                    LINK {/* Texto fixo */}
+                                    LINK 
                                 </div>
                             </div>
-                            {/* ---------------------------------------------------------------- */}
 
                         </div>
                     </div>
@@ -323,15 +290,7 @@ function PromotionalArtCreatorPage() {
                     <button 
                         onClick={handleGenerateImage} 
                         disabled={isGenerating || !customSettings.photoUrl || !isPhotoPreloaded} 
-                        style={{ 
-                            marginTop: '25px', padding: '12px 25px', 
-                            backgroundColor:'#ffffff', 
-                            color: '#6c0464', 
-                            border: '2px solid #6c0464', borderRadius: '50px', fontWeight: 'bold', fontSize: '15px', 
-                            cursor: (!isPhotoPreloaded) ? 'not-allowed' : 'pointer',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)', transition: 'all 0.2s',
-                            opacity: (isGenerating || !customSettings.photoUrl || !isPhotoPreloaded) ? 0.6 : 1
-                        }}
+                        className="promo-download-btn"
                     >
                         {isGenerating ? '⏳ Gerando...' : (!isPhotoPreloaded ? '⏳ Preparando...' : `📥 Baixar Arte (${activeTemplate.name})`)}
                     </button>
