@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import axios from 'axios'; // 🚀 O axios padrão é essencial aqui para não mandar cabeçalhos do Django para a AWS
 import { toast } from 'react-toastify'; 
 
 function DashboardUploadPage() {
@@ -96,6 +97,9 @@ function DashboardUploadPage() {
         );
     };
 
+    // =========================================================================================
+    // 🚀 LÓGICA DE UPLOAD DIRECT-TO-S3 (FOTOS) COM LOTES DE CONCORRÊNCIA
+    // =========================================================================================
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
         
@@ -116,41 +120,65 @@ function DashboardUploadPage() {
         setIsUploadingFotos(true);
         let fotosEnviadasComSucesso = 0;
         let fotosComErro = 0;
-        const LOTE_SIZE = 5; 
         
-        for (let i = 0; i < fotoFiles.length; i += LOTE_SIZE) {
-            const loteAtual = Array.from(fotoFiles).slice(i, i + LOTE_SIZE);
-            setUploadStatusMsg(`A enviar pacote ${i + 1} a ${Math.min(i + LOTE_SIZE, fotoFiles.length)} de ${fotoFiles.length}... Por favor, não feche a página!`);
+        // Disparamos 5 fotos de cada vez para saturar a internet do cliente sem parar o navegador
+        const CONCURRENCY_LIMIT = 5; 
+        const arrayFiles = Array.from(fotoFiles);
+        
+        for (let i = 0; i < arrayFiles.length; i += CONCURRENCY_LIMIT) {
+            const loteAtual = arrayFiles.slice(i, i + CONCURRENCY_LIMIT);
+            const numFinal = Math.min(i + CONCURRENCY_LIMIT, arrayFiles.length);
+            
+            setUploadStatusMsg(`A enviar pacote ${i + 1} a ${numFinal} de ${arrayFiles.length} diretamente para a nuvem... Por favor, não feche a página!`);
 
             const promessasDeUpload = loteAtual.map(async (file) => {
-                const formData = new FormData();
-                formData.append('album', selectedAlbum);
-                formData.append('imagem', file);
-                formData.append('destino_upload', uploadDestino); 
-                formData.append('categoria', fotoCategoria);
-                
-                if (uploadDestino !== 'ftp') {
-                    formData.append('preco', fotoPreco);
-                    formData.append('legenda', fotoLegenda);
-                }
-
-                if (uploadDestino !== 'site' && selectedJornais.length > 0) {
-                    formData.append('jornais', selectedJornais.join(','));
-                }
-
                 try {
-                    await axiosInstance.post('/fotos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+                    // PASSO 1: Pedir a "chave do cofre" (Presigned URL) ao Django em milissegundos
+                    const presignedRes = await axiosInstance.post('/dashboard/get-presigned-url/', {
+                        file_name: file.name,
+                        content_type: file.type,
+                        tipo: 'foto'
+                    });
+                    
+                    const { presigned_url, file_key } = presignedRes.data;
+
+                    // PASSO 2: Enviar a Foto DIRETAMENTE para a Amazon S3 / Cloudflare!
+                    // Usamos `axios.put` puro. Nada passa pela Hetzner!
+                    await axios.put(presigned_url, file, {
+                        headers: {
+                            'Content-Type': file.type
+                        }
+                    });
+
+                    // PASSO 3: Avisar o Django "A foto está no S3, guarde no banco de dados e chame o Celery"
+                    // (Aqui só enviamos texto JSON, é super leve)
+                    await axiosInstance.post('/fotos/upload/', {
+                        file_key: file_key,
+                        album: selectedAlbum,
+                        destino_upload: uploadDestino,
+                        categoria: fotoCategoria,
+                        preco: fotoPreco,
+                        legenda: fotoLegenda,
+                        jornais: selectedJornais.length > 0 ? selectedJornais.join(',') : '',
+                        ftp_titulo: file.name, // Pode adicionar mais metadados do form aqui se precisar
+                    });
+
                     return 'sucesso';
                 } catch (error) {
-                    console.error(`Erro ao enviar a foto ${file.name}:`, error);
+                    console.error(`Erro no upload direto da foto ${file.name}:`, error);
                     return 'erro';
                 }
             });
 
-            const resultadosDoLote = await Promise.all(promessasDeUpload);
+            // Espera que as 5 fotos deste lote cheguem à AWS antes de mandar as próximas 5
+            const resultadosDoLote = await Promise.allSettled(promessasDeUpload);
+            
             resultadosDoLote.forEach(resultado => {
-                if (resultado === 'sucesso') fotosEnviadasComSucesso++;
-                else fotosComErro++;
+                if (resultado.status === 'fulfilled' && resultado.value === 'sucesso') {
+                    fotosEnviadasComSucesso++;
+                } else {
+                    fotosComErro++;
+                }
             });
         }
 
@@ -160,7 +188,7 @@ function DashboardUploadPage() {
         if (fotosComErro > 0) {
             toast.error(`${fotosEnviadasComSucesso} fotos enviadas. ${fotosComErro} falharam. Verifique a sua conexão.`);
         } else {
-            toast.success(`${fotosEnviadasComSucesso} foto(s) enviadas com sucesso para a fila de processamento!`);
+            toast.success(`${fotosEnviadasComSucesso} foto(s) enviadas super rápido para a nuvem!`);
         }
 
         setFotoFiles([]);
@@ -185,8 +213,12 @@ function DashboardUploadPage() {
         setStagedVideos(prev => prev.filter(video => video.id !== id));
     };
 
+    // =========================================================================================
+    // 🚀 LÓGICA DE UPLOAD DIRECT-TO-S3 (VÍDEOS)
+    // =========================================================================================
     const handleVideoSubmit = async (e) => {
         e.preventDefault();
+        
         if (!selectedAlbum) {
             toast.info("Por favor, selecione um álbum de destino primeiro (Passo 1).");
             return;
@@ -197,26 +229,60 @@ function DashboardUploadPage() {
         }
         
         setIsUploadingVideos(true);
-        setUploadProgressVideos(0);
-        for (let i = 0; i < stagedVideos.length; i++) {
-            const video = stagedVideos[i];
-            setUploadProgressVideos(i + 1);
-            const formData = new FormData();
-            formData.append('album', selectedAlbum);
-            formData.append('titulo', video.titulo);
-            formData.append('preco', video.preco);
-            formData.append('arquivo_video', video.videoFile);
-            formData.append('categoria', videoCategoria);
+        let videosEnviados = 0;
+        
+        // Vídeos são massivos. Enviamos 2 em simultâneo
+        const CONCURRENCY_LIMIT = 2;
+
+        for (let i = 0; i < stagedVideos.length; i += CONCURRENCY_LIMIT) {
+            const lote = stagedVideos.slice(i, i + CONCURRENCY_LIMIT);
+            setUploadProgressVideos(videosEnviados);
             
-            try {
-                await axiosInstance.post('/dashboard/videos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-            } catch (error) {
-                console.error(`Erro ao enviar o vídeo ${video.videoFile.name}:`, error);
-                toast.error(`Erro ao enviar o vídeo ${video.videoFile.name}`);
-            }
+            const lotePromises = lote.map(async (video) => {
+                try {
+                    // PASSO 1: URL Pré-assinada para Vídeo
+                    const presignedRes = await axiosInstance.post('/dashboard/get-presigned-url/', {
+                        file_name: video.videoFile.name,
+                        content_type: video.videoFile.type,
+                        tipo: 'video'
+                    });
+                    
+                    const { presigned_url, file_key } = presignedRes.data;
+
+                    // PASSO 2: Upload Direto S3
+                    await axios.put(presigned_url, video.videoFile, {
+                        headers: { 'Content-Type': video.videoFile.type }
+                    });
+
+                    // PASSO 3: Gravar Registo no Django
+                    await axiosInstance.post('/dashboard/videos/upload/', {
+                        file_key: file_key,
+                        album: selectedAlbum,
+                        titulo: video.titulo,
+                        preco: video.preco,
+                        categoria: videoCategoria
+                    });
+
+                    return 'sucesso';
+                } catch (error) {
+                    console.error(`Erro ao enviar o vídeo ${video.videoFile.name}:`, error);
+                    return 'erro';
+                }
+            });
+
+            const resultados = await Promise.allSettled(lotePromises);
+            
+            resultados.forEach(resultado => {
+                if (resultado.status === 'fulfilled' && resultado.value === 'sucesso') {
+                    videosEnviados++;
+                } else {
+                    toast.error(`Falha ao enviar um dos vídeos.`);
+                }
+            });
         }
+        
         setIsUploadingVideos(false);
-        toast.success(`${stagedVideos.length} vídeo(s) enviados com sucesso!`);
+        toast.success(`${stagedVideos.length} vídeo(s) enviados para a nuvem com sucesso!`);
         setStagedVideos([]);
         const videoUploadInput = document.getElementById('video-upload');
         if(videoUploadInput) videoUploadInput.value = '';
@@ -355,7 +421,7 @@ function DashboardUploadPage() {
                                 Voltar
                             </Link>
                             <button type="submit" className="create-button upload-btn-half" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ cursor: (isUploadingFotos || fotoFiles.length === 0) ? 'not-allowed' : 'pointer', opacity: (isUploadingFotos || fotoFiles.length === 0) ? 0.6 : 1 }}>
-                                {isUploadingFotos ? 'A enviar...' : `Enviar Fotos`}
+                                {isUploadingFotos ? 'A enviar para Nuvem...' : `Enviar Fotos`}
                             </button>
                         </div>
                     </form>
@@ -435,7 +501,7 @@ function DashboardUploadPage() {
                                 ))}
                             </div>
                         )}
-                        {isUploadingVideos && <p className="upload-video-status">⏳ Enviando e processando vídeo {uploadProgressVideos} de {stagedVideos.length}... Por favor, não feche a página.</p>}
+                        {isUploadingVideos && <p className="upload-video-status">⏳ Enviando vídeo {uploadProgressVideos} de {stagedVideos.length} em lotes para a nuvem... Por favor, não feche a página.</p>}
                         
                         <div className="upload-actions-row">
                             <Link to="/dashboard/albuns" className="button-outline upload-btn-half">

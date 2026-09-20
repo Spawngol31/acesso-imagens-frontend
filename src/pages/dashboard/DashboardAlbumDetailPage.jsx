@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
+import axios from 'axios'; // 🚀 IMPORTANTE: Axios puro para S3 sem cabeçalhos do Django
 import { toast } from 'react-toastify';
 
 // --- Componente de Formulário para Edição Individual ---
@@ -215,7 +216,7 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
 function DashboardAlbumDetailPage() {
     const [album, setAlbum] = useState(null);
     const [loading, setLoading] = useState(true);
-    const { id } = useParams();
+    const { id } = useParams(); // album ID
     
     const [activeGlobalModal, setActiveGlobalModal] = useState(null); 
 
@@ -264,7 +265,6 @@ function DashboardAlbumDetailPage() {
     const [isCategoryDeleteModalOpen, setIsCategoryDeleteModalOpen] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
 
-    // 🚀 NOVO: Estado para abrir o Menu Mobile
     const [isMobileActionsMenuOpen, setIsMobileActionsMenuOpen] = useState(false);
 
     const itensPorPagina = 20;
@@ -296,7 +296,7 @@ function DashboardAlbumDetailPage() {
 
     const toggleJornal = (jornalId) => {
         if (selectedJornais.includes(jornalId)) {
-            setSelectedJornais(prev => prev.filter(id => id !== jornalId));
+            setSelectedJornais(prev => prev.filter(j_id => j_id !== jornalId));
         } else {
             setSelectedJornais(prev => [...prev, jornalId]);
         }
@@ -371,11 +371,11 @@ function DashboardAlbumDetailPage() {
     };
 
     const toggleFotoSelection = (fotoId) => {
-        setSelectedFotos(prev => prev.includes(fotoId) ? prev.filter(id => id !== fotoId) : [...prev, fotoId]);
+        setSelectedFotos(prev => prev.includes(fotoId) ? prev.filter(f_id => f_id !== fotoId) : [...prev, fotoId]);
     };
     
     const toggleVideoSelection = (videoId) => {
-        setSelectedVideos(prev => prev.includes(videoId) ? prev.filter(id => id !== videoId) : [...prev, videoId]);
+        setSelectedVideos(prev => prev.includes(videoId) ? prev.filter(v_id => v_id !== videoId) : [...prev, videoId]);
     };
 
     const handleSelectAllVisible = () => {
@@ -406,8 +406,8 @@ function DashboardAlbumDetailPage() {
         setIsBulkDeleteModalOpen(false); 
         toast.info("A excluir arquivos selecionados, aguarde...");
         try {
-            const photoPromises = selectedFotos.map(id => axiosInstance.delete(`/dashboard/fotos/${id}/`));
-            const videoPromises = selectedVideos.map(id => axiosInstance.delete(`/dashboard/videos/${id}/`));
+            const photoPromises = selectedFotos.map(fotoId => axiosInstance.delete(`/dashboard/fotos/${fotoId}/`));
+            const videoPromises = selectedVideos.map(videoId => axiosInstance.delete(`/dashboard/videos/${videoId}/`));
             
             await Promise.all([...photoPromises, ...videoPromises]);
             toast.success("Todos os itens selecionados foram excluídos com sucesso!");
@@ -447,9 +447,16 @@ function DashboardAlbumDetailPage() {
         }
     };
 
+    // =========================================================================================
+    // 🚀 LÓGICA DE UPLOAD DIRECT-TO-S3 (FOTOS) COM LOTES
+    // =========================================================================================
     const handlePhotoSubmit = async (e) => {
         e.preventDefault();
-        if (fotoFiles.length === 0) { toast.info("Selecione pelo menos uma foto."); return; }
+        
+        if (fotoFiles.length === 0) { 
+            toast.info("Selecione pelo menos uma foto."); 
+            return; 
+        }
         
         if ((uploadDestino === 'ambos' || uploadDestino === 'ftp') && selectedJornais.length === 0) {
             toast.error("Selecione pelo menos um jornal parceiro na lista!");
@@ -460,31 +467,59 @@ function DashboardAlbumDetailPage() {
         let fotosEnviadasComSucesso = 0;
         let fotosComErro = 0;
 
-        for (let i = 0; i < fotoFiles.length; i++) {
-            const file = fotoFiles[i];
-            setUploadStatusMsg(`A processar a foto ${i + 1} de ${fotoFiles.length}...`);
-            
-            const formData = new FormData();
-            formData.append('album', id);
-            formData.append('imagem', file);
-            formData.append('destino_upload', uploadDestino);
-            formData.append('categoria', fotoCategoria);
-            
-            if (uploadDestino !== 'ftp') {
-                formData.append('preco', fotoPreco);
-                formData.append('legenda', fotoLegenda);
-            }
+        const CONCURRENCY_LIMIT = 5; 
+        const arrayFiles = Array.from(fotoFiles);
 
-            if (uploadDestino !== 'site') {
-                formData.append('jornais', selectedJornais.join(','));
-            }
+        for (let i = 0; i < arrayFiles.length; i += CONCURRENCY_LIMIT) {
+            const loteAtual = arrayFiles.slice(i, i + CONCURRENCY_LIMIT);
+            const numFinal = Math.min(i + CONCURRENCY_LIMIT, arrayFiles.length);
             
-            try {
-                await axiosInstance.post('/fotos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                fotosEnviadasComSucesso++;
-            } catch (error) { 
-                fotosComErro++;
-            }
+            setUploadStatusMsg(`A enviar pacote ${i + 1} a ${numFinal} de ${arrayFiles.length} para a nuvem...`);
+            
+            const promessasDeUpload = loteAtual.map(async (file) => {
+                try {
+                    // PASSO 1: Pedir a Presigned URL ao Django
+                    const presignedRes = await axiosInstance.post('/dashboard/get-presigned-url/', {
+                        file_name: file.name,
+                        content_type: file.type,
+                        tipo: 'foto'
+                    });
+                    
+                    const { presigned_url, file_key } = presignedRes.data;
+
+                    // PASSO 2: Enviar a Foto DIRETAMENTE para a Amazon S3 / Cloudflare
+                    await axios.put(presigned_url, file, {
+                        headers: { 'Content-Type': file.type }
+                    });
+
+                    // PASSO 3: Avisar o Django e criar registo
+                    await axiosInstance.post('/fotos/upload/', {
+                        file_key: file_key,
+                        album: id,
+                        destino_upload: uploadDestino,
+                        categoria: fotoCategoria,
+                        preco: fotoPreco,
+                        legenda: fotoLegenda,
+                        jornais: selectedJornais.length > 0 ? selectedJornais.join(',') : '',
+                        ftp_titulo: file.name,
+                    });
+
+                    return 'sucesso';
+                } catch (error) {
+                    console.error(`Erro no upload da foto ${file.name}:`, error);
+                    return 'erro';
+                }
+            });
+
+            const resultadosDoLote = await Promise.allSettled(promessasDeUpload);
+            
+            resultadosDoLote.forEach(resultado => {
+                if (resultado.status === 'fulfilled' && resultado.value === 'sucesso') {
+                    fotosEnviadasComSucesso++;
+                } else {
+                    fotosComErro++;
+                }
+            });
         }
         
         setIsUploadingFotos(false);
@@ -493,7 +528,7 @@ function DashboardAlbumDetailPage() {
         if (fotosComErro > 0) {
             toast.error(`${fotosEnviadasComSucesso} fotos enviadas. ${fotosComErro} falharam.`);
         } else {
-            toast.success(`Sucesso! ${fotosEnviadasComSucesso} foto(s) enviadas com sucesso.`);
+            toast.success(`Sucesso! ${fotosEnviadasComSucesso} foto(s) enviadas mais rápido na nuvem.`);
             setActiveGlobalModal(null); 
             setFotoFiles([]);
             setSelectedJornais([]);
@@ -510,30 +545,74 @@ function DashboardAlbumDetailPage() {
         setStagedVideos(prev => [...prev, ...newStagedVideos]);
     };
 
-    const handleStagedVideoChange = (id, field, value) => { setStagedVideos(prev => prev.map(video => (video.id === id ? { ...video, [field]: value } : video))); };
-    const removeStagedVideo = (id) => { setStagedVideos(prev => prev.filter(video => video.id !== id)); };
+    const handleStagedVideoChange = (videoId, field, value) => { 
+        setStagedVideos(prev => prev.map(video => (video.id === videoId ? { ...video, [field]: value } : video))); 
+    };
+    const removeStagedVideo = (videoId) => { 
+        setStagedVideos(prev => prev.filter(video => video.id !== videoId)); 
+    };
 
+    // =========================================================================================
+    // 🚀 LÓGICA DE UPLOAD DIRECT-TO-S3 (VÍDEOS) COM LOTES
+    // =========================================================================================
     const handleVideoSubmit = async (e) => {
         e.preventDefault();
         if (stagedVideos.length === 0) return;
         
         setIsUploadingVideos(true);
+        let videosEnviados = 0;
         
-        for (let i = 0; i < stagedVideos.length; i++) {
-            const video = stagedVideos[i];
-            const formData = new FormData();
-            formData.append('album', id);
-            formData.append('titulo', video.titulo);
-            formData.append('preco', video.preco);
-            formData.append('arquivo_video', video.videoFile);
-            formData.append('categoria', videoCategoria);
+        const CONCURRENCY_LIMIT = 2;
+
+        for (let i = 0; i < stagedVideos.length; i += CONCURRENCY_LIMIT) {
+            const lote = stagedVideos.slice(i, i + CONCURRENCY_LIMIT);
+            setUploadProgressVideos(videosEnviados);
             
-            try { await axiosInstance.post('/dashboard/videos/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } }); } 
-            catch (error) { toast.error(`Erro no vídeo ${video.videoFile.name}`); }
+            const lotePromises = lote.map(async (video) => {
+                try {
+                    // PASSO 1: Pedir URL
+                    const presignedRes = await axiosInstance.post('/dashboard/get-presigned-url/', {
+                        file_name: video.videoFile.name,
+                        content_type: video.videoFile.type,
+                        tipo: 'video'
+                    });
+                    
+                    const { presigned_url, file_key } = presignedRes.data;
+
+                    // PASSO 2: S3 Upload Direto
+                    await axios.put(presigned_url, video.videoFile, {
+                        headers: { 'Content-Type': video.videoFile.type }
+                    });
+
+                    // PASSO 3: Gravar Registo
+                    await axiosInstance.post('/dashboard/videos/upload/', {
+                        file_key: file_key,
+                        album: id,
+                        titulo: video.titulo,
+                        preco: video.preco,
+                        categoria: videoCategoria
+                    });
+
+                    return 'sucesso';
+                } catch (error) {
+                    console.error(`Erro ao enviar o vídeo ${video.videoFile.name}:`, error);
+                    return 'erro';
+                }
+            });
+
+            const resultados = await Promise.allSettled(lotePromises);
+            
+            resultados.forEach(resultado => {
+                if (resultado.status === 'fulfilled' && resultado.value === 'sucesso') {
+                    videosEnviados++;
+                } else {
+                    toast.error(`Falha ao enviar um dos vídeos.`);
+                }
+            });
         }
         
         setIsUploadingVideos(false);
-        toast.success(`Vídeos enviados com sucesso!`);
+        toast.success(`Vídeos enviados para a nuvem com sucesso!`);
         setStagedVideos([]);
         setActiveGlobalModal(null); 
         fetchAlbumDetails();
@@ -643,15 +722,13 @@ function DashboardAlbumDetailPage() {
                 
                 <div className="detail-header-actions">
                     
-                    {/* 🚀 BOTÃO ÚNICO PARA MOBILE */}
                     <button 
                         className="button-outline mobile-actions-trigger" 
                         onClick={() => setIsMobileActionsMenuOpen(true)}
                     >
-                        Opções do Álbum
+                        ⚙️ Opções do Álbum
                     </button>
 
-                    {/* 🚀 GRUPO DE BOTÕES PARA DESKTOP */}
                     <div className="desktop-actions-group">
                         <Link to="/dashboard/albuns" className="button-outline">Voltar</Link>
                         <button onClick={() => setActiveGlobalModal('uploadFotos')} className="button-outline">+ Fotos</button>
@@ -766,16 +843,13 @@ function DashboardAlbumDetailPage() {
                 onPageChange={handleVideoPageChange} 
             />
 
-            {/* 🚀 BARRA FLUTUANTE DE AÇÕES EM MASSA */}
             {isSelectionMode && (
                 <div className="floating-action-bar bulk-selection-bar">
                     
-                    {/* Texto isolado no topo */}
                     <span className="floating-bar-text">
                         {selectedFotos.length + selectedVideos.length} item(s) selecionado(s)
                     </span>
                     
-                    {/* Botões agrupados em baixo */}
                     <div className="bulk-selection-actions">
                         <button onClick={handleSelectAllVisible} className="bulk-btn bulk-btn-dark">
                             Selecionar Tudo (Página)
@@ -805,10 +879,6 @@ function DashboardAlbumDetailPage() {
                 </div>
             )}
 
-            {/* ========================================================================= */}
-            {/* MODAIS GLOBAIS DE UPLOAD E EDIÇÃO */}
-            {/* ========================================================================= */}
-            
             {activeGlobalModal === 'uploadFotos' && (
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content">
@@ -912,7 +982,7 @@ function DashboardAlbumDetailPage() {
                                     Voltar
                                 </button>
                                 <button type="submit" className="create-button modal-btn-half" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ opacity: isUploadingFotos ? 0.6 : 1 }}>
-                                    {isUploadingFotos ? 'A enviar...' : `Enviar Fotos`}
+                                    {isUploadingFotos ? 'A enviar em lotes...' : `Enviar Fotos`}
                                 </button>
                             </div>
                         </form>
@@ -1001,7 +1071,7 @@ function DashboardAlbumDetailPage() {
                                 </div>
                             )}
                             
-                            {isUploadingVideos && <p className="modal-uploading-text">⏳ Enviando vídeo {uploadProgressVideos} de {stagedVideos.length}...</p>}
+                            {isUploadingVideos && <p className="modal-uploading-text">⏳ A enviar vídeo {uploadProgressVideos} de {stagedVideos.length} em lotes...</p>}
                             
                             <div className="modal-actions-row">
                                 <button type="button" onClick={() => setActiveGlobalModal(null)} className='button-outline modal-btn-half'>
@@ -1078,10 +1148,6 @@ function DashboardAlbumDetailPage() {
                     </div>
                 </div>
             )}
-
-            {/* ========================================================================= */}
-            {/* MODAL DE MENUS MOBILE (OPÇÕES DO ÁLBUM) */}
-            {/* ========================================================================= */}
             
             {isMobileActionsMenuOpen && (
                 <div className="dash-modal-overlay" style={{zIndex: 9999}}>
@@ -1091,12 +1157,12 @@ function DashboardAlbumDetailPage() {
                             <button onClick={() => setIsMobileActionsMenuOpen(false)} className="dash-modal-close">✖</button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <Link to="/dashboard/albuns" className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Voltar</Link>
-                            <button onClick={() => { setActiveGlobalModal('uploadFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Fotos</button>
-                            <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Vídeos</button>
-                            <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Fotos)</button>
-                            <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Vídeos)</button>
-                            <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Click & Share</Link>
+                            <Link to="/dashboard/albuns" className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>⬅️ Voltar aos Álbuns</Link>
+                            <button onClick={() => { setActiveGlobalModal('uploadFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>📷 Adicionar Fotos</button>
+                            <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>🎥 Adicionar Vídeos</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>💰 Editar Preço (Fotos)</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>💰 Editar Preço (Vídeos)</button>
+                            <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>🎨 Click & Share</Link>
                             
                             <hr style={{width: '100%', border: 'none', borderTop: '1px solid var(--border-color)', margin: '5px 0'}}/>
                             
@@ -1105,16 +1171,12 @@ function DashboardAlbumDetailPage() {
                                 style={{ padding: '12px', borderColor: isSelectionMode ? '#dc3545' : 'var(--primary-purple)', color: isSelectionMode ? '#dc3545' : 'var(--primary-purple)' }}
                                 onClick={() => { setIsSelectionMode(!isSelectionMode); setIsMobileActionsMenuOpen(false); }}
                             >
-                                {isSelectionMode ? 'Cancelar Seleção Múltipla' : 'Ativar Seleção Múltipla'}
+                                {isSelectionMode ? '❌ Cancelar Seleção Múltipla' : '✅ Ativar Seleção Múltipla'}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* ========================================================================= */}
-            {/* MODAIS DE CONFIRMAÇÃO E EXCLUSÃO */}
-            {/* ========================================================================= */}
 
             {isConfirmModalOpen && fotoParaMudar && (
                 <div className="dash-modal-overlay">
