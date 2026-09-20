@@ -3241,6 +3241,123 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .checkout-link-btn { text-decoration: none; display: inline-block; }
 
 /* ==========================================================================
+   COOKIE BANNER (AVISO DE PRIVACIDADE E LGPD)
+   ========================================================================== */
+.cookie-banner-overlay {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 900px;
+    z-index: 9999999; /* Fica por cima de tudo no site */
+    animation: slideUpCookie 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cookie-banner-content {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    border-radius: 16px;
+    padding: 20px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    color: var(--text-main);
+}
+
+.cookie-text-section {
+    flex: 1;
+}
+
+.cookie-text-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: var(--primary-purple);
+    font-weight: 700;
+}
+
+.cookie-text-section p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.cookie-actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.cookie-btn-accept {
+    background-color: var(--primary-purple);
+    color: var(--bg-main);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cookie-btn-accept:hover {
+    color: var(--bg-main);
+    border: none;
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+.cookie-btn-decline {
+    background-color: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cookie-btn-decline:hover {
+    background-color: transparent;
+    color: var(--text-muted);
+}
+
+@keyframes slideUpCookie {
+    from { transform: translate(-50%, 150%); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* --- Responsividade (Para Celulares) --- */
+@media (max-width: 768px) {
+    .cookie-banner-overlay {
+        bottom: 0;
+        width: 100%;
+    }
+    .cookie-banner-content {
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 24px 24px 0 0; /* Estilo gaveta colada na base */
+        border-bottom: none;
+        padding: 25px 20px;
+        gap: 25px;
+    }
+    .cookie-actions {
+        flex-direction: column-reverse; /* Coloca o botão "Aceitar" no topo no telemóvel */
+        width: 100%;
+    }
+    .cookie-btn-accept, .cookie-btn-decline {
+        width: 100%;
+        padding: 14px;
+        text-align: center;
+    }
+}
+
+/* ==========================================================================
    MODAL INSTAGRAM (Estilo Bottom Sheet)
    ========================================================================== */
 .insta-modal-overlay {

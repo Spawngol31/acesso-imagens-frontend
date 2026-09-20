@@ -53,6 +53,7 @@ import NewsListPage from './pages/NewsListPage';
 import NewsDetailPage from './pages/NewsDetailPage';
 import PoliticaPrivacidade from './pages/PoliticaPrivacidade';
 import PromotionalArtCreatorPage from './pages/dashboard/PromotionalArtCreatorPage';
+import CookieBanner from './components/CookieBanner';
 
 // --- AS NOVAS PÁGINAS DE SAQUE ---
 import FotografoSaquesPage from './pages/dashboard/FotografoSaquesPage';
@@ -155,6 +156,7 @@ function App() {
         pauseOnHover 
         theme="colored" 
       />
+      <CookieBanner />
     </>
   );
 }
