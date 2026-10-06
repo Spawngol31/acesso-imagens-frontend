@@ -113,8 +113,22 @@ function Layout() {
 
                     <div className="header-actions">
                         
-                        <button onClick={toggleTheme} className="theme-toggle-btn" title="Alternar Tema">
-                            {theme === 'light' ? <IconMoon /> : <IconSun />}
+                        <button 
+                            onClick={toggleTheme} 
+                            className="admin-header-badge theme-badge-btn" 
+                            title="Alternar Tema"
+                        >
+                            {theme === 'dark' ? (
+                                <>
+                                    <IconSun /> 
+                                    <span style={{ marginLeft: '5px' }}>Whitemode</span>
+                                </>
+                            ) : (
+                                <>
+                                    <IconMoon /> 
+                                    <span style={{ marginLeft: '5px' }}>Darkmode</span>
+                                </>
+                            )}
                         </button>
 
                         {(!user || user.papel === 'CLIENTE') && (

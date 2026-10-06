@@ -33,6 +33,7 @@ import AdminStatsPage from './pages/admin/AdminStatsPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminFinanceiroPage from './pages/admin/AdminFinanceiroPage';
 import AdminAvaliacoesPage from './pages/admin/AdminAvaliacoesPage';
+import GerenciarAlbunsAdmin from './pages/admin/GerenciarAlbunsAdmin';
 import DashboardAlbunsPage from './pages/dashboard/DashboardAlbunsPage';
 import DashboardCarrinhosPage from './pages/dashboard/DashboardCarrinhosPage';
 import DashboardAlbumDetailPage from './pages/dashboard/DashboardAlbumDetailPage';
@@ -139,6 +140,7 @@ function App() {
             <Route path="vendas" element={<AdminFinanceiroPage />} />
             <Route path="saques" element={<AdminSaquesPage />} />
             <Route path="avaliacoes" element={<AdminAvaliacoesPage />} />
+            <Route path="limpeza-albuns" element={<GerenciarAlbunsAdmin />} />
           </Route>
         </Route>
 

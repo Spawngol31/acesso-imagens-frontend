@@ -159,10 +159,29 @@ const DashboardLayout = () => {
                         <img src={theme === 'dark' ? "/images/icon_home_dark.PNG" : "/images/icon_homepage.png"} alt="Acesso Imagens Logo" className="header-logo-img" />
                     </Link>
                     
-                    <div className="admin-header-actions">
-                        <button onClick={toggleTheme} className="theme-toggle-btn" title="Alternar Tema">
-                            {theme === 'dark' ? <IconSun /> : <IconMoon />}
+                    {/* NOVO CÓDIGO */}
+                    <div className="admin-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        
+                        {/* Novo Botão de Tema estilo "Badge" */}
+                        <button 
+                            onClick={toggleTheme} 
+                            className="admin-header-badge theme-badge-btn" 
+                            title="Alternar Tema"
+                        >
+                            {theme === 'dark' ? (
+                                <>
+                                    <IconSun /> 
+                                    <span style={{ marginLeft: '5px' }}>Whitemode</span>
+                                </>
+                            ) : (
+                                <>
+                                    <IconMoon /> 
+                                    <span style={{ marginLeft: '5px' }}>Darkmode</span>
+                                </>
+                            )}
                         </button>
+                        
+                        {/* Seu Botão de Admin atual */}
                         <span className="admin-header-badge">
                             Olá, {user?.nome_completo?.split(' ')[0]}!
                         </span>

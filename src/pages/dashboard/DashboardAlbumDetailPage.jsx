@@ -726,7 +726,7 @@ function DashboardAlbumDetailPage() {
                         className="button-outline mobile-actions-trigger" 
                         onClick={() => setIsMobileActionsMenuOpen(true)}
                     >
-                        ⚙️ Opções do Álbum
+                        Opções do Álbum
                     </button>
 
                     <div className="desktop-actions-group">
@@ -1157,12 +1157,12 @@ function DashboardAlbumDetailPage() {
                             <button onClick={() => setIsMobileActionsMenuOpen(false)} className="dash-modal-close">✖</button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <Link to="/dashboard/albuns" className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>⬅️ Voltar aos Álbuns</Link>
-                            <button onClick={() => { setActiveGlobalModal('uploadFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>📷 Adicionar Fotos</button>
-                            <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>🎥 Adicionar Vídeos</button>
-                            <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>💰 Editar Preço (Fotos)</button>
-                            <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>💰 Editar Preço (Vídeos)</button>
-                            <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>🎨 Click & Share</Link>
+                            <Link to="/dashboard/albuns" className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Voltar aos Álbuns</Link>
+                            <button onClick={() => { setActiveGlobalModal('uploadFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Fotos</button>
+                            <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Vídeos</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Fotos)</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Vídeos)</button>
+                            <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Click & Share</Link>
                             
                             <hr style={{width: '100%', border: 'none', borderTop: '1px solid var(--border-color)', margin: '5px 0'}}/>
                             
@@ -1171,7 +1171,7 @@ function DashboardAlbumDetailPage() {
                                 style={{ padding: '12px', borderColor: isSelectionMode ? '#dc3545' : 'var(--primary-purple)', color: isSelectionMode ? '#dc3545' : 'var(--primary-purple)' }}
                                 onClick={() => { setIsSelectionMode(!isSelectionMode); setIsMobileActionsMenuOpen(false); }}
                             >
-                                {isSelectionMode ? '❌ Cancelar Seleção Múltipla' : '✅ Ativar Seleção Múltipla'}
+                                {isSelectionMode ? '❌ Cancelar Seleção Múltipla' : 'Ativar Seleção Múltipla'}
                             </button>
                         </div>
                     </div>

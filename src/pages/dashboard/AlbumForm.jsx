@@ -71,7 +71,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             
             {/* TÍTULO DO MODAL */}
             <h2 className="album-form-title">
-                {isEditing ? 'Editar álbum' : 'Criar novo álbum'}
+                {isEditing ? 'Editar álbum' : 'Novo álbum'}
             </h2>
             
             <label className="album-form-label">Título do Álbum</label>

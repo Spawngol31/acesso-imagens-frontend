@@ -191,7 +191,7 @@ function DashboardAlbunsPage() {
                 
                 <div className="dash-albuns-actions">
                     <Link to="/dashboard/upload" className='create-button'>Upar mídias</Link>
-                    <Link to="/dashboard/albuns/novo" className='create-button'>Criar novo álbum +</Link>
+                    <Link to="/dashboard/albuns/novo" className='create-button'>Novo álbum +</Link>
                 </div>
             </div>
 
