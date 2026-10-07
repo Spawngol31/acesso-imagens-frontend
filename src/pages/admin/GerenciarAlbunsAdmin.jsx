@@ -8,7 +8,7 @@ const GerenciarAlbunsAdmin = () => {
 
     // Estados de Paginação (30 itens por página)
     const [paginaAtual, setPaginaAtual] = useState(1);
-    const itensPorPagina = 1;
+    const itensPorPagina = 30;
 
     // Estados dos Modais
     const [modalConfirmacaoOpen, setModalConfirmacaoOpen] = useState(false);
