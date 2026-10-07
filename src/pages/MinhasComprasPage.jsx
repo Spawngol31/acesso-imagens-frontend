@@ -81,7 +81,6 @@ function MinhasComprasPage() {
         }
     };
 
-    // 🚀 FUNÇÃO DE COPIAR O LINK DENTRO DA GAVETA
     const handleCopyDownloadLink = () => {
         if (!downloadUrlToCopy) return;
         navigator.clipboard.writeText(downloadUrlToCopy)
@@ -102,7 +101,6 @@ function MinhasComprasPage() {
             const urlOriginal = response.data.download_url;
             const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
 
-            // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM: ABRE A GAVETA COM O LINK DO ZIP!
             if (isInAppBrowser && !isAndroid) {
                 setDownloadUrlToCopy(urlOriginal);
                 setIsDownloadDrawerOpen(true);
@@ -111,7 +109,6 @@ function MinhasComprasPage() {
                 return;
             }
 
-            // SE FOR ANDROID NO INSTAGRAM: USA INTENT
             if (isInAppBrowser && isAndroid) {
                 const urlSemHttps = urlOriginal.replace(/^https?:\/\//, '');
                 const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
@@ -121,7 +118,6 @@ function MinhasComprasPage() {
                 return;
             }
 
-            // SE ESTIVER NO PC OU SAFARI NORMAL
             const link = document.createElement('a');
             link.href = urlOriginal;
             link.setAttribute('download', `acesso_imagens_pacote.zip`);
@@ -139,56 +135,44 @@ function MinhasComprasPage() {
         }
     };
 
-    const handleDownload = async (fotoId, fileName) => {
-        setDownloading(fotoId);
-        toast.info("A preparar o ficheiro original...");
-
-        try {
-            const response = await axiosInstance.get(`/download-foto/${fotoId}/`);
-            const urlSegura = response.data.download_url;
-            const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
-
-            // 🚀 SE FOR iPHONE (iOS) NO INSTAGRAM: ABRE A GAVETA COM O LINK DIRETO DA FOTO!
-            if (isInAppBrowser && !isAndroid) {
-                setDownloadUrlToCopy(urlSegura);
-                setIsDownloadDrawerOpen(true);
-                setDownloading(null);
-                return;
-            }
-
-            // SE FOR ANDROID NO INSTAGRAM: USA INTENT
-            if (isInAppBrowser && isAndroid) {
-                const urlSemHttps = urlSegura.replace(/^https?:\/\//, '');
-                const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
-                window.location.href = intentUrl;
-                setDownloading(null);
-                return;
-            }
-
-            // FAZ O FETCH PARA O BLOB (Força o download real no Safari/Chrome/PC)
-            const imageResponse = await fetch(urlSegura);
-            if (!imageResponse.ok) throw new Error("A imagem não pôde ser descarregada.");
-            
-            const imageBlob = await imageResponse.blob();
-            const urlBlob = window.URL.createObjectURL(imageBlob);
-
-            const link = document.createElement('a');
-            link.href = urlBlob;
-            
-            const safeName = fileName ? fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : `acesso_imagens_foto_${fotoId}`;
-            link.download = `${safeName}.jpg`;
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(urlBlob);
-
-        } catch (error) {
-            console.error("Erro crítico ao fazer download:", error);
-            toast.error("Ocorreu um erro. Tente novamente mais tarde.");
-        } finally {
+    // 🚀 NOVA FUNÇÃO DE DOWNLOAD ATUALIZADA
+    const handleDownload = (item) => {
+        setDownloading(item.foto.id);
+        
+        // Verifica se o backend enviou o link seguro da Cloudflare
+        if (!item.url_download) {
+            toast.error("O link de download não está disponível. Contate o suporte.");
             setDownloading(null);
+            return;
         }
+
+        const isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
+
+        if (isInAppBrowser && !isAndroid) {
+            setDownloadUrlToCopy(item.url_download);
+            setIsDownloadDrawerOpen(true);
+            setDownloading(null);
+            return;
+        }
+
+        if (isInAppBrowser && isAndroid) {
+            const urlSemHttps = item.url_download.replace(/^https?:\/\//, '');
+            const intentUrl = `intent://${urlSemHttps}#Intent;scheme=https;package=com.android.chrome;end;`;
+            window.location.href = intentUrl;
+            setDownloading(null);
+            return;
+        }
+
+        // Abre o link da Cloudflare para iniciar o download
+        toast.info("O download vai começar...");
+        const link = document.createElement('a');
+        link.href = item.url_download;
+        link.target = "_blank"; 
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setDownloading(null);
     };
 
     const handleBulkSendEmail = async () => {
@@ -337,8 +321,9 @@ function MinhasComprasPage() {
                                             </p>
                                         ) : isInAppBrowser ? (
                                             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {/* 🚀 ONCLICK CORRIGIDO AQUI */}
                                                 <button 
-                                                    onClick={() => handleDownload(item.foto.id, item.foto.legenda)}
+                                                    onClick={() => handleDownload(item)}
                                                     disabled={downloading === item.foto.id}
                                                     className="create-button"
                                                     style={{ width: '100%' }}
@@ -347,8 +332,9 @@ function MinhasComprasPage() {
                                                 </button>
                                             </div>
                                         ) : (
+                                            /* 🚀 ONCLICK CORRIGIDO AQUI */
                                             <button 
-                                                onClick={() => handleDownload(item.foto.id, item.foto.legenda)}
+                                                onClick={() => handleDownload(item)}
                                                 disabled={downloading === item.foto.id}
                                                 className="create-button"
                                                 style={{ width: '100%', marginTop: '10px' }}
@@ -392,9 +378,7 @@ function MinhasComprasPage() {
                 </div>
             )}
 
-            {/* ========================================================================= */}
-            {/* GAVETA DO INSTAGRAM (BOTTOM SHEET TIPO BANLEK) */}
-            {/* ========================================================================= */}
+            {/* GAVETA DO INSTAGRAM */}
             {isDownloadDrawerOpen && (
                 <div className="insta-modal-overlay">
                     <div className="insta-modal-content">
