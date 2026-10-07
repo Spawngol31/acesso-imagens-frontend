@@ -80,32 +80,43 @@ function NewsListPage() {
           {/*           PAGINAÇÃO ESTILIZADA (Igual à imagem)           */}
           {/* ========================================================= */}
           {totalPages > 1 && (
-            <div className="pagination-container">
+            <div className="pagination-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '3rem', padding: '1rem' }}>
               
-              {/* Botão Voltar (<) só aparece se não estivermos na página 1 */}
-              {currentPage > 1 && (
-                <button onClick={() => handlePageChange(currentPage - 1)} className="pagination-nav-btn">
-                  &lt;
-                </button>
-              )}
+              {/* Botão Voltar (<) - Sempre visível, mas desabilitado na página 1 */}
+              <button 
+                onClick={() => handlePageChange(currentPage - 1)} 
+                disabled={currentPage === 1}
+                className="pagination-nav-btn"
+                style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
+              >
+                &lt;
+              </button>
 
-              {/* Gera os números das páginas */}
+              {/* Gera os números das páginas com o mesmo estilo do AlbumList */}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <button 
                   key={page} 
                   onClick={() => handlePageChange(page)}
                   className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                  style={{
+                      width: '40px', height: '40px', border: 'none', borderRadius: '8px',
+                      cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
+                      fontSize: '1rem', transition: 'all 0.2s'
+                  }}
                 >
                   {page}
                 </button>
               ))}
 
-              {/* Botão Avançar (>) só aparece se não estivermos na última página */}
-              {currentPage < totalPages && (
-                <button onClick={() => handlePageChange(currentPage + 1)} className="pagination-nav-btn">
-                  &gt;
-                </button>
-              )}
+              {/* Botão Avançar (>) - Sempre visível, mas desabilitado na última página */}
+              <button 
+                onClick={() => handlePageChange(currentPage + 1)} 
+                disabled={currentPage === totalPages}
+                className="pagination-nav-btn"
+                style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
+              >
+                &gt;
+              </button>
             </div>
           )}
         </>

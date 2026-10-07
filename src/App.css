@@ -915,13 +915,18 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
     color: var(--primary-purple);
     font-weight: bold;
 }
-.pagination-nav-btn:hover { color: var(--bg-main);}
+.pagination-nav-btn:hover { 
+    color: var(--primary-purple);
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 20px; 
+}
 .pagination-number {
     background-color: transparent;
     color: var(--primary-purple);
 }
 .pagination-number:hover {
-    background-color: var(--primary-purple); color: var(--bg-main);
+    background-color: var(--primary-purple); color: var(--bg-main); border: none;
 }
 .pagination-number.active {
     background-color: var(--primary-purple) !important;
@@ -3724,7 +3729,102 @@ button.theme-badge-btn:hover {
     border-radius: 8px; /* Mantém os cantos bonitos */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+/* Coluna do Fotógrafo */
+.admin-td-fotografo {
+    color: var(--text-main);
+    font-size: 14px;
+}
 
+/* =========================================
+   PAGINAÇÃO ESTILO NÚMEROS
+   ========================================= */
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.pagination-arrow {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    border-radius: 20px; /* Cantos arredondados iguais à imagem */
+    font-family: inherit;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-number {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    border-radius: 8px; /* Cantos arredondados iguais à imagem */
+    font-family: inherit;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-number:hover {
+    color: var(--primary-purple);
+}
+
+.pagination-arrow {
+    font-weight: bold;
+    font-size: 18px;
+    color: #aaaaaa;
+}
+
+.pagination-arrow:hover:not(:disabled) {
+    color: var(--primary-purple);
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 20px;
+}
+
+.pagination-arrow:disabled {
+    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.3;
+    cursor: not-allowed;
+    border: none;
+    border-radius: 20px;
+    color: #aaaaaa;
+}
+
+/* Efeito ao passar o rato em números inativos */
+.pagination-number:hover:not(.active):not(.dots) {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* O número da página atual (Quadrado Branco) */
+.pagination-number.active {
+    background-color: #ffffff;
+    color: #111111; /* Texto escuro para contrastar com o fundo branco */
+    font-weight: 600;
+}
+
+/* Reticências (...) */
+.pagination-number.dots {
+    cursor: default;
+    background: transparent;
+    min-width: 20px;
+    padding: 0;
+}
 
 
 /* ==========================================================================

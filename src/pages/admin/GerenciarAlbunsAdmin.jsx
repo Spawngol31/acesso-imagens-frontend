@@ -6,6 +6,11 @@ const GerenciarAlbunsAdmin = () => {
     const [selecionados, setSelecionados] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // Estados de Paginação (30 itens por página)
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const itensPorPagina = 1;
+
+    // Estados dos Modais
     const [modalConfirmacaoOpen, setModalConfirmacaoOpen] = useState(false);
     const [modalAvisoOpen, setModalAvisoOpen] = useState(false);
     const [avisoConteudo, setAvisoConteudo] = useState({ titulo: '', mensagem: '' });
@@ -18,9 +23,23 @@ const GerenciarAlbunsAdmin = () => {
         try {
             const response = await axiosInstance.get('/albuns/?is_arquivado=false');
             setAlbuns(response.data);
+            setPaginaAtual(1);
         } catch (error) {
             console.error("Erro ao buscar álbuns", error);
         }
+    };
+
+    // Identifica o nome do fotógrafo considerando os diferentes formatos do backend
+    const obterNomeFotografo = (album) => {
+        if (typeof album.fotografo === 'string') return album.fotografo;
+        return (
+            album.fotografo_nome ||
+            album.fotografo?.nome_completo ||
+            album.fotografo?.nome ||
+            album.fotografo?.username ||
+            album.usuario_nome ||
+            'Não informado'
+        );
     };
 
     const handleSelecionar = (id) => {
@@ -70,6 +89,41 @@ const GerenciarAlbunsAdmin = () => {
         }
     };
 
+    // Cálculo dos itens da página atual
+    const indexUltimo = paginaAtual * itensPorPagina;
+    const indexPrimeiro = indexUltimo - itensPorPagina;
+    const albunsExibidos = albuns.slice(indexPrimeiro, indexUltimo);
+    const totalPaginas = Math.ceil(albuns.length / itensPorPagina) || 1;
+
+    const obterPaginasVisiveis = () => {
+        const delta = 1; // Mostra 1 página antes e 1 depois da página atual
+        const left = paginaAtual - delta;
+        const right = paginaAtual + delta;
+        let pages = [];
+        let pagesWithDots = [];
+        let l;
+
+        for (let i = 1; i <= totalPaginas; i++) {
+            if (i === 1 || i === totalPaginas || (i >= left && i <= right)) {
+                pages.push(i);
+            }
+        }
+
+        for (let i of pages) {
+            if (l) {
+                if (i - l === 2) {
+                    pagesWithDots.push(l + 1);
+                } else if (i - l !== 1) {
+                    pagesWithDots.push('...');
+                }
+            }
+            pagesWithDots.push(i);
+            l = i;
+        }
+
+        return pagesWithDots;
+    };
+
     return (
         <div className="admin-container">
             <h2 className="admin-titulo">Limpeza de álbuns</h2>
@@ -89,18 +143,19 @@ const GerenciarAlbunsAdmin = () => {
                             <th>Selecionar</th>
                             <th>ID</th>
                             <th>Título do Álbum</th>
+                            <th>Fotógrafo</th>
                             <th>Data do Evento</th>
                         </tr>
                     </thead>
                     <tbody>
                         {albuns.length === 0 ? (
                             <tr>
-                                <td colSpan="4" className="admin-td-empty">
+                                <td colSpan="5" className="admin-td-empty">
                                     Nenhum álbum ativo encontrado.
                                 </td>
                             </tr>
                         ) : (
-                            albuns.map(album => (
+                            albunsExibidos.map(album => (
                                 <tr key={album.id} className="admin-table-row">
                                     <td>
                                         <input 
@@ -112,6 +167,7 @@ const GerenciarAlbunsAdmin = () => {
                                     </td>
                                     <td className="admin-td-id">#{album.id}</td>
                                     <td className="admin-td-titulo">{album.titulo}</td>
+                                    <td className="admin-td-fotografo">{obterNomeFotografo(album)}</td>
                                     <td className="admin-td-data">
                                         {new Date(album.data_evento).toLocaleDateString('pt-BR')}
                                     </td>
@@ -121,6 +177,38 @@ const GerenciarAlbunsAdmin = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Controles de Paginação */}
+            {totalPaginas > 1 && (
+                <div className="pagination-container">
+                    <button 
+                        className="pagination-arrow"
+                        onClick={() => setPaginaAtual(prev => Math.max(prev - 1, 1))}
+                        disabled={paginaAtual === 1}
+                    >
+                        &lt;
+                    </button>
+                    
+                    {obterPaginasVisiveis().map((page, index) => (
+                        <button 
+                            key={index}
+                            className={`pagination-number ${paginaAtual === page ? 'active' : ''} ${page === '...' ? 'dots' : ''}`}
+                            onClick={() => typeof page === 'number' && setPaginaAtual(page)}
+                            disabled={page === '...'}
+                        >
+                            {page}
+                        </button>
+                    ))}
+
+                    <button 
+                        className="pagination-arrow"
+                        onClick={() => setPaginaAtual(prev => Math.min(prev + 1, totalPaginas))}
+                        disabled={paginaAtual === totalPaginas}
+                    >
+                        &gt;
+                    </button>
+                </div>
+            )}
 
             {/* Modal de Confirmação */}
             {modalConfirmacaoOpen && (
