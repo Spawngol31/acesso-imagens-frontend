@@ -359,7 +359,7 @@ function DashboardUploadPage() {
                             {(!existingCategories.includes(fotoCategoria) || existingCategories.length === 0) && (
                                 <input 
                                     type="text" 
-                                    placeholder="Ex: Jogo 1 - Guarany x Pelotas" 
+                                    placeholder="Ex: Jogo 1 - Brasil x Argentina" 
                                     value={fotoCategoria}
                                     onChange={(e) => setFotoCategoria(e.target.value)}
                                     disabled={isUploadingFotos}
