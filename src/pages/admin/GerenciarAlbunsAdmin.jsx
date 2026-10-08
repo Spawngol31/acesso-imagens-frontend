@@ -6,8 +6,9 @@ const GerenciarAlbunsAdmin = () => {
     const [selecionados, setSelecionados] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Estados de Paginação (30 itens por página)
+    // Paginação vinda do Servidor
     const [paginaAtual, setPaginaAtual] = useState(1);
+    const [totalAlbuns, setTotalAlbuns] = useState(0);
     const itensPorPagina = 30;
 
     // Estados dos Modais
@@ -15,10 +16,12 @@ const GerenciarAlbunsAdmin = () => {
     const [modalAvisoOpen, setModalAvisoOpen] = useState(false);
     const [avisoConteudo, setAvisoConteudo] = useState({ titulo: '', mensagem: '' });
 
+    // Carrega sempre que a página atual mudar
     useEffect(() => {
-        carregarAlbuns();
-    }, []);
+        carregarAlbuns(paginaAtual);
+    }, [paginaAtual]);
 
+    // Rola a tela suavemente para o topo ao trocar de página
     useEffect(() => {
         window.scrollTo({
             top: 0,
@@ -26,37 +29,19 @@ const GerenciarAlbunsAdmin = () => {
         });
     }, [paginaAtual]);
 
-    const carregarAlbuns = async () => {
+    const carregarAlbuns = async (pagina) => {
         try {
             setLoading(true);
-            let todosAlbuns = [];
-            let urlAtual = '/albuns/?is_arquivado=false';
+            // Faz UMA ÚNICA requisição rápida pedindo apenas os 30 daquela página
+            const response = await axiosInstance.get(`/albuns/?is_arquivado=false&page=${pagina}&page_size=${itensPorPagina}`);
             
-            // Vai buscando as páginas uma a uma até o Django dizer que acabaram
-            while (urlAtual) {
-                const response = await axiosInstance.get(urlAtual);
-                
-                if (response.data.results) {
-                    // Se for paginado, junta os álbuns desta página à lista total
-                    todosAlbuns = [...todosAlbuns, ...response.data.results];
-                    
-                    // Pega o link para a próxima página (se não houver, fica null e o loop para)
-                    // Substituímos o domínio completo por caminho relativo para o axiosInstance funcionar bem
-                    if (response.data.next) {
-                        const nextUrlObj = new URL(response.data.next);
-                        urlAtual = '/albuns/' + nextUrlObj.search;
-                    } else {
-                        urlAtual = null; 
-                    }
-                } else {
-                    // Se o Django não mandou paginação (segurança extra)
-                    todosAlbuns = response.data;
-                    urlAtual = null;
-                }
+            if (response.data.results) {
+                setAlbuns(response.data.results);
+                setTotalAlbuns(response.data.count || 0);
+            } else {
+                setAlbuns(response.data);
+                setTotalAlbuns(response.data.length || 0);
             }
-
-            setAlbuns(todosAlbuns);
-            setPaginaAtual(1);
         } catch (error) {
             console.error("Erro ao buscar álbuns", error);
         } finally {
@@ -110,7 +95,7 @@ const GerenciarAlbunsAdmin = () => {
             setModalAvisoOpen(true);
             
             setSelecionados([]); 
-            carregarAlbuns(); 
+            carregarAlbuns(paginaAtual); 
             
         } catch (error) {
             setAvisoConteudo({ 
@@ -124,14 +109,11 @@ const GerenciarAlbunsAdmin = () => {
         }
     };
 
-    // Cálculo dos itens da página atual
-    const indexUltimo = paginaAtual * itensPorPagina;
-    const indexPrimeiro = indexUltimo - itensPorPagina;
-    const albunsExibidos = albuns.slice(indexPrimeiro, indexUltimo);
-    const totalPaginas = Math.ceil(albuns.length / itensPorPagina) || 1;
+    // Cálculo das páginas com base no total vindo do backend
+    const totalPaginas = Math.ceil(totalAlbuns / itensPorPagina) || 1;
 
     const obterPaginasVisiveis = () => {
-        const delta = 1; // Mostra 1 página antes e 1 depois da página atual
+        const delta = 1;
         const left = paginaAtual - delta;
         const right = paginaAtual + delta;
         let pages = [];
@@ -168,7 +150,7 @@ const GerenciarAlbunsAdmin = () => {
                 onClick={abrirModalConfirmacao} 
                 disabled={loading || selecionados.length === 0}
             >
-                {loading ? "Processando e limpando o R2..." : `Apagar e Arquivar Selecionados (${selecionados.length})`}
+                {loading ? "Processando..." : `Apagar e Arquivar Selecionados (${selecionados.length})`}
             </button>
 
             <div className="table-responsive-wrapper">
@@ -186,11 +168,11 @@ const GerenciarAlbunsAdmin = () => {
                         {albuns.length === 0 ? (
                             <tr>
                                 <td colSpan="5" className="admin-td-empty">
-                                    Nenhum álbum ativo encontrado.
+                                    {loading ? "Carregando álbuns..." : "Nenhum álbum ativo encontrado."}
                                 </td>
                             </tr>
                         ) : (
-                            albunsExibidos.map(album => (
+                            albuns.map(album => (
                                 <tr key={album.id} className="admin-table-row">
                                     <td>
                                         <input 
@@ -219,7 +201,7 @@ const GerenciarAlbunsAdmin = () => {
                     <button 
                         className="pagination-arrow"
                         onClick={() => setPaginaAtual(prev => Math.max(prev - 1, 1))}
-                        disabled={paginaAtual === 1}
+                        disabled={paginaAtual === 1 || loading}
                     >
                         &lt;
                     </button>
@@ -229,7 +211,7 @@ const GerenciarAlbunsAdmin = () => {
                             key={index}
                             className={`pagination-number ${paginaAtual === page ? 'active' : ''} ${page === '...' ? 'dots' : ''}`}
                             onClick={() => typeof page === 'number' && setPaginaAtual(page)}
-                            disabled={page === '...'}
+                            disabled={page === '...' || loading}
                         >
                             {page}
                         </button>
@@ -238,7 +220,7 @@ const GerenciarAlbunsAdmin = () => {
                     <button 
                         className="pagination-arrow"
                         onClick={() => setPaginaAtual(prev => Math.min(prev + 1, totalPaginas))}
-                        disabled={paginaAtual === totalPaginas}
+                        disabled={paginaAtual === totalPaginas || loading}
                     >
                         &gt;
                     </button>
