@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios'; 
 
 const BASE_URL = import.meta.env.VITE_WP_API_URL || '';
-const WP_API_URL = `${BASE_URL.replace(/\/$/, '')}/posts?_embed`;
+const WP_API_URL = `${BASE_URL}/posts?_embed=wp:featuredmedia&_fields=id,title,excerpt,slug,date,_links`;
 
 function NewsListPage() {
   const [noticias, setNoticias] = useState([]);

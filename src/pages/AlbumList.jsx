@@ -1,10 +1,8 @@
-// src/pages/AlbumList.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom'; 
 import axiosInstance from '../api/axiosInstance';
 
-// --- COMPONENTE DE PAGINAÇÃO NUMÉRICA (ADAPTADO AO DARK MODE) ---
+// --- COMPONENTE DE PAGINAÇÃO (Mantido exatamente como o seu) ---
 const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
 
@@ -64,34 +62,34 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
         </div>
     );
 };
-// ------------------------------------------------------------------
 
 function AlbumList() {
   const [albuns, setAlbuns] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- LÓGICA DE BUSCA EM TEMPO REAL ---
+  // --- LÓGICA DE BUSCA E PAGINAÇÃO ---
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const buscaInicialUrl = queryParams.get('q') || ''; 
   
   const [searchTerm, setSearchTerm] = useState(buscaInicialUrl);
-  
-  // --- ESTADOS DA PAGINAÇÃO ---
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const ITEMS_PER_PAGE = 20;
-  // -------------------------------------
 
+  // Busca os álbuns reais diretamente da API paginada do Django
   useEffect(() => {
     const getAlbuns = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/albuns/');
-        if (Array.isArray(response.data)) {
-            setAlbuns(response.data);
-        } else {
-            setAlbuns([]); 
-        }
+        // O React agora diz ao Django: "Dá-me a página X, procurando por Y"
+        const response = await axiosInstance.get(`/albuns/?page=${currentPage}&search=${searchTerm}`);
+        
+        // Como o Django agora é paginado, os dados vêm dentro de "results"
+        setAlbuns(response.data.results || []);
+        // E o total de páginas é calculado com base no "count" total do banco de dados
+        setTotalPages(Math.ceil((response.data.count || 0) / ITEMS_PER_PAGE));
+        
       } catch (error) {
         console.error("Erro ao buscar os álbuns:", error);
         setAlbuns([]); 
@@ -99,25 +97,20 @@ function AlbumList() {
         setLoading(false);
       }
     };
-    getAlbuns();
-  }, []);
+    
+    // Pequeno atraso (debounce) para não travar a base de dados enquanto o utilizador digita
+    const timerId = setTimeout(() => {
+        getAlbuns();
+    }, 300);
 
-  // Sempre que o utilizador digitar algo na barra de pesquisa, volta para a página 1
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
+    return () => clearTimeout(timerId);
+  }, [currentPage, searchTerm]);
 
-  // --- FILTRO LOCAL RÁPIDO ---
-  const albunsFiltrados = albuns.filter(album => 
-      album.titulo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // --- LÓGICA DE CORTE PARA PAGINAÇÃO ---
-  const totalPages = Math.ceil(albunsFiltrados.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  
-  const albunsPaginados = albunsFiltrados.slice(startIndex, endIndex);
+  // Se o utilizador pesquisar algo novo, volta à página 1
+  const handleSearchChange = (e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1);
+  };
 
   const handlePageChange = (novaPagina) => {
       setCurrentPage(novaPagina);
@@ -126,8 +119,6 @@ function AlbumList() {
 
   return (
     <div className="page-container">
-      
-      {/* CABEÇALHO E BARRA DE PESQUISA */}
       <div className="album-list-header-wrapper">
           <h1 className="page-title" style={{ margin: 0, textAlign: 'left' }}>Álbuns</h1>
           
@@ -136,7 +127,7 @@ function AlbumList() {
                   type="text" 
                   placeholder="Pesquisar pelo nome do álbum..." 
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                   className="album-search-input"
               />
               <span className="album-search-icon">
@@ -152,8 +143,8 @@ function AlbumList() {
       ) : (
         <>
           <div className='album-grid'>
-            {Array.isArray(albunsPaginados) && albunsPaginados.length > 0 ? (
-              albunsPaginados.map(album => (
+            {albuns.length > 0 ? (
+              albuns.map(album => (
                 <Link to={`/album/${album.id}`} key={album.id} className="album-card">
                   <div 
                     className="album-card-image"
@@ -163,7 +154,7 @@ function AlbumList() {
                     <h3>{album.titulo}</h3>
                     
                     <div className="album-meta-info">
-                      <span>{new Date(album.data_evento).toLocaleDateString()}</span>
+                      <span>{new Date(album.data_evento).toLocaleDateString('pt-BR')}</span>
                       {album.fotografo && <span> • {album.fotografo}</span>}
                     </div>
                     
@@ -175,7 +166,7 @@ function AlbumList() {
               <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 0' }}>
                   <p className="page-subtitle" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Nenhum álbum encontrado.</p>
                   {searchTerm && (
-                      <button onClick={() => setSearchTerm('')} className="button-outline">
+                      <button onClick={() => {setSearchTerm(''); setCurrentPage(1);}} className="button-outline">
                           Ver todos os álbuns
                       </button>
                   )}
