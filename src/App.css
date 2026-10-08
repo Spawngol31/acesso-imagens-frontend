@@ -1953,13 +1953,13 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 
 .dash-modal-actions { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
 .modal-btn-cancel { padding: 10px 20px; border-radius: 20px; border: 1px solid var(--border-color); cursor: pointer; background-color: var(--bg-secondary); color: var(--text-main); font-weight: bold; transition: background-color 0.2s; }
-.modal-btn-cancel:hover { background-color: var(--hover-bg); }
+.modal-btn-cancel:hover { background-color: var(--hover-bg); border: 1px solid var(--border-color); color: var(--text-main); }
 
 .modal-btn-confirm { padding: 10px 20px; border-radius: 20px; border: none; color: white; cursor: pointer; font-weight: bold; transition: transform 0.2s; }
 .modal-btn-confirm.btn-danger { background-color: #dc3545; }
-.modal-btn-confirm.btn-danger:hover { background-color: #c82333; transform: translateY(-2px); }
+.modal-btn-confirm.btn-danger:hover { background-color: #c82333; transform: translateY(-2px); border: none; }
 .modal-btn-confirm.btn-success { background-color: #28a745; }
-.modal-btn-confirm.btn-success:hover { background-color: #218838; transform: translateY(-2px); }
+.modal-btn-confirm.btn-success:hover { background-color: #218838; transform: translateY(-2px); border: none; }
 
 /* ==========================================================================
    30. FORMULÁRIO DE ÁLBUNS (CRIAR E EDITAR)

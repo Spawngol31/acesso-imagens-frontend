@@ -1,5 +1,3 @@
-// src/pages/dashboard/AlbumForm.jsx
-
 import React, { useState, useEffect } from 'react';
 
 const CATEGORIAS = [
@@ -19,7 +17,6 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
         qtd_desconto_2: '', pct_desconto_2: '',
         qtd_desconto_3: '', pct_desconto_3: '',
     });
-    const [capaFile, setCapaFile] = useState(null);
 
     // Identifica se estamos em modo de Edição (se possui ID válido)
     const isEditing = !!initialData?.id;
@@ -59,11 +56,8 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             if (!dadosFormatados[campo]) dadosFormatados[campo] = 0;
         });
 
-        if (isEditing) {
-            onSubmit(dadosFormatados, capaFile);
-        } else {
-            onSubmit(dadosFormatados);
-        }
+        // Como removemos o upload manual da capa, enviamos apenas os dados de texto
+        onSubmit(dadosFormatados);
     };
 
     return (
@@ -114,34 +108,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
                 ))}
             </div>
 
-            {/* UPLOAD DA IMAGEM DE CAPA COM BOTÃO PERSONALIZADO (APENAS APARECE SE ESTIVER A EDITAR) */}
-            {isEditing && (
-                <div className="album-form-cover-box">
-                    <label className="album-form-label">Imagem de Capa do Álbum</label>
-                    
-                    <div className="album-form-cover-actions">
-                        <input 
-                            id="album-cover-upload" 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={(e) => setCapaFile(e.target.files[0])} 
-                            style={{ display: 'none' }} 
-                        />
-                        
-                        <label htmlFor="album-cover-upload" className="album-form-cover-btn">
-                            Escolher imagem...
-                        </label>
-                        
-                        <div className="album-form-cover-status">
-                            {capaFile ? (
-                                <span className="cover-status-success">✅ {capaFile.name}</span>
-                            ) : (
-                                initialData.capa && <span>Atual: {initialData.capa.split('/').pop()}</span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* A SESSÃO DA IMAGEM DE CAPA FOI REMOVIDA DAQUI! */}
             
             <label className="album-form-checkbox-wrapper">
                 <input name="is_publico" type="checkbox" checked={albumData.is_publico} onChange={handleChange} className="album-form-checkbox" />

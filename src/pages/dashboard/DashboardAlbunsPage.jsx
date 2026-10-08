@@ -281,13 +281,6 @@ function DashboardAlbunsPage() {
                                             >
                                                 {album.is_arquivado ? 'Desarquivar' : 'Arquivar'}
                                             </button>
-                                            <button 
-                                                onClick={() => handleDeleteClick(album)} 
-                                                className="btn-acao btn-acao-delete"
-                                                title="Excluir Álbum Definitivamente"
-                                            >
-                                                Excluir
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -316,47 +309,36 @@ function DashboardAlbunsPage() {
             {isConfirmModalOpen && albumParaMudar && (
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content dash-modal-small">
-                        <h3 className="dash-modal-title">
-                            {albumParaMudar.is_arquivado ? 'Desarquivar Álbum?' : 'Arquivar Álbum?'}
+                        <h3 className={`dash-modal-title ${!albumParaMudar.is_arquivado ? 'text-danger' : ''}`}>
+                            {albumParaMudar.is_arquivado ? 'Desarquivar Álbum?' : 'Arquivar e Limpar Álbum?'}
                         </h3>
-                        <p className="dash-modal-text">
-                            {albumParaMudar.is_arquivado 
-                                ? "Tem certeza que deseja desarquivar este álbum? Ele voltará a ficar público."
-                                : "Tem certeza que deseja arquivar este álbum? Ele será removido da loja."}
-                        </p>
-                        <div className="dash-modal-actions">
-                            <button onClick={() => setIsConfirmModalOpen(false)} className="modal-btn-cancel">Cancelar</button>
-                            <button onClick={confirmarAcao} className={`modal-btn-confirm ${albumParaMudar.is_arquivado ? 'btn-success' : 'btn-danger'}`}>
-                                Confirmar
-                            </button>
+                        
+                        <div className="dash-modal-text">
+                            {albumParaMudar.is_arquivado ? (
+                                <p>Tem certeza que deseja desarquivar este álbum? Ele voltará a ficar público e disponível para compra na loja.</p>
+                            ) : (
+                                <>
+                                    <p>Tem certeza que deseja arquivar <strong>{albumParaMudar.titulo}</strong>?</p>
+                                    <p style={{ color: '#ff6b6b', marginTop: '10px', fontSize: '0.9rem', padding: '10px', backgroundColor: 'rgba(255,0,0,0.1)', borderRadius: '5px' }}>
+                                        <strong>Atenção:</strong> Ao fazer isto, o álbum será removido da loja. 
+                                        Além disso, <strong>TODAS AS FOTOS E VÍDEOS NÃO VENDIDOS SERÃO EXCLUÍDOS DEFINITIVAMENTE</strong> da plataforma. Esta ação é irreversível.
+                                    </p>
+                                </>
+                            )}
                         </div>
-                    </div>
-                </div>
-            )}
 
-            {/* MODAL DE EXCLUSÃO DEFINITIVA */}
-            {isDeleteModalOpen && albumParaExcluir && (
-                <div className="dash-modal-overlay">
-                    <div className="dash-modal-content dash-modal-small">
-                        <h3 className="dash-modal-title text-danger">
-                            ⚠️ Excluir Álbum?
-                        </h3>
-                        <p className="dash-modal-text">
-                            Tem certeza que deseja excluir o álbum <strong>{albumParaExcluir.titulo}</strong>?
-                        </p>
-                        <p className="dash-modal-warning">
-                            Atenção: Esta ação é permanente e apagará todas as mídias dentro dele.
-                        </p>
-                        <div className="dash-modal-actions">
-                            <button onClick={() => setIsDeleteModalOpen(false)} className="modal-btn-cancel">Cancelar</button>
-                            <button onClick={confirmarExclusao} className="modal-btn-confirm btn-danger">
-                                Sim, Excluir Definitivamente
+                        <div className="dash-modal-actions" style={{ marginTop: '20px' }}>
+                            <button onClick={() => setIsConfirmModalOpen(false)} className="modal-btn-cancel">Cancelar</button>
+                            <button 
+                                onClick={confirmarAcao} 
+                                className={`modal-btn-confirm ${albumParaMudar.is_arquivado ? 'btn-success' : 'btn-danger'}`}
+                            >
+                                {albumParaMudar.is_arquivado ? 'Sim, Desarquivar' : 'Sim, Arquivar e Excluir Mídias'}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-            
         </div>
     );
 }
