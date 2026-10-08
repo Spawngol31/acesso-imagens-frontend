@@ -22,7 +22,8 @@ const GerenciarAlbunsAdmin = () => {
     const carregarAlbuns = async () => {
         try {
             const response = await axiosInstance.get('/albuns/?is_arquivado=false');
-            setAlbuns(response.data);
+            const dadosExtraidos = response.data.results ? response.data.results : response.data;
+            setAlbuns(dadosExtraidos);
             setPaginaAtual(1);
         } catch (error) {
             console.error("Erro ao buscar álbuns", error);
