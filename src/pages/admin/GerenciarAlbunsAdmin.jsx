@@ -21,15 +21,42 @@ const GerenciarAlbunsAdmin = () => {
 
     const carregarAlbuns = async () => {
         try {
-            const response = await axiosInstance.get('/albuns/?is_arquivado=false');
-            const dadosExtraidos = response.data.results ? response.data.results : response.data;
-            setAlbuns(dadosExtraidos);
+            setLoading(true);
+            let todosAlbuns = [];
+            let urlAtual = '/albuns/?is_arquivado=false';
+            
+            // Vai buscando as páginas uma a uma até o Django dizer que acabaram
+            while (urlAtual) {
+                const response = await axiosInstance.get(urlAtual);
+                
+                if (response.data.results) {
+                    // Se for paginado, junta os álbuns desta página à lista total
+                    todosAlbuns = [...todosAlbuns, ...response.data.results];
+                    
+                    // Pega o link para a próxima página (se não houver, fica null e o loop para)
+                    // Substituímos o domínio completo por caminho relativo para o axiosInstance funcionar bem
+                    if (response.data.next) {
+                        const nextUrlObj = new URL(response.data.next);
+                        urlAtual = nextUrlObj.pathname + nextUrlObj.search;
+                    } else {
+                        urlAtual = null; 
+                    }
+                } else {
+                    // Se o Django não mandou paginação (segurança extra)
+                    todosAlbuns = response.data;
+                    urlAtual = null;
+                }
+            }
+
+            setAlbuns(todosAlbuns);
             setPaginaAtual(1);
         } catch (error) {
             console.error("Erro ao buscar álbuns", error);
+        } finally {
+            setLoading(false);
         }
     };
-
+    
     // Identifica o nome do fotógrafo considerando os diferentes formatos do backend
     const obterNomeFotografo = (album) => {
         if (typeof album.fotografo === 'string') return album.fotografo;
