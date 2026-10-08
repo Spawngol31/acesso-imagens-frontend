@@ -19,6 +19,13 @@ const GerenciarAlbunsAdmin = () => {
         carregarAlbuns();
     }, []);
 
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }, [paginaAtual]);
+
     const carregarAlbuns = async () => {
         try {
             setLoading(true);
