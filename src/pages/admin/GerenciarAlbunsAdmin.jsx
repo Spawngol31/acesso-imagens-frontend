@@ -37,7 +37,7 @@ const GerenciarAlbunsAdmin = () => {
                     // Substituímos o domínio completo por caminho relativo para o axiosInstance funcionar bem
                     if (response.data.next) {
                         const nextUrlObj = new URL(response.data.next);
-                        urlAtual = nextUrlObj.pathname + nextUrlObj.search;
+                        urlAtual = '/albuns/' + nextUrlObj.search;
                     } else {
                         urlAtual = null; 
                     }
@@ -56,7 +56,7 @@ const GerenciarAlbunsAdmin = () => {
             setLoading(false);
         }
     };
-    
+
     // Identifica o nome do fotógrafo considerando os diferentes formatos do backend
     const obterNomeFotografo = (album) => {
         if (typeof album.fotografo === 'string') return album.fotografo;
