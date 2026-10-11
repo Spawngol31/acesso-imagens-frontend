@@ -106,7 +106,7 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
           <div style={{
               position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
               backgroundColor: 'rgba(108, 4, 100, 0.9)', color: 'white', padding: '8px 16px',
-              borderRadius: '30px', fontSize: '13px', fontWeight: 'bold', pointerEvents: 'none',
+              borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', pointerEvents: 'none',
               zIndex: 11, whiteSpace: 'nowrap', boxShadow: '0 2px 10px rgba(0,0,0,0.4)'
           }}>
               👆 Toque para ver o outro lado
@@ -130,7 +130,7 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
               position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
               zIndex: 100000, backgroundColor: '#6c0463', color: '#fff',
               boxShadow: '0 4px 15px rgba(0,0,0,0.5)', border: 'none', padding: '12px 30px',
-              borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem'
+              borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem'
             }}
           >
             Adicionar ao carrinho (R$ {parseFloat(image.preco || 0).toFixed(2)})

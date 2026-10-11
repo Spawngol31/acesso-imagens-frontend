@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom'; 
 import axiosInstance from '../api/axiosInstance';
 
-// --- COMPONENTE DE PAGINAÇÃO (Mantido exatamente como o seu) ---
+// --- COMPONENTE DE PAGINAÇÃO ---
 const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
 
@@ -14,7 +14,6 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
         }
         if (currentPage - delta > 2) range.unshift("...");
         if (currentPage + delta < totalPages - 1) range.push("...");
-
         range.unshift(1);
         if (totalPages > 1) range.push(totalPages);
         return range;
@@ -31,7 +30,6 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
             >
                 &lt;
             </button>
-
             {pages.map((page, index) => (
                 <React.Fragment key={index}>
                     {page === "..." ? (
@@ -51,7 +49,6 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
                     )}
                 </React.Fragment>
             ))}
-
             <button 
                 onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
                 className="pagination-nav-btn"
@@ -65,29 +62,63 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
 
 function AlbumList() {
   const [albuns, setAlbuns] = useState([]);
+  const [fotografosLista, setFotografosLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- LÓGICA DE BUSCA E PAGINAÇÃO ---
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const buscaInicialUrl = queryParams.get('q') || ''; 
+  // Estados dos Filtros
+  const [isFiltroAberto, setIsFiltroAberto] = useState(false);
+  const [filtros, setFiltros] = useState({
+      nome_album: '',
+      fotografo_id: '',
+      local: '',
+      data: ''
+  });
   
-  const [searchTerm, setSearchTerm] = useState(buscaInicialUrl);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const ITEMS_PER_PAGE = 20;
 
-  // Busca os álbuns reais diretamente da API paginada do Django
+  // Conta quantos filtros estão atualmente ativos para mostrar no "badge" vermelho
+  const contarFiltrosAtivos = () => {
+      let count = 0;
+      if (filtros.nome_album) count++;
+      if (filtros.fotografo_id) count++;
+      if (filtros.local) count++;
+      if (filtros.data) count++;
+      return count;
+  };
+
+  // Carrega a lista de fotógrafos para a caixa de seleção
+  useEffect(() => {
+      const getFotografos = async () => {
+          try {
+              const response = await axiosInstance.get('/fotografos-ativos/');
+              setFotografosLista(response.data);
+          } catch (error) {
+              console.error("Erro ao carregar fotógrafos", error);
+          }
+      };
+      getFotografos();
+  }, []);
+
+  // Busca os álbuns enviando os filtros
   useEffect(() => {
     const getAlbuns = async () => {
       try {
         setLoading(true);
-        // O React agora diz ao Django: "Dá-me a página X, procurando por Y"
-        const response = await axiosInstance.get(`/albuns/?page=${currentPage}&search=${searchTerm}`);
         
-        // Como o Django agora é paginado, os dados vêm dentro de "results"
+        const params = new URLSearchParams();
+        params.append('page', currentPage);
+        
+        // Os parâmetros que o Django espera
+        if (filtros.nome_album) params.append('search', filtros.nome_album);
+        if (filtros.fotografo_id) params.append('fotografo_id', filtros.fotografo_id);
+        if (filtros.local) params.append('local', filtros.local);
+        if (filtros.data) params.append('data', filtros.data);
+
+        const response = await axiosInstance.get(`/albuns/?${params.toString()}`);
+        
         setAlbuns(response.data.results || []);
-        // E o total de páginas é calculado com base no "count" total do banco de dados
         setTotalPages(Math.ceil((response.data.count || 0) / ITEMS_PER_PAGE));
         
       } catch (error) {
@@ -98,18 +129,22 @@ function AlbumList() {
       }
     };
     
-    // Pequeno atraso (debounce) para não travar a base de dados enquanto o utilizador digita
-    const timerId = setTimeout(() => {
-        getAlbuns();
-    }, 300);
-
+    // Pequeno atraso para não pesquisar enquanto o utilizador tecla rapidamente
+    const timerId = setTimeout(() => { getAlbuns(); }, 400);
     return () => clearTimeout(timerId);
-  }, [currentPage, searchTerm]);
+  }, [currentPage, filtros]);
 
-  // Se o utilizador pesquisar algo novo, volta à página 1
-  const handleSearchChange = (e) => {
-      setSearchTerm(e.target.value);
+  const handleFiltroChange = (e) => {
+      setFiltros({
+          ...filtros,
+          [e.target.name]: e.target.value
+      });
       setCurrentPage(1);
+  };
+
+  const limparFiltros = () => {
+      setFiltros({ nome_album: '', fotografo_id: '', local: '', data: '' });
+      setIsFiltroAberto(false);
   };
 
   const handlePageChange = (novaPagina) => {
@@ -118,31 +153,105 @@ function AlbumList() {
   };
 
   return (
-    <div className="page-container">
-      <div className="album-list-header-wrapper">
+    <div className="page-container" style={{ position: 'relative' }}>
+      
+      {/* CABEÇALHO COM TÍTULO E BOTÃO DE FILTRO */}
+      <div className="filtros-header-bar">
           <h1 className="page-title" style={{ margin: 0, textAlign: 'left' }}>Álbuns</h1>
           
-          <div style={{ width: '100%', maxWidth: '400px', position: 'relative' }}>
-              <input 
-                  type="text" 
-                  placeholder="Pesquisar pelo nome do álbum..." 
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="album-search-input"
-              />
-              <span className="album-search-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                </svg>
-              </span>
-          </div>
+          <button 
+              onClick={() => setIsFiltroAberto(!isFiltroAberto)}
+              className={`btn-filtros-avancados ${isFiltroAberto ? 'aberto' : ''}`}
+          >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z"/>
+              </svg>
+              {isFiltroAberto ? 'Ocultar Filtros' : 'Pesquisar e Filtrar'}
+              
+              {/* Mostra um número de filtros ativos (ex: "2") */}
+              {contarFiltrosAtivos() > 0 && (
+                  <span className="filtros-badge-contador">{contarFiltrosAtivos()}</span>
+              )}
+          </button>
       </div>
+
+      {/* PAINEL DE FILTROS AVANÇADOS */}
+      {isFiltroAberto && (
+          <div className="filtros-modal-box" style={{ flexDirection: 'column' }}>
+              
+              {/* LINHA 1: Nome do Álbum (Ocupa 100% da largura) */}
+              <div style={{ width: '100%' }}>
+                  <label className="filtros-label">Nome do Álbum</label>
+                  <input 
+                      type="text" 
+                      name="nome_album"
+                      placeholder="Ex: Jogo Final..." 
+                      value={filtros.nome_album} 
+                      onChange={handleFiltroChange}
+                      className="filtros-input"
+                  />
+              </div>
+              
+              {/* LINHA 2: Fotógrafo, Local e Data (Lado a lado, dividindo o espaço igualmente) */}
+              <div className="filtros-grupo_principal">
+                  
+                  <div className="filtros-grupo">
+                      <label className="filtros-label">Fotógrafo</label>
+                      <select 
+                          name="fotografo_id" 
+                          value={filtros.fotografo_id} 
+                          onChange={handleFiltroChange}
+                          className="filtros-input"
+                      >
+                          <option value="">Todos os fotógrafos...</option>
+                          {fotografosLista.map(fotografo => (
+                              <option key={fotografo.id} value={fotografo.id}>
+                                  {fotografo.nome_completo || fotografo.email}
+                              </option>
+                          ))}
+                      </select>
+                  </div>
+
+                  <div className="filtros-grupo">
+                      <label className="filtros-label">Local do Evento</label>
+                      <input 
+                          type="text" 
+                          name="local"
+                          placeholder="Ex: Estádio, Ginásio..." 
+                          value={filtros.local} 
+                          onChange={handleFiltroChange}
+                          className="filtros-input"
+                      />
+                  </div>
+
+                  <div className="filtros-grupo">
+                      <label className="filtros-label">Data do Evento</label>
+                      <input 
+                          type="date" 
+                          name="data"
+                          value={filtros.data} 
+                          onChange={handleFiltroChange}
+                          className="filtros-input"
+                      />
+                  </div>
+
+              </div>
+
+              {/* LINHA 3: Botão de Limpar */}
+              <div className="filtros-botoes-acao" style={{ marginTop: '0' }}>
+                  <button onClick={limparFiltros} className="btn-limpar-filtros">
+                      Limpar todos os filtros
+                  </button>
+              </div>
+          </div>
+      )}
       
+      {/* GRELHA DE RESULTADOS (Inalterado) */}
       {loading ? (
-        <p className="page-subtitle" style={{textAlign: 'center'}}>A carregar álbuns...</p>
+        <p className="page-subtitle" style={{textAlign: 'center', marginTop: '30px'}}>A carregar álbuns...</p>
       ) : (
         <>
-          <div className='album-grid'>
+          <div className='album-grid' style={{ marginTop: '30px' }}>
             {albuns.length > 0 ? (
               albuns.map(album => (
                 <Link to={`/album/${album.id}`} key={album.id} className="album-card">
@@ -164,10 +273,10 @@ function AlbumList() {
               ))
             ) : (
               <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 0' }}>
-                  <p className="page-subtitle" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Nenhum álbum encontrado.</p>
-                  {searchTerm && (
-                      <button onClick={() => {setSearchTerm(''); setCurrentPage(1);}} className="button-outline">
-                          Ver todos os álbuns
+                  <p className="page-subtitle" style={{ fontSize: '1.2rem', marginBottom: '10px' }}>Nenhum álbum corresponde aos filtros selecionados.</p>
+                  {contarFiltrosAtivos() > 0 && (
+                      <button onClick={limparFiltros} className="button-outline">
+                          Limpar pesquisas
                       </button>
                   )}
               </div>

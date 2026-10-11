@@ -1,5 +1,3 @@
-// src/pages/AlbumDetail.jsx
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,7 +30,6 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
             className="photo-card" 
             onMouseEnter={handleMouseEnter} 
             onMouseLeave={handleMouseLeave}
-            style={{ position: 'relative', overflow: 'hidden' }}
         >
             {video.arquivo_preview_url ? (
                 <video 
@@ -42,7 +39,7 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
                     muted 
                     loop
                     playsInline
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    className="video-preview-element" 
                 />
             ) : (
                 <img src={video.miniatura_url} alt={video.titulo} />
@@ -88,7 +85,6 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
             <button 
                 onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
                 className="pagination-nav-btn"
-                style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
             >
                 &lt;
             </button>
@@ -101,7 +97,6 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
                         <button
                             onClick={() => onPageChange(page)}
                             className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === page ? 'bold' : 'normal' }}
                         >
                             {page}
                         </button>
@@ -112,7 +107,6 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
             <button 
                 onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
                 className="pagination-nav-btn"
-                style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
             >
                 &gt;
             </button>
@@ -128,6 +122,11 @@ function AlbumDetail() {
   const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // 🚀 NOVO ESTADO: Controla o Menu Mobile
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Estados da Busca Facial
+  const [isFaceSearchModalOpen, setIsFaceSearchModalOpen] = useState(false);
   const [referenceImage, setReferenceImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isSearchingFaces, setIsSearchingFaces] = useState(false);
@@ -162,6 +161,9 @@ function AlbumDetail() {
   }, [getAlbumDetail]);
 
   const handleShareClick = () => {
+    // Se o menu mobile estiver aberto, fecha-o
+    setIsMobileMenuOpen(false);
+
     let apiUrl = import.meta.env.VITE_API_URL;
     if (apiUrl.endsWith('/')) {
         apiUrl = apiUrl.slice(0, -1);
@@ -195,7 +197,8 @@ function AlbumDetail() {
           setReferenceImage(file);
           setPreviewUrl(URL.createObjectURL(file));
       } else {
-          clearFaceSearch();
+          setReferenceImage(null);
+          setPreviewUrl('');
       }
   };
 
@@ -233,6 +236,9 @@ function AlbumDetail() {
           } else {
               toast.success(`${response.data.length} foto(s) sua(s) encontrada(s)!`);
           }
+          
+          setIsFaceSearchModalOpen(false); // Fecha o Modal após sucesso
+
       } catch (err) {
           console.error("Erro na busca facial no álbum:", err);
           toast.error("Ocorreu um erro ao realizar a busca. Tente novamente.");
@@ -242,6 +248,8 @@ function AlbumDetail() {
   };
 
   const handleUnidentifiedMediaClick = () => {
+      setIsMobileMenuOpen(false); // Fecha o menu mobile se estiver aberto
+
       setReferenceImage(null);
       setPreviewUrl('');
       setFaceSearchResults(null);
@@ -252,6 +260,17 @@ function AlbumDetail() {
       if (galleryRef.current) {
           galleryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+  };
+
+  const openFaceSearch = () => {
+      setIsMobileMenuOpen(false);
+      setIsFaceSearchModalOpen(true);
+  };
+
+  const openProposta = () => {
+      setIsMobileMenuOpen(false);
+      setPropostaForm({ qtdFotos: '', qtdVideos: '', valor: '', comentario: '' }); 
+      setIsPropostaModalOpen(true);
   };
 
   const todasCategorias = new Set();
@@ -350,7 +369,7 @@ function AlbumDetail() {
               valor_oferecido: propostaForm.valor,
               comentario: propostaForm.comentario
           });
-          toast.success("🤝 Proposta enviada com sucesso! O fotógrafo analisará em breve.");
+          toast.success("Proposta enviada com sucesso! O fotógrafo analisará em breve.");
           setIsPropostaModalOpen(false);
           setPropostaForm({ qtdFotos: '', qtdVideos: '', valor: '', comentario: '' });
       } catch (error) {
@@ -360,14 +379,14 @@ function AlbumDetail() {
       }
   };
 
-  if (loading) { return <p className="page-subtitle" style={{textAlign: 'center', marginTop: '2rem'}}>A carregar álbum...</p>; }
-  if (!album) { return <p className="page-subtitle" style={{textAlign: 'center', marginTop: '2rem'}}>Álbum não encontrado.</p>; }
+  if (loading) { return <p className="page-subtitle loading-text">A carregar álbum...</p>; }
+  if (!album) { return <p className="page-subtitle loading-text">Álbum não encontrado.</p>; }
 
   return (
     <div className="page-container">
       <header className="album-detail-header page-header-detail">
         
-        <div style={{ textAlign: 'center' }}>
+        <div className="header-title-section">
             <h1 className="album-title">{album.titulo}</h1>
             {album.descricao && <p className="album-desc">{album.descricao}</p>}
             
@@ -377,19 +396,44 @@ function AlbumDetail() {
             </p>
         </div>
         
+        {/* =========================================
+            BARRA DE BOTÕES (DESKTOP)
+            Visível no PC, escondida via CSS no Mobile
+            ========================================= */}
         <div className="album-action-buttons">
-            <button onClick={handleShareClick} className="button-outline">Compartilhar álbum</button>
-            <button onClick={() => { setPropostaForm({ qtdFotos: '', qtdVideos: '', valor: '', comentario: '' }); setIsPropostaModalOpen(true); }} className="create-button">Proposta</button>
+            <button onClick={openFaceSearch} className="btn-busca-facial">
+                Busca Facial
+            </button>
+            <button onClick={handleUnidentifiedMediaClick} className="button-outline">
+                Fotos não identificadas
+            </button>
+            <button onClick={openProposta} className="button-outline">
+                Fazer Proposta
+            </button>
+            <button onClick={handleShareClick} className="button-outline">
+                Copiar Link
+            </button>
         </div>
+
+        {/* =========================================
+            BOTÃO DE OPÇÕES (MOBILE)
+            Escondido no PC, visível via CSS no Mobile
+            ========================================= */}
+        <button 
+            onClick={() => setIsMobileMenuOpen(true)} 
+            className="create-button btn-mobile-options"
+        >
+            Opções do Álbum
+        </button>
 
       </header>
 
       <main>
         
         {(album.qtd_desconto_1 > 0 || album.qtd_desconto_2 > 0 || album.qtd_desconto_3 > 0) && (
-            <div className="discount-promo-banner discount-box" style={{ textAlign: 'center' }}>
-                <div className="discount-promo-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <h3 style={{ textAlign: 'center' }}>Aproveite nossos descontos!</h3>
+            <div className="discount-promo-banner discount-box">
+                <div className="discount-promo-header">
+                    <h3>Aproveite nossos descontos!</h3>
                 </div>
                 <div className="discount-promo-list">
                     {album.qtd_desconto_1 > 0 && album.pct_desconto_1 > 0 && (
@@ -410,51 +454,6 @@ function AlbumDetail() {
                             <p>Compre <strong>{album.qtd_desconto_3} ou mais</strong> e ganhe <strong>{parseFloat(album.pct_desconto_3)}% OFF</strong></p>
                         </div>
                     )}
-                </div>
-            </div>
-        )}
-
-        {album.fotos && album.fotos.length > 0 && (
-            <div className="album-face-search-box">
-                <h3 className="face-search-title">Encontre suas fotos por reconhecimento facial</h3>
-                
-                <form onSubmit={handleFaceSearchSubmit} className="face-search-form">
-                    
-                    <label htmlFor="album-face-upload" className="button-outline face-search-label">
-                        {referenceImage ? 'Trocar Selfie' : 'Escolher Selfie'}
-                    </label>
-                    <input id="album-face-upload" type="file" accept="image/*" onChange={handleFaceFileChange} style={{ display: 'none' }} />
-
-                    {previewUrl && (
-                        <img 
-                            src={previewUrl} 
-                            alt="Selfie" 
-                            className="face-search-preview"
-                        />
-                    )}
-
-                    <button 
-                        type="submit" 
-                        className="create-button face-search-btn" 
-                        disabled={!referenceImage || isSearchingFaces} 
-                    >
-                        {isSearchingFaces ? 'A procurar...' : 'Encontrar sua foto'}
-                    </button>
-
-                    {faceSearchResults !== null && (
-                        <button type="button" onClick={clearFaceSearch} className="delete-button-pill" style={{ padding: '0.6rem 1.2rem', margin: '5px 0 0 0' }}>
-                            Limpar Busca Facial
-                        </button>
-                    )}
-                </form>
-
-                <div style={{ marginTop: '25px' }}>
-                    <button 
-                        onClick={handleUnidentifiedMediaClick}
-                        className="unidentified-btn"
-                    >
-                        Fotos ou vídeos não identificados
-                    </button>
                 </div>
             </div>
         )}
@@ -481,25 +480,25 @@ function AlbumDetail() {
              {faceSearchResults !== null 
                 ? `Resultados da Busca (${basePhotoList.length})` 
                 : showUnidentifiedOnly 
-                    ? `Fotos Não Identificadas (${basePhotoList.length})`
-                    : `Fotos (${basePhotoList.length})`
+                  ? `Fotos Não Identificadas (${basePhotoList.length})`
+                  : `Fotos (${basePhotoList.length})`
              }
           </h2>
           
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            {showUnidentifiedOnly && (
-                <button onClick={() => setShowUnidentifiedOnly(false)} className="delete-button-pill" style={{ padding: '0.6rem 1rem', margin: 0 }}>
-                    Todas
+          <div className="section-header-actions">
+            {(showUnidentifiedOnly || faceSearchResults !== null) && (
+                <button onClick={clearFaceSearch} className="btn-all-midias-pill">
+                    Ver Todas
                 </button>
             )}
-            <Link to="/eventos" className="button-outline">Voltar</Link>
+            <Link to="/eventos" className="button-outline">Voltar a galeria</Link>
           </div>
         </div>
 
         <div className="photo-grid">
           {currentPhotos.map(foto => (
             <div key={foto.id} className="photo-card" onClick={() => setSelectedImage(foto)}>
-              <img src={foto.imagem_url} alt={foto.legenda || `Foto ${foto.id}`} style={{ transform: `rotate(${foto.rotacao}deg)` }}/>
+              <img src={foto.imagem_url} alt={foto.legenda || `Foto ${foto.id}`} className="photo-grid-img"/>
               <div className="photo-overlay">
                 <p>R$ {foto.preco}</p>
                 {(!user || user.papel === 'CLIENTE') && (
@@ -515,20 +514,20 @@ function AlbumDetail() {
         {faceSearchResults !== null && currentPhotos.length === 0 && (
             <div className="empty-state-message">
                 <p>Não encontramos o seu rosto nestas fotos. Experimente usar uma selfie mais clara e com o rosto bem iluminado.</p>
-                <button onClick={clearFaceSearch} className="button-outline" style={{ marginTop: '10px' }}>Ver todas as fotos do álbum</button>
+                <button onClick={clearFaceSearch} className="button-outline">Ver todas as fotos do álbum</button>
             </div>
         )}
 
         {showUnidentifiedOnly && currentPhotos.length === 0 && (
             <div className="empty-state-message">
                 <p>Ótimo! O sistema conseguiu identificar rostos em todas as fotos deste álbum.</p>
-                <button onClick={() => setShowUnidentifiedOnly(false)} className="button-outline" style={{ marginTop: '10px' }}>Ver todas as fotos do álbum</button>
+                <button onClick={() => setShowUnidentifiedOnly(false)} className="button-outline">Ver todas as fotos do álbum</button>
             </div>
         )}
 
         {faceSearchResults === null && baseVideoList.length > 0 && (
           <>
-            <div className="section-header" style={{marginTop: '3rem'}}>
+            <div className="section-header videos-section">
               <h2>Vídeos ({baseVideoList.length})</h2>
             </div>
             
@@ -547,7 +546,79 @@ function AlbumDetail() {
         <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} onNext={handleNextImage} onPrev={handlePrevImage} />
       )}
       
-      {/* 🚀 MODAL DE PROPOSTA NO ÁLBUM */}
+      {/* 🚀 MODAL DE MENU MOBILE */}
+      {isMobileMenuOpen && (
+          <div className="modal-overlay" onClick={() => setIsMobileMenuOpen(false)}>
+              <div className="modal-content mobile-options-modal" onClick={e => e.stopPropagation()}>
+                  <h3 style={{ textAlign: 'center' }}>Opções do Álbum</h3>
+                  
+                  <div className="mobile-options-menu-list">
+                      <button onClick={openFaceSearch} className="create-button btn-busca-facial">
+                          Busca Facial
+                      </button>
+                      <button onClick={handleUnidentifiedMediaClick} className="button-outline">
+                          Fotos não identificadas
+                      </button>
+                      <button onClick={openProposta} className="button-outline">
+                          Fazer Proposta
+                      </button>
+                      <button onClick={handleShareClick} className="button-outline">
+                          Copiar Link
+                      </button>
+                  </div>
+
+                  <button 
+                      onClick={() => setIsMobileMenuOpen(false)} 
+                      className="button-outline" 
+                      style={{ width: '100%', marginTop: '20px', border: 'none', color: '#ccc' }}
+                  >
+                      Fechar
+                  </button>
+              </div>
+          </div>
+      )}
+
+      {/* 🚀 MODAL DE BUSCA FACIAL */}
+      {isFaceSearchModalOpen && (
+          <div className="modal-overlay">
+              <div className="modal-content proposta-modal-box face-search-modal">
+                  <h3>Busca Inteligente por IA</h3>
+                  <p className="modal-subtitle">
+                      Faça o upload de uma selfie para o sistema encontrar todas as fotos onde você aparece!
+                  </p>
+                  
+                  <form onSubmit={handleFaceSearchSubmit} className="face-search-form">
+                      <label htmlFor="modal-face-upload" className="button-outline face-search-upload-label">
+                          {referenceImage ? 'Trocar Selfie' : 'Tirar ou Escolher Selfie'}
+                      </label>
+                      <input id="modal-face-upload" type="file" accept="image/*" onChange={handleFaceFileChange} className="hidden-file-input" />
+
+                      {previewUrl && (
+                          <div className="face-search-preview-container">
+                              <img 
+                                  src={previewUrl} 
+                                  alt="Selfie" 
+                                  className="face-search-img"
+                              />
+                          </div>
+                      )}
+
+                      <div className="modal-actions-row">
+                          <button type="button" onClick={() => setIsFaceSearchModalOpen(false)} className="button-outline">Cancelar</button>
+                          <button 
+                              type="submit" 
+                              disabled={!referenceImage || isSearchingFaces} 
+                              className="create-button btn-busca-facial"
+                          >
+                              {isSearchingFaces ? 'A procurar...' : 'Pesquisar Rosto'}
+                          </button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      )}
+
+      {/* 🚀 MODAL DE PROPOSTA */}
       {isPropostaModalOpen && (
           <div className="modal-overlay">
               <div className="modal-content proposta-modal-box">
@@ -567,7 +638,7 @@ function AlbumDetail() {
                       </div>
                       
                       <div className="proposta-col">
-                          <label>Valor Oferecido (R$)</label>
+                          <label>Valor Oferecido (R\$)</label>
                           <input type="number" step="0.01" required min="1" placeholder="Ex: 150.00" value={propostaForm.valor} onChange={(e) => setPropostaForm({...propostaForm, valor: e.target.value})} />
                       </div>
 

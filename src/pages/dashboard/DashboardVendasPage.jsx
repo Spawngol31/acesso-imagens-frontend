@@ -1,12 +1,17 @@
-// src/pages/dashboard/DashboardVendasPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axiosInstance';
 import { toast } from 'react-toastify';
 
+// --- FUNÇÃO AUXILIAR PARA CENSURAR VALORES ---
+const renderValor = (valor, mostrar) => {
+    if (!mostrar) return 'R\$ •••••';
+    return `R$ ${parseFloat(valor).toFixed(2)}`;
+};
+
 // --- COMPONENTE: RANKING DO FOTÓGRAFO ---
-const RankingAlbunsFotografo = () => {
+// Recebe a propriedade 'mostrarValores' do pai
+const RankingAlbunsFotografo = ({ mostrarValores }) => {
     const [ranking, setRanking] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -47,7 +52,7 @@ const RankingAlbunsFotografo = () => {
                                     <td className="ranking-medal-col">{medalha}</td>
                                     <td className="ranking-title-col">{album.album_titulo}</td>
                                     <td className="ranking-qtd-col">{album.qtd_vendida} mídias</td>
-                                    <td className="ranking-price-col">R$ {parseFloat(album.total_arrecadado).toFixed(2)}</td>
+                                    <td className="ranking-price-col">{renderValor(album.total_arrecadado, mostrarValores)}</td>
                                 </tr>
                             );
                         })}
@@ -63,6 +68,9 @@ function DashboardVendasPage() {
     const [loading, setLoading] = useState(true);
     const [larguraJanela, setLarguraJanela] = useState(window.innerWidth);
     const isMobile = larguraJanela < 900;
+
+    // 👇 NOVO ESTADO: Controla a privacidade dos valores 👇
+    const [mostrarValores, setMostrarValores] = useState(true);
 
     const [dados, setDados] = useState([]);
     const [vendaSelecionada, setVendaSelecionada] = useState(null); 
@@ -212,6 +220,7 @@ function DashboardVendasPage() {
                             key={index}
                             onClick={() => setCurrentPage(number)}
                             className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === number ? 'bold' : 'normal' }}
                         >
                             {number}
                         </button>
@@ -233,8 +242,40 @@ function DashboardVendasPage() {
     return (
         <div className="dashboard-page-content finance-page-wrapper">
             
-            <div className="dash-header-box">
+            <div className="dash-header-box" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 className="dash-main-title">Meu financeiro</h2>
+                
+                {/* BOTÃO MÁGICO DE PRIVACIDADE COM SVG */}
+                <button 
+                    onClick={() => setMostrarValores(!mostrarValores)}
+                    className="create-button"
+                    style={{
+                        display: 'flex', 
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                    title={mostrarValores ? "Ocultar valores" : "Mostrar valores"}
+                >
+                    {mostrarValores ? (
+                        <>
+                            {/* Ícone de Olho Aberto (Ocultar) */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Ocultar Valores
+                        </>
+                    ) : (
+                        <>
+                            {/* Ícone de Olho Fechado/Riscado (Mostrar) */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                            Mostrar Valores
+                        </>
+                    )}
+                </button>
             </div>
 
             <div className="finance-tabs-container">
@@ -251,14 +292,16 @@ function DashboardVendasPage() {
                     <div className="finance-balance-box">
                         <div>
                             <p className="balance-label">Saldo pendente (A Receber)</p>
-                            <h2 className="balance-value">R$ {parseFloat(resumo.saldo_pendente).toFixed(2)}</h2>
+                            {/* Uso da função renderValor */}
+                            <h2 className="balance-value">{renderValor(resumo.saldo_pendente, mostrarValores)}</h2>
                         </div>
                         <Link to="/dashboard/saques" className="create-button">
                             Solicitar saque
                         </Link>
                     </div>
 
-                    <RankingAlbunsFotografo />
+                    {/* Passamos o estado para o componente filho */}
+                    <RankingAlbunsFotografo mostrarValores={mostrarValores} />
 
                     <div className={`finance-split-layout ${isMobile ? 'mobile-layout' : ''}`}>
                         
@@ -296,7 +339,7 @@ function DashboardVendasPage() {
                                                             ? <span className="status-badge-paid">✓ Já Recebido</span> 
                                                             : <span className="status-badge-pending">⏳ A Receber</span>}
                                                     </td>
-                                                    <td className="col-comission">R$ {venda.comissao.toFixed(2)}</td>
+                                                    <td className="col-comission">{renderValor(venda.comissao, mostrarValores)}</td>
                                                 </tr>
                                             ))}
                                             {dados.length === 0 && <tr><td colSpan="5" className="finance-empty-row">Nenhuma venda encontrada com estes filtros.</td></tr>}
@@ -358,7 +401,7 @@ function DashboardVendasPage() {
                                             <td className="col-receipt-period">
                                                 {recibo.referencia_inicio} até {recibo.referencia_fim}
                                             </td>
-                                            <td className="col-comission">R$ {recibo.valor_pago.toFixed(2)}</td>
+                                            <td className="col-comission">{renderValor(recibo.valor_pago, mostrarValores)}</td>
                                             <td className="col-receipt-action">
                                                 <button onClick={() => imprimirRecibo(recibo)} className="print-receipt-btn">
                                                     Ver / Imprimir
@@ -403,7 +446,8 @@ function DashboardVendasPage() {
                             <p><strong>📅 Data da Venda:</strong> {vendaSelecionada.data}</p>
                             
                             <div className="sale-comission-highlight">
-                                <p>Sua Comissão: R$ {vendaSelecionada.comissao.toFixed(2)}</p>
+                                {/* Ocultamos também a comissão no pop-up! */}
+                                <p>Sua Comissão: {renderValor(vendaSelecionada.comissao, mostrarValores)}</p>
                             </div>
                         </div>
 
