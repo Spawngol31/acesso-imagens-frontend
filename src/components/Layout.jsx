@@ -104,6 +104,7 @@ function Layout() {
                     
                     <nav className={`public-nav ${isMobileMenuOpen ? 'open' : ''}`}>
                         <NavLink to="/busca">Procurar fotos</NavLink>
+                        <NavLink to="/eventos">Álbuns</NavLink>
                         <NavLink to="/solucoes">Serviços</NavLink>
                         <NavLink to="/noticias">Notícias</NavLink>
                         <NavLink to="/imprensa">Na Mídia</NavLink>
