@@ -4215,8 +4215,8 @@ button.theme-badge-btn:hover {
     position: absolute;
     top: 5px;
     right: 25px;
-    background-color: #6c0464;
-    color: white;
+    background-color: var(--primary-purple);
+    color: var(--bg-main);
     border-radius: 50%;
     width: 16px;
     height: 16px;
@@ -4225,6 +4225,24 @@ button.theme-badge-btn:hover {
     align-items: center;
     justify-content: center;
     font-weight: bold;
+}
+
+/* ====================================================
+   REMOVER CONTORNO GROSSO DE FOCO NOS BOTÕES
+   ==================================================== */
+button:focus,
+a:focus,
+input:focus,
+select:focus {
+    outline: none !important;
+}
+
+/* Opcional: Se quiser manter o site acessível, pode 
+   substituir aquele contorno feio por um brilho suave do seu Roxo */
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--primary-purple);
+    outline-offset: 2px;
 }
 
 @media (max-width: 768px) {
@@ -4314,5 +4332,11 @@ button.theme-badge-btn:hover {
     .whatsapp-fab {
         bottom: 85px; 
         z-index: 999;
+    }
+    .header-actions .cart-link {
+        display: none;
+    }
+    .public-nav a[href="/eventos"] {
+        display: none;
     }
 }
