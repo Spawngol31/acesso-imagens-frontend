@@ -43,7 +43,7 @@ function NewsDetailPage() {
                     
                     {/* 🚀 IMAGEM DE DESTAQUE COM CRÉDITOS */}
                     {featuredMedia?.source_url && (
-                        <div style={{ marginBottom: '30px' }}>
+                        <div className="news-featured-image-container">
                             <img 
                                 src={featuredMedia.source_url} 
                                 alt={noticia.title.rendered} 

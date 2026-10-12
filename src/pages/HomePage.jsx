@@ -285,7 +285,7 @@ function HomePage() {
                                 return (
                                     <div key={noticia.id} className="carousel-item">
                                         <div className="home-carousel-card">
-                                            <div className="carousel-image-bg" style={{ backgroundImage: `url(${imagemUrl})`, backgroundSize: 'cover' }}></div>
+                                            <div className="carousel-image-bg" style={{ backgroundImage: `url(${imagemUrl})` }}></div>
                                             <div className="carousel-content">
                                                 <h3 dangerouslySetInnerHTML={{ __html: noticia.title.rendered }}></h3>
                                                 <div className="carousel-meta-row">
