@@ -80,13 +80,24 @@ function PromotionalArtCreatorPage() {
         fetchAlbumDetails();
     }, [fetchAlbumDetails]);
 
+    // 1. Criamos um estado para a URL da foto que vai para o Canvas
+    const [canvasPhotoUrl, setCanvasPhotoUrl] = useState('');
+
     useEffect(() => {
         if (customSettings.photoUrl) {
             setIsPhotoPreloaded(false);
+            
+            // 2. O Truque: Adicionamos um carimbo de tempo para ignorar o Cache da Cloudflare
+            const urlSemCache = `${customSettings.photoUrl}?nocache=${new Date().getTime()}`;
+            setCanvasPhotoUrl(urlSemCache);
+
             const img = new Image();
+            img.crossOrigin = "anonymous"; 
             img.onload = () => setIsPhotoPreloaded(true);
             img.onerror = () => setIsPhotoPreloaded(true); 
-            img.src = customSettings.photoUrl;
+            img.src = urlSemCache;
+        } else {
+            setCanvasPhotoUrl('');
         }
     }, [customSettings.photoUrl]);
 
@@ -128,9 +139,9 @@ function PromotionalArtCreatorPage() {
     if (loading) return <p className="page-subtitle" style={{ padding: '20px' }}>Carregando ferramenta...</p>;
     if (!album) return <p className="page-subtitle text-danger" style={{ padding: '20px' }}>Álbum não encontrado.</p>;
 
-    const proxyPhotoUrl = customSettings.photoUrl 
-        ? `${axiosInstance.defaults.baseURL}proxy-image/?url=${encodeURIComponent(customSettings.photoUrl)}`
-        : '';
+/*    const proxyPhotoUrl = customSettings.photoUrl 
+       ? `${axiosInstance.defaults.baseURL}proxy-image/?url=${encodeURIComponent(customSettings.photoUrl)}`
+        : ''; */
 
     const STORY_WIDTH = 320;
     const STORY_HEIGHT = 568;
@@ -245,8 +256,8 @@ function PromotionalArtCreatorPage() {
                             
                             {activeTemplate.id === TEMPLATES.PHONE_MOCKUP.id && (
                                 <div style={{ position: 'absolute', top: '25px', left: '15px', right: '15px', bottom: '100px', zIndex: 1 }}>
-                                    <div style={{ position: 'absolute', top: '40px', left: '60px', right: '60px', bottom: '40px', borderRadius: '25px', overflow: 'hidden', backgroundColor: '#eee' }}>
-                                        {isPhotoPreloaded && <img src={proxyPhotoUrl} alt="Foto" style={selectedImageStyle} />}
+                                    <div style={{ position: 'absolute', top: '40px', left: '60px', right: '60px', bottom: '40px', borderRadius: '15px', overflow: 'hidden', backgroundColor: '#eee', boxShadow: '0 5px 30px rgba(0, 0, 0, 0.9)' }}>
+                                        {isPhotoPreloaded && canvasPhotoUrl && <img src={canvasPhotoUrl} alt="Foto" crossOrigin="anonymous" style={selectedImageStyle} />}
                                         <PhotoFooterInfo /> 
                                     </div>
                                     <img src={TEMPLATES.PHONE_MOCKUP.overlayUrl} alt="Celular" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 3, objectFit: 'contain' }} />
@@ -254,9 +265,9 @@ function PromotionalArtCreatorPage() {
                             )}
 
                             {activeTemplate.id === TEMPLATES.CAROUSEL_MIMIC.id && (
-                                <div style={{ position: 'absolute', top: '120px', left: '30px', right: '30px', height: '280px', zIndex: 1, border: '10px solid #fff', borderRadius: '5px' }}>
-                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: '8px', overflow: 'hidden', backgroundColor: '#eee', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' }}>
-                                        {isPhotoPreloaded && <img src={proxyPhotoUrl} alt="Foto" style={selectedImageStyle} />}
+                                <div style={{ position: 'absolute', top: '120px', left: '30px', right: '30px', height: '280px', zIndex: 1, border: '10px solid #fff', borderRadius: '8px', boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)'  }}>
+                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', backgroundColor: '#eee', boxShadow: '0 5px 15px rgba(0,0,0,0.2)' }}>
+                                        {isPhotoPreloaded && canvasPhotoUrl && <img src={canvasPhotoUrl} alt="Foto" crossOrigin="anonymous" style={selectedImageStyle} />}
                                         <PhotoFooterInfo />
                                     </div>
                                     <img src={TEMPLATES.CAROUSEL_MIMIC.overlayUrl} alt="Carrossel" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 3, objectFit: 'contain' }} />
@@ -269,7 +280,7 @@ function PromotionalArtCreatorPage() {
                                     backgroundColor: '#eee', borderRadius: '16px', overflow: 'hidden', zIndex: 1,
                                     boxShadow: '0 10px 25px rgba(0,0,0,0.15)', border: '4px solid #fff'
                                 }}>
-                                    {isPhotoPreloaded && <img src={proxyPhotoUrl} alt="Foto" style={selectedImageStyle} />}
+                                    {isPhotoPreloaded && canvasPhotoUrl && <img src={canvasPhotoUrl} alt="Foto" crossOrigin="anonymous" style={selectedImageStyle} />}
                                     <PhotoFooterInfo />
                                 </div>
                             )}

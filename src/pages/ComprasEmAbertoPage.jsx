@@ -136,14 +136,14 @@ function ComprasEmAbertoPage() {
                                     <div className="pending-purchase-actions">
                                         <button 
                                             onClick={() => handlePagarAgora(compra)} 
-                                            className="create-button" 
+                                            className="create-button btn-pay-now" 
                                         >
                                             Pagar Agora
                                         </button>
                                         
                                         <button 
                                             onClick={() => handlePagarAgora(compra)} 
-                                            className="button-outline" 
+                                            className="button-outline btn-pay-now" 
                                         >
                                             Mudar forma de pagamento
                                         </button>

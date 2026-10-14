@@ -126,7 +126,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
 
                                 {profilePicFile ? (
                                     <p className="profile-pic-success">
-                                        ✅ Arquivo selecionado: {profilePicFile.name} (Será enviado ao salvar)
+                                        Arquivo selecionado: {profilePicFile.name} (Será enviado ao salvar)
                                     </p>
                                 ) : (
                                     <p className="profile-pic-empty">
@@ -190,7 +190,7 @@ function UserEditForm({ user, onSubmit, onCancel }) {
                     )}
 
                     <div className="modal-actions-row">
-                        <button type="button" onClick={onCancel} className="button-outline modal-btn-half" >Cancelar</button>
+                        <button type="button" onClick={onCancel} className="button-outline modal-btn-half-cancel" >Cancelar</button>
                         <button type="submit" className="create-button modal-btn-half" >Salvar Alterações</button>
                     </div>
                 </form>
@@ -344,13 +344,13 @@ function AdminUserPage() {
 
                 <div className="filter-actions-col">
                     <button onClick={fetchUsers} className='create-button'>Filtrar</button>
-                    <button onClick={handleLimparFiltros} className='create-button'>Limpar</button>
+                    <button onClick={handleLimparFiltros} className='filter-btn-clear-user'>Limpar</button>
                 </div>
             </div>
 
             {!hasActiveFilters && !loading && (
                 <div className="users-fast-mode-alert">
-                    MODO RÁPIDO: A mostrar apenas os 50 cadastros mais recentes. Use os filtros acima para pesquisar contas antigas.
+                    Mostrando os últimos 30 usuários cadastrados no site.
                 </div>
             )}
 

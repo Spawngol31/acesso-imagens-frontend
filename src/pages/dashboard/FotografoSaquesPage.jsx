@@ -165,7 +165,7 @@ function FotografoSaquesPage() {
                         className="create-button saque-submit-btn" 
                         style={{ opacity: (isSubmitting || saldoPendente <= 0) ? 0.6 : 1 }}
                     >
-                        {isSubmitting ? 'Enviando...' : 'Pedir saque total'}
+                        {isSubmitting ? 'Enviando...' : 'Solicitar saque'}
                     </button>
                 </form>
             </div>

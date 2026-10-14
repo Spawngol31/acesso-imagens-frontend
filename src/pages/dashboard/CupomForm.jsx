@@ -99,7 +99,7 @@ function CupomForm({ onSubmit, initialData = {}, onCancel }) {
                     </label>
                     
                     <div className="modal-actions-row" style={{ marginTop: '30px' }}>
-                        <button type="button" onClick={onCancel} className="button-outline modal-btn-half">
+                        <button type="button" onClick={onCancel} className="modal-btn-half-cancel">
                             Cancelar
                         </button>
                         <button type="submit" className="create-button modal-btn-half">

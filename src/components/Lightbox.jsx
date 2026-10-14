@@ -70,8 +70,8 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
       {onPrev && (
         <button onClick={(e) => { e.stopPropagation(); onPrev(); }} style={{
             position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
-            background: 'rgba(255, 255, 255, 0.1)', border: 'none', color: 'white', 
-            fontSize: '1.5rem', padding: '15px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 100000
+            background: 'none', border: 'none', color: 'white', 
+            fontSize: '1.5rem', padding: '15px 20px', cursor: 'pointer', zIndex: 100000
         }}>
           &#10094;
         </button>
@@ -141,8 +141,8 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
       {onNext && (
         <button onClick={(e) => { e.stopPropagation(); onNext(); }} style={{
             position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
-            background: 'rgba(255, 255, 255, 0.1)', border: 'none', color: 'white', 
-            fontSize: '1.5rem', padding: '15px 20px', cursor: 'pointer', borderRadius: '50%', zIndex: 100000
+            background: 'none', border: 'none', color: 'white', 
+            fontSize: '1.5rem', padding: '15px 20px', cursor: 'pointer', zIndex: 100000
         }}>
           &#10095;
         </button>

@@ -177,13 +177,13 @@ const AdminLayout = () => {
                         
                     {/* BOTÃO DE MENU (Abre a tela completa) */} 
                     <div onClick={() => setIsMenuOpen(!isMenuOpen)} className={`nav-item-link ${isMenuOpen ? 'nav-item-active' : ''}`}>
-                        <div className="nav-item-icon-wrapper" style={{ position: 'relative' }}>
+                        <div className="nav-item-icon-wrapper-menu" style={{ position: 'relative' }}>
                             <IconMenu />
                             {(saquesPendentesCount > 0 && !isMenuOpen) && (
                                 <span className="nav-badge-indicator"></span>
                             )}
                         </div>
-                        <span className="nav-item-label">Menu</span>
+                        <span className="nav-item-label-menu">Menu</span>
                     </div> 
                 </nav>
             </footer>

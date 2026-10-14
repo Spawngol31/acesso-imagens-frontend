@@ -420,7 +420,7 @@ function DashboardUploadPage() {
                             <Link to="/dashboard/albuns" className="button-outline upload-btn-half">
                                 Voltar
                             </Link>
-                            <button type="submit" className="create-button upload-btn-half" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ cursor: (isUploadingFotos || fotoFiles.length === 0) ? 'not-allowed' : 'pointer', opacity: (isUploadingFotos || fotoFiles.length === 0) ? 0.6 : 1 }}>
+                            <button type="submit" className="create-button upload-btn-half" disabled={isUploadingFotos || fotoFiles.length === 0}>
                                 {isUploadingFotos ? 'A enviar para Nuvem...' : `Enviar Fotos`}
                             </button>
                         </div>
@@ -507,7 +507,7 @@ function DashboardUploadPage() {
                             <Link to="/dashboard/albuns" className="button-outline upload-btn-half">
                                 Voltar
                             </Link>
-                            <button onClick={handleVideoSubmit} className="create-button upload-btn-half" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ cursor: (isUploadingVideos || stagedVideos.length === 0) ? 'not-allowed' : 'pointer', opacity: (isUploadingVideos || stagedVideos.length === 0) ? 0.6 : 1 }}>
+                            <button onClick={handleVideoSubmit} className="create-button upload-btn-half" disabled={isUploadingVideos || stagedVideos.length === 0} >
                                 {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
                             </button>
                         </div>

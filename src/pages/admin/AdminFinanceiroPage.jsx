@@ -315,8 +315,8 @@ function AdminFinanceiroPage() {
 
                             {!vendasBuscadas ? (
                                 <div className="finance-fast-mode-box">
-                                    <h4 className="fast-mode-title">Modo Rápido Ativado</h4>
-                                    <p className="fast-mode-desc">Utilize os filtros e clique em Pesquisar para carregar as vendas de forma rápida.</p>
+                                    <h4 className="fast-mode-title">Filtros necessários</h4>
+                                    <p className="fast-mode-desc">Utilize os filtros e clique em Pesquisar para carregar as vendas.</p>
                                 </div>
                             ) : loading ? (
                                 <p className="finance-loading-text">A carregar vendas...</p>
@@ -363,7 +363,7 @@ function AdminFinanceiroPage() {
                         </div>
 
                         <div className="finance-sidebar">
-                            <h3 className="sidebar-filter-title">FILTROS</h3>
+                            <h3 className="sidebar-filter-title">FILTRAR VENDAS</h3>
                             <div className="sidebar-filter-form">
                                 <label className="filter-label">Data Inicial</label>
                                 <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} className="filter-input" />
@@ -403,8 +403,8 @@ function AdminFinanceiroPage() {
                         
                         {!historicoBuscado ? (
                             <div className="finance-fast-mode-box">
-                                <h4 className="fast-mode-title">Modo Rápido Ativado</h4>
-                                <p className="fast-mode-desc">Utilize os filtros ao lado para pesquisar recibos antigos de forma rápida.</p>
+                                <h4 className="fast-mode-title">Filtros necessários</h4>
+                                <p className="fast-mode-desc">Utilize os filtros ao lado para pesquisar recibos antigos.</p>
                             </div>
                         ) : loading ? (
                             <p className="finance-loading-text">A carregar recibos...</p>

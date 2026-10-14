@@ -233,7 +233,7 @@ function AdminAvaliacoesPage() {
                             </label>
 
                             <div className="modal-actions-row" style={{ marginTop: '20px' }}>
-                                <button type="button" onClick={closeModal} className="button-outline modal-btn-half">Cancelar</button>
+                                <button type="button" onClick={closeModal} className="button-outline modal-btn-half-cancel">Cancelar</button>
                                 <button type="submit" className="create-button modal-btn-half">Salvar Avaliação</button>
                             </div>
                         </form>
@@ -245,7 +245,6 @@ function AdminAvaliacoesPage() {
             {isDeleteModalOpen && avaliacaoParaExcluir && (
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content dash-modal-small text-center">
-                        <div className="users-block-icon">⚠️</div>
                         <h3 className="dash-modal-title text-danger">Excluir Avaliação?</h3>
                         
                         <p className="dash-modal-text">

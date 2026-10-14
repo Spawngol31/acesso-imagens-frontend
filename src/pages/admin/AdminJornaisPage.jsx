@@ -288,7 +288,7 @@ function AdminJornaisPage() {
                             </div>
 
                             <div className="modal-actions-row">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className='button-outline modal-btn-half'>Cancelar</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className='button-outline modal-btn-half-cancel'>Cancelar</button>
                                 <button type="submit" className='create-button modal-btn-half'>
                                     {formData.id ? 'Atualizar Jornal' : 'Salvar Jornal'}
                                 </button>
