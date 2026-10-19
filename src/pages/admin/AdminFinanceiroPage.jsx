@@ -347,7 +347,7 @@ function AdminFinanceiroPage() {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        {venda.pago_ao_fotografo ? <span className="status-badge-paid">✓ Feito</span> : <span className="status-badge-pending">⏳ Pendente</span>}
+                                                        {venda.pago_ao_fotografo ? <span className="status-badge-paid">✓ Feito</span> : <span className="status-badge-pending">Pendente</span>}
                                                     </td>
                                                     <td className="col-comission">R$ {venda.comissao.toFixed(2)}</td>
                                                 </tr>

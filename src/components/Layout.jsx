@@ -16,8 +16,6 @@ const IconShield = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="
 const IconNews = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M15 18h-5"></path><path d="M10 6h8v4h-8V6Z"></path></svg>);
 const IconLogOut = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>);
 const IconMenu = () => (<svg className="bottom-nav-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>);
-const IconSun = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>);
-const IconMoon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>);
 
 function Layout() {
     const { user, logout } = useAuth();
@@ -30,16 +28,6 @@ function Layout() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
     const [hasPropostaUpdate, setHasPropostaUpdate] = useState(false);
-
-    // 🚀 TEMA
-    const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'light');
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('app-theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
     // Fechar dropdown ao clicar fora
     useEffect(() => {
@@ -99,7 +87,13 @@ function Layout() {
                 <div className="container header-container">
                     
                     <Link to="/" className="logo">
-                        <img src={theme === 'dark' ? "/images/icon_home_dark.PNG" : "/images/icon_homepage.png"} alt="Acesso Imagens Logo" className="header-logo-img" />
+                        <picture>
+                            {/* Se o aparelho do cliente estiver no modo escuro, o navegador carrega esta: */}
+                            <source srcSet="/images/icon_home_dark.PNG" media="(prefers-color-scheme: dark)" />
+                            
+                            {/* Caso contrário (modo claro padrão), carrega esta: */}
+                            <img src="/images/icon_homepage.png" alt="Acesso Imagens Logo" className="header-logo-img" />
+                        </picture>
                     </Link>
                     
                     <nav className={`public-nav ${isMobileMenuOpen ? 'open' : ''}`}>
@@ -111,25 +105,6 @@ function Layout() {
                     </nav>
 
                     <div className="header-actions">
-                        
-                        <button 
-                            onClick={toggleTheme} 
-                            className="admin-header-badge theme-badge-btn" 
-                            title="Alternar Tema"
-                        >
-                            {theme === 'dark' ? (
-                                <>
-                                    <IconSun /> 
-                                    <span style={{ marginLeft: '5px' }}>Whitemode</span>
-                                </>
-                            ) : (
-                                <>
-                                    <IconMoon /> 
-                                    <span style={{ marginLeft: '5px' }}>Darkmode</span>
-                                </>
-                            )}
-                        </button>
-
                         {(!user || user.papel === 'CLIENTE') && (
                             <Link to="/carrinho" className="cart-link">
                                 <IconCart />

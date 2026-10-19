@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom'; 
+import { Link, useSearchParams } from 'react-router-dom'; 
 import axiosInstance from '../api/axiosInstance';
 
 // --- COMPONENTE DE PAGINAÇÃO ---
@@ -61,14 +61,17 @@ const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
 };
 
 function AlbumList() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const termoDaHome = searchParams.get('q') || '';
+
   const [albuns, setAlbuns] = useState([]);
   const [fotografosLista, setFotografosLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Estados dos Filtros
+  // Estados dos Filtros (já inicia com o termo pesquisado na HomePage, se existir)
   const [isFiltroAberto, setIsFiltroAberto] = useState(false);
   const [filtros, setFiltros] = useState({
-      nome_album: '',
+      nome_album: termoDaHome,
       fotografo_id: '',
       local: '',
       data: ''
@@ -78,7 +81,16 @@ function AlbumList() {
   const [totalPages, setTotalPages] = useState(1);
   const ITEMS_PER_PAGE = 20;
 
-  // Conta quantos filtros estão atualmente ativos para mostrar no "badge" vermelho
+  // Sincroniza caso o parâmetro ?q= da URL mude
+  useEffect(() => {
+      const q = searchParams.get('q');
+      if (q !== null) {
+          setFiltros(prev => ({ ...prev, nome_album: q }));
+          setCurrentPage(1);
+      }
+  }, [searchParams]);
+
+  // Conta quantos filtros estão atualmente ativos para mostrar no "badge"
   const contarFiltrosAtivos = () => {
       let count = 0;
       if (filtros.nome_album) count++;
@@ -135,16 +147,27 @@ function AlbumList() {
   }, [currentPage, filtros]);
 
   const handleFiltroChange = (e) => {
-      setFiltros({
-          ...filtros,
-          [e.target.name]: e.target.value
-      });
+      const { name, value } = e.target;
+      setFiltros(prev => ({
+          ...prev,
+          [name]: value
+      }));
+      // Se alterar o nome do álbum manualmente, atualiza ou limpa o ?q= da URL
+      if (name === 'nome_album') {
+          if (value.trim()) {
+              setSearchParams({ q: value });
+          } else {
+              setSearchParams({});
+          }
+      }
       setCurrentPage(1);
   };
 
   const limparFiltros = () => {
       setFiltros({ nome_album: '', fotografo_id: '', local: '', data: '' });
+      setSearchParams({}); // Remove o ?q= da barra de endereços
       setIsFiltroAberto(false);
+      setCurrentPage(1);
   };
 
   const handlePageChange = (novaPagina) => {
@@ -192,7 +215,7 @@ function AlbumList() {
                   />
               </div>
               
-              {/* LINHA 2: Fotógrafo, Local e Data (Lado a lado, dividindo o espaço igualmente) */}
+              {/* LINHA 2: Fotógrafo, Local e Data */}
               <div className="filtros-grupo_principal">
                   
                   <div className="filtros-grupo">
@@ -246,7 +269,7 @@ function AlbumList() {
           </div>
       )}
       
-      {/* GRELHA DE RESULTADOS (Inalterado) */}
+      {/* GRELHA DE RESULTADOS */}
       {loading ? (
         <p className="page-subtitle" style={{textAlign: 'center', marginTop: '30px'}}>A carregar álbuns...</p>
       ) : (

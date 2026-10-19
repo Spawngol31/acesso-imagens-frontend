@@ -117,7 +117,7 @@ function AlbumForm({ onSubmit, initialData = {}, onCancel }) {
             
             {/* BOTÕES DE AÇÃO */}
             <div className="album-form-actions">
-                <button type="button" onClick={onCancel} className="create-button btn-cancel">
+                <button type="button" onClick={onCancel} className="create-button modal-btn-half-cancel">
                     Cancelar
                 </button>
                 <button type="submit" className="create-button">

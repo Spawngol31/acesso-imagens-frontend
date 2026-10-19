@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 
 function DashboardCuponsPage() {
     const [cupons, setCupons] = useState([]);
+    const [albunsDisponiveis, setAlbunsDisponiveis] = useState([]);
     const [loading, setLoading] = useState(true);
     
     // Estado do formulário de criação/edição
@@ -34,8 +35,26 @@ function DashboardCuponsPage() {
         }
     };
 
+    const fetchMeusAlbuns = async () => {
+        try {
+            const response = await axiosInstance.get('/dashboard/albuns/');
+            const lista = Array.isArray(response.data) ? response.data : (response.data.results || []);
+            setAlbunsDisponiveis(lista);
+        } catch (error) {
+            try {
+                // Fallback caso a rota principal de álbuns seja /albuns/
+                const fallback = await axiosInstance.get('/albuns/');
+                const listaFallback = Array.isArray(fallback.data) ? fallback.data : (fallback.data.results || []);
+                setAlbunsDisponiveis(listaFallback);
+            } catch (err) {
+                console.error("Erro ao buscar álbuns para o cupom:", err);
+            }
+        }
+    };
+
     useEffect(() => {
         fetchCupons();
+        fetchMeusAlbuns();
     }, []);
 
     const handleFormSubmit = async (cupomData) => {
@@ -48,7 +67,7 @@ function DashboardCuponsPage() {
             setIsModalOpen(false);
             setEditingCupom(null);
             fetchCupons();
-            setCurrentPage(1); // 🚀 Volta para a primeira página ao criar/editar para ver as alterações
+            setCurrentPage(1);
             toast.success(isEditing ? "Cupom atualizado com sucesso!" : "Cupom criado com sucesso!");
         } catch (error) {
             console.error("Erro ao salvar cupom:", error.response?.data);
@@ -56,7 +75,6 @@ function DashboardCuponsPage() {
         }
     };
 
-    // --- NOVA LÓGICA DO MODAL DE EXCLUSÃO ---
     const handleDeleteClick = (cupom) => {
         setCupomToDelete(cupom);
         setIsDeleteModalOpen(true);
@@ -70,7 +88,6 @@ function DashboardCuponsPage() {
             fetchCupons();
             toast.success("Cupom apagado com sucesso!");
             
-            // 🚀 Volta para a página anterior se a última linha for apagada
             if (currentCupons.length === 1 && currentPage > 1) {
                 setCurrentPage(prev => prev - 1);
             }
@@ -83,13 +100,38 @@ function DashboardCuponsPage() {
         }
     };
 
+    // Renderiza os emblemas de álbuns na tabela
+    const renderAlbunsDoCupom = (cupom) => {
+        const titulos = cupom.albuns_titulos || [];
+        if (titulos.length === 0) {
+            return <span className="cupom-album-badge-all">Todos os álbuns</span>;
+        }
+
+        const primeiros = titulos.slice(0, 2);
+        const restantes = titulos.length - primeiros.length;
+
+        return (
+            <div className="cupom-album-badges-wrap" title={titulos.join(', ')}>
+                {primeiros.map((titulo, idx) => (
+                    <span key={idx} className="cupom-album-badge-specific">
+                        {titulo}
+                    </span>
+                ))}
+                {restantes > 0 && (
+                    <span className="cupom-album-badge-more">
+                        +{restantes}
+                    </span>
+                )}
+            </div>
+        );
+    };
+
     // 🚀 LÓGICA DE FATIAMENTO (SLICE) PARA PAGINAÇÃO
     const indexOfLastCupom = currentPage * itemsPerPage;
     const indexOfFirstCupom = indexOfLastCupom - itemsPerPage;
     const currentCupons = cupons.slice(indexOfFirstCupom, indexOfLastCupom);
     const totalPages = Math.ceil(cupons.length / itemsPerPage);
 
-    // 🚀 COMPONENTE DE UI DA PAGINAÇÃO MINIMALISTA
     const renderPagination = () => {
         if (totalPages <= 1) return null;
 
@@ -108,7 +150,6 @@ function DashboardCuponsPage() {
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
                     className="pagination-nav-btn"
-                    style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}
                 >
                     &#60;
                 </button>
@@ -121,7 +162,6 @@ function DashboardCuponsPage() {
                             key={index}
                             onClick={() => setCurrentPage(number)}
                             className={`pagination-number ${currentPage === number ? 'active' : ''}`}
-                            style={{ cursor: 'pointer', transition: 'all 0.2s', fontWeight: currentPage === number ? 'bold' : 'normal' }}
                         >
                             {number}
                         </button>
@@ -132,7 +172,6 @@ function DashboardCuponsPage() {
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
                     className="pagination-nav-btn"
-                    style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}
                 >
                     &#62;
                 </button>
@@ -140,7 +179,7 @@ function DashboardCuponsPage() {
         );
     };
 
-    if (loading) return <p className="page-subtitle" style={{ padding: '20px' }}>A carregar os seus cupons...</p>;
+    if (loading) return <p className="page-subtitle">A carregar os seus cupons...</p>;
 
     return (
         <div className="dashboard-page-content cupons-page-wrapper">
@@ -161,16 +200,18 @@ function DashboardCuponsPage() {
                             <tr>
                                 <th>Código</th>
                                 <th>Desconto (%)</th>
+                                <th>Álbuns</th>
                                 <th>Validade</th>
                                 <th>Status</th>
-                                <th style={{ textAlign: 'center' }}>Ações</th>
+                                <th className="dash-th-center">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             {currentCupons.length > 0 ? currentCupons.map(cupom => (
-                                <tr key={cupom.id} >
+                                <tr key={cupom.id}>
                                     <td className="dash-td-bold">{cupom.codigo}</td>
                                     <td className="dash-td-success">{parseFloat(cupom.desconto_percentual).toFixed(2)}%</td>
+                                    <td>{renderAlbunsDoCupom(cupom)}</td>
                                     <td className="dash-td-text">{cupom.data_validade ? new Date(cupom.data_validade).toLocaleDateString() : 'Sem validade'}</td>
                                     <td>
                                         {cupom.ativo ? (
@@ -198,7 +239,7 @@ function DashboardCuponsPage() {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" className="dash-table-empty">Você ainda não criou nenhum cupom.</td>
+                                    <td colSpan="6" className="dash-table-empty">Você ainda não criou nenhum cupom.</td>
                                 </tr>
                             )}
                         </tbody>
@@ -206,19 +247,19 @@ function DashboardCuponsPage() {
                 </div>
             </div>
 
-            {/* 🚀 RENDERIZA A PAGINAÇÃO AQUI */}
             {renderPagination()}
 
-            {/* MODAL DE CRIAÇÃO/EDIÇÃO (Reutiliza as classes de CupomForm) */}
+            {/* MODAL DE CRIAÇÃO/EDIÇÃO */}
             {isModalOpen && (
                 <CupomForm 
                     onSubmit={handleFormSubmit}
                     initialData={editingCupom}
+                    albunsDisponiveis={albunsDisponiveis}
                     onCancel={() => { setIsModalOpen(false); setEditingCupom(null); }}
                 />
             )}
 
-            {/* --- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO --- */}
+            {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
             {isDeleteModalOpen && cupomToDelete && (
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content dash-modal-small">

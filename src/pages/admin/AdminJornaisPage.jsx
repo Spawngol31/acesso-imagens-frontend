@@ -216,14 +216,14 @@ function AdminJornaisPage() {
 
                                     <button 
                                         onClick={() => toggleStatus(jornal.id, jornal.ativo)}
-                                        className={`btn-acao ${jornal.ativo ? 'btn-acao-archive' : 'btn-acao-unarchive'}`}
+                                        className={`btn-acao ${jornal.ativo ? 'btn-acao-archive-ftp' : 'btn-acao-unarchive'}`}
                                     >
                                         {jornal.ativo ? 'Pausar Envios' : 'Retomar Envios'}
                                     </button>
 
                                     <button 
                                         onClick={() => abrirModalExclusao(jornal.id, jornal.nome_jornal)}
-                                        className="btn-acao btn-acao-archive"
+                                        className="btn-acao btn-acao-delete"
                                         title="Excluir Jornal"
                                     >
                                         Excluir

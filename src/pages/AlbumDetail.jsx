@@ -401,7 +401,7 @@ function AlbumDetail() {
             Visível no PC, escondida via CSS no Mobile
             ========================================= */}
         <div className="album-action-buttons">
-            <button onClick={openFaceSearch} className="btn-busca-facial">
+            <button onClick={openFaceSearch} className="button-outline">
                 Busca Facial
             </button>
             <button onClick={handleUnidentifiedMediaClick} className="button-outline">
@@ -553,7 +553,7 @@ function AlbumDetail() {
                   <h3 style={{ textAlign: 'center' }}>Opções do Álbum</h3>
                   
                   <div className="mobile-options-menu-list">
-                      <button onClick={openFaceSearch} className="create-button btn-busca-facial">
+                      <button onClick={openFaceSearch} className="create-button btn-busca-facial-modal">
                           Busca Facial
                       </button>
                       <button onClick={handleUnidentifiedMediaClick} className="button-outline">
@@ -569,8 +569,8 @@ function AlbumDetail() {
 
                   <button 
                       onClick={() => setIsMobileMenuOpen(false)} 
-                      className="button-outline" 
-                      style={{ width: '100%', marginTop: '20px', border: 'none', color: '#ccc' }}
+                      className="button-outline btn-close" 
+                      style={{ width: '100%', marginTop: '20px' }}
                   >
                       Fechar
                   </button>
@@ -604,11 +604,11 @@ function AlbumDetail() {
                       )}
 
                       <div className="modal-actions-row">
-                          <button type="button" onClick={() => setIsFaceSearchModalOpen(false)} className="button-outline">Cancelar</button>
+                          <button type="button" onClick={() => setIsFaceSearchModalOpen(false)} className="modal-btn-half-cancel">Cancelar</button>
                           <button 
                               type="submit" 
                               disabled={!referenceImage || isSearchingFaces} 
-                              className="create-button btn-busca-facial"
+                              className="create-button btn-busca-facial-modal"
                           >
                               {isSearchingFaces ? 'A procurar...' : 'Pesquisar Rosto'}
                           </button>
@@ -653,7 +653,7 @@ function AlbumDetail() {
                       </div>
 
                       <div className="modal-actions-row">
-                          <button type="button" onClick={() => setIsPropostaModalOpen(false)} className="button-outline">Cancelar</button>
+                          <button type="button" onClick={() => setIsPropostaModalOpen(false)} className="modal-btn-half-cancel">Cancelar</button>
                           <button type="submit" disabled={isSendingProposta} className="create-button">
                               {isSendingProposta ? 'A enviar...' : 'Enviar Proposta'}
                           </button>

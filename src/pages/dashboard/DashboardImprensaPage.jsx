@@ -177,7 +177,7 @@ function DashboardImprensaPage() {
                                         </td>
                                         <td className="text-center nowrap-col">
                                             <button onClick={() => openEditModal(materia)} className="btn-acao btn-acao-edit">Editar</button>
-                                            <button onClick={() => abrirModalExclusao(materia)} className="btn-acao btn-acao-archive">Excluir</button>
+                                            <button onClick={() => abrirModalExclusao(materia)} className="btn-acao btn-acao-delete">Excluir</button>
                                         </td>
                                     </tr>
                                 ))}

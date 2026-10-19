@@ -18,8 +18,6 @@ const IconNewspaper = () => <svg width="20" height="20" viewBox="0 0 24 24" fill
 const IconStar = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
 const IconArchive = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>;
 const IconLogout = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
-const IconSun = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
-const IconMoon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>;
 
 const AdminLayout = () => {
     const { user, logout } = useAuth();
@@ -27,24 +25,6 @@ const AdminLayout = () => {
     
     const [saquesPendentesCount, setSaquesPendentesCount] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    // 🚀 LÓGICA DO TEMA (CLARO/ESCURO)
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-
-    useEffect(() => {
-        // Sincroniza o tema com o documento HTML para que o CSS global reaja
-        document.documentElement.setAttribute('data-theme', theme);
-        if (theme === 'dark') {
-            document.body.classList.add('dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
-        }
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : 'light');
-    };
 
     useEffect(() => {
         const verificarSaquesPendentes = async () => {
@@ -112,32 +92,17 @@ const AdminLayout = () => {
             <header className="admin-header">
                 <div className="admin-header-content">
                     <Link to="/" title="Voltar para a página inicial pública" className="admin-logo-link">
-                        <img src={theme === 'dark' ? "/images/icon_home_dark.PNG" : "/images/icon_homepage.png"} alt="Acesso Imagens Logo" className="header-logo-img" />
+                        <picture>
+                            {/* Se o aparelho do cliente estiver no modo escuro, o navegador carrega esta: */}
+                            <source srcSet="/images/icon_home_dark.PNG" media="(prefers-color-scheme: dark)" />
+                            
+                            {/* Caso contrário (modo claro padrão), carrega esta: */}
+                            <img src="/images/icon_homepage.png" alt="Acesso Imagens Logo" className="header-logo-img" />
+                        </picture>
                     </Link>
                     
                     {/* NOVO CÓDIGO */}
                     <div className="admin-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        
-                        {/* Novo Botão de Tema estilo "Badge" */}
-                        <button 
-                            onClick={toggleTheme} 
-                            className="admin-header-badge theme-badge-btn" 
-                            title="Alternar Tema"
-                        >
-                            {theme === 'dark' ? (
-                                <>
-                                    <IconSun /> 
-                                    <span style={{ marginLeft: '5px' }}>Whitemode</span>
-                                </>
-                            ) : (
-                                <>
-                                    <IconMoon /> 
-                                    <span style={{ marginLeft: '5px' }}>Darkmode</span>
-                                </>
-                            )}
-                        </button>
-                        
-                        {/* Seu Botão de Admin atual */}
                         <span className="admin-header-badge">
                             Admin: {user?.nome_completo?.split(' ')[0]}
                         </span>

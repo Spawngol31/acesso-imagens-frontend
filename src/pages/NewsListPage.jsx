@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios'; 
 
 const BASE_URL = import.meta.env.VITE_WP_API_URL || '';
-const WP_API_URL = `${BASE_URL}/posts?_embed=wp:featuredmedia&_fields=id,title,excerpt,slug,date,_links`;
+const WP_API_URL = `${BASE_URL}/posts?_embed=wp:featuredmedia&_fields=id,type,title,excerpt,slug,date,_links`;
 
 function NewsListPage() {
   const [noticias, setNoticias] = useState([]);
@@ -98,11 +98,6 @@ function NewsListPage() {
                   key={page} 
                   onClick={() => handlePageChange(page)}
                   className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-                  style={{
-                      width: '40px', height: '40px', border: 'none', borderRadius: '8px',
-                      cursor: 'pointer', fontWeight: currentPage === page ? 'bold' : 'normal',
-                      fontSize: '1rem', transition: 'all 0.2s'
-                  }}
                 >
                   {page}
                 </button>

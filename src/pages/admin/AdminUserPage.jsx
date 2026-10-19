@@ -428,13 +428,9 @@ function AdminUserPage() {
             {modalBloqueioAberto && usuarioParaBloquear && (
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content dash-modal-small">
-                        
-                        <div className="users-block-icon">
-                            {usuarioParaBloquear.is_active ? '🔒' : '🔓'}
-                        </div>
-                        
+ 
                         <h3 className="dash-modal-title">
-                            {usuarioParaBloquear.is_active ? 'Bloquear Utilizador?' : 'Desbloquear Utilizador?'}
+                            {usuarioParaBloquear.is_active ? 'Bloquear usuário?' : 'Desbloquear usuário?'}
                         </h3>
                         
                         <p className="dash-modal-text">

@@ -395,7 +395,7 @@ function DashboardUploadPage() {
                         
                         {uploadDestino !== 'site' && meusJornais.length > 0 && (
                             <div className="upload-ftp-box">
-                                <h4 className="upload-ftp-title">🚀 Distribuir via FTP para:</h4>
+                                <h4 className="upload-ftp-title">Distribuir via FTP para:</h4>
                                 <p className="upload-ftp-desc">
                                     (Obrigatório) Escolha para quais parceiros deseja enviar estas fotos automaticamente.
                                 </p>

@@ -292,7 +292,7 @@ function CartPage() {
                             </div>
 
                             <div className="modal-actions">
-                                <button type="button" onClick={() => setIsPropostaModalOpen(false)} className="button-outline" style={{ flex: 1 }}>Cancelar</button>
+                                <button type="button" onClick={() => setIsPropostaModalOpen(false)} className="button-outline btn-cancelar" style={{ flex: 1 }}>Cancelar</button>
                                 <button type="submit" disabled={isSendingProposta} className="create-button" style={{ flex: 1 }}>
                                     {isSendingProposta ? 'A enviar...' : 'Enviar Oferta'}
                                 </button>

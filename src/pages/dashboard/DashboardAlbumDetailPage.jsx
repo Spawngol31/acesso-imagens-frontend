@@ -961,7 +961,7 @@ function DashboardAlbumDetailPage() {
                             
                             {uploadDestino !== 'site' && meusJornais.length > 0 && (
                                 <div className="modal-ftp-box">
-                                    <h4 className="ftp-box-title">🚀 Envio via FTP (Imprensa)</h4>
+                                    <h4 className="ftp-box-title">Envio via FTP (Imprensa)</h4>
                                     <p className="ftp-box-desc">Selecione os jornais para onde deseja enviar estas fotos:</p>
                                     
                                     <div className="ftp-list">

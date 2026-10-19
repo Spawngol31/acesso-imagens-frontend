@@ -189,7 +189,7 @@ function AdminSaquesPage() {
                                 <div className="saque-comprovante-box">
                                     
                                     <label className="create-button comprovante-btn">
-                                        📎 Procurar Ficheiro (Opcional)
+                                        Procurar Ficheiro (Opcional)
                                         <input 
                                             type="file" 
                                             accept="image/*,application/pdf"
