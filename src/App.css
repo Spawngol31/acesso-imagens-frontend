@@ -2421,14 +2421,14 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .bulk-btn-dark:hover {color: var(--bg-main);}
 .bulk-btn-outline { border: 1px solid var(--text-muted); background-color: transparent; color: var(--primary-purple); }
 .bulk-btn-outline:hover {color: var(--bg-main);}
-.bulk-btn-danger { background-color: #dc3545; color: var(--text-light); }
-.bulk-btn-danger:hover {color: var(--text-light); background-color: #b40718; border: none;}
+.bulk-btn-danger { background-color: var(--vermelho-wd-mode-color); color: var(--text-light); }
+.bulk-btn-danger:hover {color: var(--text-light); background-color: var(--vermelho-wd-mode-color); border: none;}
 .bulk-btn-exit { border: 1px solid #777; background-color: transparent; color: var(--primary-purple); }
 .bulk-btn-exit:hover {color: var(--bg-main);}
 /* Modais de Upload e Edição em Massa */
 .dash-modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
 .dash-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
-.dash-modal-close:hover { color: #dc3545; background-color: transparent; border: none; }
+.dash-modal-close:hover { color: var(--vermelho-wd-mode-color); background-color: transparent; border: none; }
 .modal-form-flex { display: flex; flex-direction: column; gap: 15px; }
 .modal-input-group { display: flex; flex-direction: column; gap: 5px; }
 .modal-label { display: block; font-size: 13px; font-weight: bold; color: var(--text-muted); margin-bottom: 5px; }
@@ -2437,7 +2437,7 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .modal-input-mb { margin-bottom: 10px; }
 .modal-input-large { padding: 12px; font-size: 16px; }
 .modal-dropzone { padding: 15px; border: 2px dashed var(--border-color); border-radius: 8px; text-align: center; background-color: var(--bg-secondary); margin: 10px 0; }
-.dropzone-success-msg { color: #28a745; font-weight: bold; margin: 10px 0 0 0; font-size: 13px; }
+.dropzone-success-msg { color: var(--verde-wd-mode-color); font-weight: bold; margin: 10px 0 0 0; font-size: 13px; }
 .modal-row-flex { display: flex; gap: 10px; }
 .modal-col-2 { flex: 2; }
 .modal-col-1 { flex: 1; }
@@ -4210,20 +4210,23 @@ a:focus-visible {
    SELETOR DE ÁLBUNS NO MODAL DE CUPONS E BADGES NA TABELA
    ==================================================== */
 .cupom-scope-toggle {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 4px;
+    display: flex;
+    gap: 0.5rem;
+    background-color: var(--bg-secondary);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
 }
 
 .cupom-scope-btn {
-    padding: 10px 12px;
-    border: 1px solid var(--primary-purple);
-    background-color: var(--input-bg);
-    color: var(--primary-purple);
-    border-radius: 8px;
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 6px;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -4231,6 +4234,7 @@ a:focus-visible {
 .cupom-scope-btn:hover {
     border-color: var(--input-bg);
     color: var(--bg-main);
+    border: none;
 }
 
 .cupom-scope-btn.active {
@@ -4242,7 +4246,7 @@ a:focus-visible {
 .cupom-albums-box {
     margin-top: 10px;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 10px;
     background-color: var(--bg-secondary);
     display: flex;
@@ -4254,17 +4258,19 @@ a:focus-visible {
     display: flex;
     align-items: center;
     gap: 8px;
+    width: 100%;
 }
 
 .cupom-albums-search {
     flex: 1;
     padding: 8px 12px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.88rem;
     outline: none;
     background-color: var(--input-bg);
     color: var(--text-main);
+    box-sizing: border-box;
 }
 
 .cupom-albums-search:focus {
@@ -4276,7 +4282,7 @@ a:focus-visible {
     background-color: transparent;
     border: 1px solid var(--primary-purple);
     color: var(--text-highlight);
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
@@ -4304,7 +4310,7 @@ a:focus-visible {
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 0.9rem;
     color: var(--text-main);
@@ -4671,5 +4677,18 @@ input[type="date"] {
     .carousel-action-btn {
         margin-top: 12px;
         flex-shrink: 0;
+    }
+    .cupom-albums-header {
+        flex-direction: column;
+    }
+    .cupom-albums-search { width: 100%;}
+    .cupom-albums-select-all {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .dash-modal-content {
+        max-height: 95vh;
+        margin: 0.5rem;
     }
 }
