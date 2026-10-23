@@ -212,7 +212,7 @@ function FotografoSaquesPage() {
                                                         rel="noopener noreferrer" 
                                                         className="saque-receipt-link"
                                                     >
-                                                        Ver Comprovante
+                                                        Ver comprovante
                                                     </a>
                                                 )}
                                                 <div className="saque-obs-text">

@@ -27,7 +27,7 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
 
     return (
         <div 
-            className="photo-card" 
+            className="video-card" 
             onMouseEnter={handleMouseEnter} 
             onMouseLeave={handleMouseLeave}
         >
@@ -39,6 +39,8 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
                     muted 
                     loop
                     playsInline
+                    disablePictureInPicture
+                    disableRemotePlayback
                     className="video-preview-element" 
                 />
             ) : (
@@ -51,7 +53,7 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
                 </div>
             )}
 
-            <div className="photo-overlay">
+            <div className="video-overlay">
                 <p>R$ {video.preco}</p>
                 {(!user || user.papel === 'CLIENTE') && (
                     <button onClick={(e) => handleAddToCartClick(e, video)}>Adicionar ao carrinho</button>
@@ -402,16 +404,16 @@ function AlbumDetail() {
             ========================================= */}
         <div className="album-action-buttons">
             <button onClick={openFaceSearch} className="button-outline">
-                Busca Facial
+                Busca facial
             </button>
             <button onClick={handleUnidentifiedMediaClick} className="button-outline">
                 Fotos não identificadas
             </button>
             <button onClick={openProposta} className="button-outline">
-                Fazer Proposta
+                Fazer proposta
             </button>
             <button onClick={handleShareClick} className="button-outline">
-                Copiar Link
+                Copiar link
             </button>
         </div>
 
@@ -554,16 +556,16 @@ function AlbumDetail() {
                   
                   <div className="mobile-options-menu-list">
                       <button onClick={openFaceSearch} className="create-button btn-busca-facial-modal">
-                          Busca Facial
+                          Busca facial
                       </button>
                       <button onClick={handleUnidentifiedMediaClick} className="button-outline">
                           Fotos não identificadas
                       </button>
                       <button onClick={openProposta} className="button-outline">
-                          Fazer Proposta
+                          Fazer proposta
                       </button>
                       <button onClick={handleShareClick} className="button-outline">
-                          Copiar Link
+                          Copiar link
                       </button>
                   </div>
 

@@ -228,8 +228,8 @@ function AdminUserPage() {
             const response = await axiosInstance.get(`/admin/users/?${params.toString()}`);
             setUsers(response.data);
         } catch (error) {
-            console.error("Erro ao buscar utilizadores:", error);
-            toast.error("Erro ao carregar a lista de utilizadores.");
+            console.error("Erro ao buscar usuários:", error);
+            toast.error("Erro ao carregar a lista de usuários.");
         } finally {
             setLoading(false);
         }
@@ -259,14 +259,14 @@ function AdminUserPage() {
         
         try {
             await axiosInstance.post(`/admin/users/${usuarioParaBloquear.id}/${action}/`);
-            toast.success(`Utilizador ${action === 'bloquear' ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
+            toast.success(`Usuário ${action === 'bloquear' ? 'bloqueado' : 'desbloqueado'} com sucesso!`);
             
             setModalBloqueioAberto(false);
             setUsuarioParaBloquear(null);
             fetchUsers(); // Recarrega a lista
         } catch (error) {
-            console.error(`Erro ao ${action} utilizador:`, error);
-            toast.error("Erro ao alterar o status do utilizador.");
+            console.error(`Erro ao ${action} usuário:`, error);
+            toast.error("Erro ao alterar o status do usuário.");
         }
     };
 
@@ -289,7 +289,7 @@ function AdminUserPage() {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
-            toast.success("Utilizador atualizado com sucesso!");
+            toast.success("Usuário atualizado com sucesso!");
             setIsModalOpen(false);
             setEditingUser(null);
             fetchUsers();
@@ -355,7 +355,7 @@ function AdminUserPage() {
             )}
 
             <div className="dash-table-card">
-                {loading ? <p className="page-subtitle" style={{ padding: '20px' }}>A carregar utilizadores...</p> : (
+                {loading ? <p className="page-subtitle" style={{ padding: '20px' }}>A carregar usuários...</p> : (
                     <div className="dash-table-responsive">
                         <table className="dash-table min-width-800">
                             <thead>
@@ -409,7 +409,7 @@ function AdminUserPage() {
                                 {users.length === 0 && (
                                     <tr>
                                         <td colSpan="6" className="dash-table-empty">
-                                            Nenhum utilizador encontrado.
+                                            Nenhum usuário encontrado.
                                         </td>
                                     </tr>
                                 )}
@@ -417,7 +417,7 @@ function AdminUserPage() {
                         </table>
                     </div>
                 )}
-                <p className="users-count-text">Mostrando {users.length} utilizadores.</p>
+                <p className="users-count-text">Mostrando {users.length} usuários.</p>
             </div>
 
             {isModalOpen && (

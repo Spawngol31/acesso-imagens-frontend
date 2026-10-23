@@ -327,16 +327,16 @@ function DashboardUploadPage() {
                                     className="upload-input"
                                     disabled={isUploadingFotos}
                                 >
-                                    <option value="site">Salvar APENAS na minha Loja (Site)</option>
-                                    <option value="ambos">Duplo Envio: Salvar na Loja + Enviar para Jornais</option>
-                                    <option value="ftp">Enviar APENAS para os Jornais (FTP)</option>
+                                    <option value="site">Salvar APENAS na minha loja (site)</option>
+                                    <option value="ambos">Duplo envio: salvar na loja + enviar para jornais</option>
+                                    <option value="ftp">Enviar APENAS para os jornais (FTP)</option>
                                 </select>
                             </div>
                         )}
 
                         <div className="upload-input-group">
                             <span className="upload-label-clean">
-                                Organizar em Aba / Sub-pasta (Opcional)
+                                Organizar em aba / Sub-pasta (opcional)
                             </span>
 
                             {existingCategories.length > 0 && (
@@ -349,7 +349,7 @@ function DashboardUploadPage() {
                                     disabled={isUploadingFotos}
                                     className={`upload-input ${(!existingCategories.includes(fotoCategoria) || fotoCategoria === '') ? 'upload-input-mb' : ''}`}
                                 >
-                                    <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                    <option value="nova">Criar nova aba / Sub-pasta...</option>
                                     {existingCategories.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
                                     ))}
@@ -369,7 +369,7 @@ function DashboardUploadPage() {
                         </div>
 
                         <div className="upload-file-dropzone">
-                            <label htmlFor="photo-upload" className="create-button dropzone-btn">Selecionar Ficheiros...</label>
+                            <label htmlFor="photo-upload" className="create-button dropzone-btn">Selecionar ficheiros...</label>
                             <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos} style={{ display: 'none' }}/>
                             {fotoFiles.length > 0 && <p className="upload-files-selected">{fotoFiles.length} foto(s) selecionada(s)</p>}
                         </div>
@@ -377,11 +377,11 @@ function DashboardUploadPage() {
                         {uploadDestino !== 'ftp' && (
                             <div className="upload-row-flex">
                                 <div className="upload-col-flex-2">
-                                    <span className="upload-label-clean">Legenda para o Site (Opcional)</span>
+                                    <span className="upload-label-clean">Legenda para o site (opcional)</span>
                                     <input type="text" className="upload-input" onChange={(e) => setFotoLegenda(e.target.value)} disabled={isUploadingFotos}/>
                                 </div>
                                 <div className="upload-col-flex-1">
-                                    <span className="upload-label-clean">Preço de Venda (R$)</span>
+                                    <span className="upload-label-clean">Preço de venda (R$)</span>
                                     <input type="number" step="0.01" className="upload-input" value={fotoPreco} onChange={(e) => setFotoPreco(e.target.value)} required={uploadDestino !== 'ftp'} disabled={isUploadingFotos} />
                                 </div>
                             </div>
@@ -421,7 +421,7 @@ function DashboardUploadPage() {
                                 Voltar
                             </Link>
                             <button type="submit" className="create-button upload-btn-half" disabled={isUploadingFotos || fotoFiles.length === 0}>
-                                {isUploadingFotos ? 'A enviar para Nuvem...' : `Enviar Fotos`}
+                                {isUploadingFotos ? 'A enviar para Nuvem...' : `Enviar fotos`}
                             </button>
                         </div>
                     </form>
@@ -432,7 +432,7 @@ function DashboardUploadPage() {
                         
                         <div className="upload-input-group">
                             <span className="upload-label-clean">
-                                Organizar em Aba / Sub-pasta (Opcional)
+                                Organizar em aba / Sub-pasta (opcional)
                             </span>
 
                             {existingCategories.length > 0 && (
@@ -445,7 +445,7 @@ function DashboardUploadPage() {
                                     disabled={isUploadingVideos}
                                     className={`upload-input ${(!existingCategories.includes(videoCategoria) || videoCategoria === '') ? 'upload-input-mb' : ''}`}
                                 >
-                                    <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                    <option value="nova">Criar nova aba / Sub-pasta...</option>
                                     {existingCategories.map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
                                     ))}
@@ -465,7 +465,7 @@ function DashboardUploadPage() {
                         </div>
 
                         <div className="upload-file-dropzone">
-                            <label htmlFor="video-upload" className="create-button dropzone-btn">Selecionar Ficheiros de Vídeo...</label>
+                            <label htmlFor="video-upload" className="create-button dropzone-btn">Selecionar ficheiros de vídeo...</label>
                             <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple disabled={isUploadingVideos} style={{ display: 'none' }}/>
                         </div>
                         
@@ -508,7 +508,7 @@ function DashboardUploadPage() {
                                 Voltar
                             </Link>
                             <button onClick={handleVideoSubmit} className="create-button upload-btn-half" disabled={isUploadingVideos || stagedVideos.length === 0} >
-                                {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
+                                {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} vídeo(s)`}
                             </button>
                         </div>
                     </form>

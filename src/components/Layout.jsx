@@ -144,17 +144,17 @@ function Layout() {
                                         )}
                                         
                                         {user.papel === 'FOTOGRAFO' && (
-                                            <Link to="/dashboard/albuns" className="dark-dropdown-item"><span className="dark-icon"><IconGear /></span>Painel do Fotógrafo</Link>
+                                            <Link to="/dashboard/albuns" className="dark-dropdown-item"><span className="dark-icon"><IconGear /></span>Painel do fotógrafo</Link>
                                         )}
                                         {user.papel === 'ADMIN' && (
                                             <Link to="/admin" className="dark-dropdown-item"><span className="dark-icon"><IconShield /></span>Painel Admin</Link>
                                         )}
                                         {['JORNALISTA', 'ASSESSOR_IMPRENSA', 'ASSESSOR_COMUNICACAO'].includes(user.papel) && (
-                                            <Link to="/dashboard/imprensa" className="dark-dropdown-item"><span className="dark-icon"><IconNews /></span>Painel do Editor</Link>
+                                            <Link to="/dashboard/imprensa" className="dark-dropdown-item"><span className="dark-icon"><IconNews /></span>Painel do editor</Link>
                                         )}
 
                                         {user.papel !== 'ADMIN' && (
-                                            <Link to="/perfil" className="dark-dropdown-item"><span className="dark-icon"><IconUser /></span>Meu Perfil</Link>
+                                            <Link to="/perfil" className="dark-dropdown-item"><span className="dark-icon"><IconUser /></span>Meu perfil</Link>
                                         )}
                                         
                                         <div className="dropdown-divider"></div>

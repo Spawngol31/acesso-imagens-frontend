@@ -365,10 +365,10 @@ function AdminFinanceiroPage() {
                         <div className="finance-sidebar">
                             <h3 className="sidebar-filter-title">FILTRAR VENDAS</h3>
                             <div className="sidebar-filter-form">
-                                <label className="filter-label">Data Inicial</label>
+                                <label className="filter-label">Data inicial</label>
                                 <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleChange} className="filter-input" />
                                 
-                                <label className="filter-label">Data Final</label>
+                                <label className="filter-label">Data final</label>
                                 <input type="date" name="data_fim" value={filtros.data_fim} onChange={handleChange} className="filter-input" />
                                 
                                 <label className="filter-label">Fotógrafo</label>
@@ -450,10 +450,10 @@ function AdminFinanceiroPage() {
                     <div className="finance-sidebar">
                         <h3 className="sidebar-filter-title">FILTRAR RECIBOS</h3>
                         <div className="sidebar-filter-form">
-                            <label className="filter-label">Data Inicial</label>
+                            <label className="filter-label">Data inicial</label>
                             <input type="date" name="data_inicio" value={filtrosHistorico.data_inicio} onChange={handleChangeHistorico} className="filter-input" />
                             
-                            <label className="filter-label">Data Final</label>
+                            <label className="filter-label">Data final</label>
                             <input type="date" name="data_fim" value={filtrosHistorico.data_fim} onChange={handleChangeHistorico} className="filter-input" />
                             
                             <label className="filter-label">Fotógrafo</label>

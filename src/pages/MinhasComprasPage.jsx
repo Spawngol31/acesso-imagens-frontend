@@ -73,11 +73,12 @@ function MinhasComprasPage() {
     };
 
     const handleSelectAll = () => {
-        const fotosValidas = itensComprados.filter(item => !verificarExpirado(item.data_compra));
-        if (selecionadas.length === fotosValidas.length) {
+        const itensValidos = itensComprados.filter(item => !verificarExpirado(item.data_compra));
+        if (selecionadas.length === itensValidos.length) {
             setSelecionadas([]); 
         } else {
-            setSelecionadas(fotosValidas.map(item => item.foto.id)); 
+            // 🚀 Usa a media correta (foto ou video) para pegar o ID
+            setSelecionadas(itensValidos.map(item => (item.foto || item.video).id)); 
         }
     };
 
@@ -137,7 +138,8 @@ function MinhasComprasPage() {
 
     // 🚀 NOVA FUNÇÃO DE DOWNLOAD ATUALIZADA
     const handleDownload = (item) => {
-        setDownloading(item.foto.id);
+        const media = item.foto || item.video; // 🚀 Pega a mídia correta
+        setDownloading(media.id);
         
         // Verifica se o backend enviou o link seguro da Cloudflare
         if (!item.url_download) {
@@ -281,7 +283,7 @@ function MinhasComprasPage() {
                                 className="custom-checkbox"
                             />
                             <label htmlFor="selectAll" className="select-all-label">
-                                Selecionar Todas as Fotos ({fotosValidasCount})
+                                Selecionar todas as mídias ({fotosValidasCount})
                             </label>
                         </div>
                     )}
@@ -289,28 +291,70 @@ function MinhasComprasPage() {
                     <div className="purchase-grid">
                         {currentItens.map(item => {
                             const expirado = verificarExpirado(item.data_compra);
-                            const isSelected = selecionadas.includes(item.foto.id);
+                            
+                            // 🚀 O SEGREDO: Pega foto ou vídeo dependendo do que o cliente comprou
+                            const media = item.foto || item.video; 
+                            if (!media) return null; // Evita erro se o item vier vazio
+                            
+                            const isSelected = selecionadas.includes(media.id);
+                            
+                            // Fotos usam imagem_url, Vídeos usam miniatura_url
+                            const coverUrl = item.foto ? media.imagem_url : media.miniatura_url;
 
                             return (
-                                <div key={item.foto.id} className={`purchase-card ${isSelected ? 'selected' : ''}`}>
+                                <div key={media.id} className={`purchase-card ${isSelected ? 'selected' : ''}`}>
                                     
                                     {!expirado && (
                                         <div className="purchase-checkbox-overlay">
                                             <input 
                                                 type="checkbox" 
                                                 checked={isSelected}
-                                                onChange={() => handleToggleSelect(item.foto.id)}
+                                                onChange={() => handleToggleSelect(media.id)}
                                                 className="custom-checkbox"
                                             />
                                         </div>
                                     )}
 
-                                    <div className={`purchase-card-image ${expirado ? 'expired' : ''}`}>
-                                        <img 
-                                            src={item.foto.imagem_url} 
-                                            alt={item.foto.legenda}
-                                            style={{ transform: `rotate(${item.foto.rotacao}deg)` }}
-                                        />
+                                    <div 
+                                        className={`purchase-card-image ${expirado ? 'expired' : ''}`}
+                                        onMouseEnter={(e) => {
+                                            const video = e.currentTarget.querySelector('video');
+                                            // Dá play e ignora erros se o utilizador tirar o rato rápido demais
+                                            if (video) video.play().catch(() => {}); 
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            const video = e.currentTarget.querySelector('video');
+                                            if (video) {
+                                                video.pause();
+                                                video.currentTime = 0; // Opcional: faz o vídeo voltar ao início (capa) ao tirar o rato
+                                            }
+                                        }}
+                                    >
+                                        {item.video ? (
+                                            <>
+                                                <video 
+                                                    src={media.arquivo_preview_url}
+                                                    poster={media.miniatura_url} 
+                                                    muted 
+                                                    loop
+                                                    playsInline
+                                                    /* autoPlay foi removido daqui! */
+                                                    disablePictureInPicture
+                                                    disableRemotePlayback
+                                                    className="media-preview-element" 
+                                                />
+                                                <div className="video-play-overlay">
+                                                    <span className="video-play-icon">▶</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <img 
+                                                src={media.imagem_url} 
+                                                alt={media.legenda || 'Mídia comprada'}
+                                                style={{ transform: `rotate(${media.rotacao || 0}deg)` }}
+                                                className="media-preview-element"
+                                            />
+                                        )}
                                     </div>
                                     <div className="purchase-card-info">
                                         <p><strong>Comprado em:</strong> {new Date(item.data_compra).toLocaleDateString()}</p>
@@ -321,25 +365,23 @@ function MinhasComprasPage() {
                                             </p>
                                         ) : isInAppBrowser ? (
                                             <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                {/* 🚀 ONCLICK CORRIGIDO AQUI */}
                                                 <button 
                                                     onClick={() => handleDownload(item)}
-                                                    disabled={downloading === item.foto.id}
+                                                    disabled={downloading === media.id}
                                                     className="create-button"
                                                     style={{ width: '100%' }}
                                                 >
-                                                    {downloading === item.foto.id ? 'A processar...' : 'Baixar Original'}
+                                                    {downloading === media.id ? 'A processar...' : 'Baixar Original'}
                                                 </button>
                                             </div>
                                         ) : (
-                                            /* 🚀 ONCLICK CORRIGIDO AQUI */
                                             <button 
                                                 onClick={() => handleDownload(item)}
-                                                disabled={downloading === item.foto.id}
+                                                disabled={downloading === media.id}
                                                 className="create-button"
                                                 style={{ width: '100%', marginTop: '10px' }}
                                             >
-                                                {downloading === item.foto.id ? 'A baixar...' : 'Baixar Original'}
+                                                {downloading === media.id ? 'A baixar...' : 'Baixar Original'}
                                             </button>
                                         )}
                                     </div>
@@ -364,7 +406,7 @@ function MinhasComprasPage() {
                             disabled={isBulkDownloading || isBulkEmailing}
                             className="create-button"
                         >
-                            {isBulkDownloading ? 'A gerar ZIP...' : '📥 Baixar ZIP'}
+                            {isBulkDownloading ? 'A gerar ZIP...' : 'Baixar ZIP'}
                         </button>
                         
                         <button 
@@ -372,7 +414,7 @@ function MinhasComprasPage() {
                             disabled={isBulkDownloading || isBulkEmailing}
                             className="create-button btn-secondary-pink"
                         >
-                            {isBulkEmailing ? 'A enviar...' : '📧 Enviar para E-mail'}
+                            {isBulkEmailing ? 'A enviar...' : 'Enviar para E-mail'}
                         </button>
                     </div>
                 </div>

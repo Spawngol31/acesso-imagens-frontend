@@ -726,7 +726,7 @@ function DashboardAlbumDetailPage() {
                         className="button-outline mobile-actions-trigger" 
                         onClick={() => setIsMobileActionsMenuOpen(true)}
                     >
-                        Opções do Álbum
+                        Opções do álbum
                     </button>
 
                     <div className="desktop-actions-group">
@@ -741,7 +741,7 @@ function DashboardAlbumDetailPage() {
                             className="button-outline"
                             onClick={() => setIsSelectionMode(!isSelectionMode)} 
                         >
-                            {isSelectionMode ? 'Cancelar Seleção' : 'Seleção Múltipla'}
+                            {isSelectionMode ? 'Cancelar seleção' : 'Seleção múltipla'}
                         </button>
                     </div>
                 </div>
@@ -774,7 +774,7 @@ function DashboardAlbumDetailPage() {
                 </div>
             )}
 
-            <h3 className="detail-section-title">Galeria de Fotos ({basePhotoList.length})</h3>
+            <h3 className="detail-section-title">Galeria de fotos ({basePhotoList.length})</h3>
             <div className="media-grid">
                 {currentPhotos.map(foto => {
                     const isSelected = selectedFotos.includes(foto.id);
@@ -820,7 +820,7 @@ function DashboardAlbumDetailPage() {
                 onPageChange={handlePhotoPageChange} 
             />
 
-            <h3 className="detail-section-title" style={{ marginTop: '40px' }}>Galeria de Vídeos ({baseVideoList.length})</h3>
+            <h3 className="detail-section-title" style={{ marginTop: '40px' }}>Galeria de vídeos ({baseVideoList.length})</h3>
             <div className="media-grid" style={{paddingBottom: '2rem'}}>
                 {currentVideos.map(video => (
                     <DashboardVideoPreviewCard 
@@ -852,7 +852,7 @@ function DashboardAlbumDetailPage() {
                     
                     <div className="bulk-selection-actions">
                         <button onClick={handleSelectAllVisible} className="bulk-btn bulk-btn-dark">
-                            Selecionar Tudo (Página)
+                            Selecionar tudo (Página)
                         </button>
                         
                         <button 
@@ -860,7 +860,7 @@ function DashboardAlbumDetailPage() {
                             disabled={selectedFotos.length === 0 && selectedVideos.length === 0}
                             className="bulk-btn bulk-btn-outline"
                         >
-                            Deselecionar Tudo
+                            Deselecionar tudo
                         </button>
 
                         <button 
@@ -868,11 +868,11 @@ function DashboardAlbumDetailPage() {
                             disabled={selectedFotos.length === 0 && selectedVideos.length === 0} 
                             className="bulk-btn bulk-btn-danger"
                         >
-                            Apagar Selecionados
+                            Apagar selecionados
                         </button>
 
                         <button onClick={clearSelection} className="bulk-btn bulk-btn-exit">
-                            Sair do Modo Seleção
+                            Sair do modo seleção
                         </button>
                     </div>
 
@@ -883,7 +883,7 @@ function DashboardAlbumDetailPage() {
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content">
                         <div className="dash-modal-header">
-                            <h3 className="dash-modal-title">✙ Adicionar Novas Fotos</h3>
+                            <h3 className="dash-modal-title">✙ Adicionar novas fotos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} disabled={isUploadingFotos} className="dash-modal-close">✖</button>
                         </div>
                         <form onSubmit={handlePhotoSubmit} className="modal-form-flex">
@@ -899,16 +899,16 @@ function DashboardAlbumDetailPage() {
                                         }} 
                                         className="modal-input"
                                     >
-                                        <option value="site">Salvar APENAS na minha Loja (Site)</option>
-                                        <option value="ambos">Salvar na Loja + Enviar para Jornais (FTP)</option>
-                                        <option value="ftp">Enviar APENAS para Jornais (Não salvar no Site)</option>
+                                        <option value="site">Salvar APENAS na minha loja (site)</option>
+                                        <option value="ambos">Salvar na loja + Enviar para jornais (FTP)</option>
+                                        <option value="ftp">Enviar APENAS para jornais (não salvar no site)</option>
                                     </select>
                                 </div>
                             )}
 
                             <div className="modal-input-group">
                                 <label className="modal-label">
-                                    Organizar em Aba / Sub-pasta (Opcional)
+                                    Organizar em aba / Sub-pasta (opcional)
                                 </label>
 
                                 {existingCategories.length > 0 && (
@@ -921,7 +921,7 @@ function DashboardAlbumDetailPage() {
                                         disabled={isUploadingFotos}
                                         className={`modal-input ${(!existingCategories.includes(fotoCategoria) || fotoCategoria === '') ? 'modal-input-mb' : ''}`}
                                     >
-                                        <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                        <option value="nova">Criar nova aba / Sub-pasta...</option>
                                         {existingCategories.map(cat => (
                                             <option key={cat} value={cat}>{cat}</option>
                                         ))}
@@ -941,7 +941,7 @@ function DashboardAlbumDetailPage() {
                             </div>
 
                             <div className="modal-dropzone">
-                                <label htmlFor="photo-upload" className="create-button dropzone-btn">Selecionar Ficheiros...</label>
+                                <label htmlFor="photo-upload" className="create-button dropzone-btn">Selecionar ficheiros...</label>
                                 <input id="photo-upload" type="file" accept="image/*" onChange={(e) => setFotoFiles(e.target.files)} multiple disabled={isUploadingFotos} style={{ display: 'none' }} />
                                 {fotoFiles.length > 0 && <p className="dropzone-success-msg">{fotoFiles.length} foto(s) selecionada(s)</p>}
                             </div>
@@ -982,7 +982,7 @@ function DashboardAlbumDetailPage() {
                                     Voltar
                                 </button>
                                 <button type="submit" className="create-button modal-btn-half" disabled={isUploadingFotos || fotoFiles.length === 0} style={{ opacity: isUploadingFotos ? 0.6 : 1 }}>
-                                    {isUploadingFotos ? 'A enviar em lotes...' : `Enviar Fotos`}
+                                    {isUploadingFotos ? 'A enviar em lotes...' : `Enviar fotos`}
                                 </button>
                             </div>
                         </form>
@@ -994,14 +994,14 @@ function DashboardAlbumDetailPage() {
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content">
                         <div className="dash-modal-header">
-                            <h3 className="dash-modal-title">✙ Adicionar Novos Vídeos</h3>
+                            <h3 className="dash-modal-title">✙ Adicionar novos vídeos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} disabled={isUploadingVideos} className="dash-modal-close">✖</button>
                         </div>
                         <div className="modal-form-flex">
                             
                             <div className="modal-input-group">
                                 <label className="modal-label">
-                                    Organizar em Aba / Sub-pasta (Opcional)
+                                    Organizar em aba / Sub-pasta (opcional)
                                 </label>
 
                                 {existingCategories.length > 0 && (
@@ -1014,7 +1014,7 @@ function DashboardAlbumDetailPage() {
                                         disabled={isUploadingVideos}
                                         className={`modal-input ${(!existingCategories.includes(videoCategoria) || videoCategoria === '') ? 'modal-input-mb' : ''}`}
                                     >
-                                        <option value="nova">Criar Nova Aba / Sub-pasta...</option>
+                                        <option value="nova">Criar nova aba / Sub-pasta...</option>
                                         {existingCategories.map(cat => (
                                             <option key={cat} value={cat}>{cat}</option>
                                         ))}
@@ -1034,7 +1034,7 @@ function DashboardAlbumDetailPage() {
                             </div>
 
                             <div className="modal-dropzone">
-                                <label htmlFor="video-upload" className="create-button dropzone-btn">Selecionar Ficheiros de Vídeo...</label>
+                                <label htmlFor="video-upload" className="create-button dropzone-btn">Selecionar ficheiros de vídeo...</label>
                                 <input id="video-upload" type="file" accept="video/*" onChange={handleVideoSelect} multiple disabled={isUploadingVideos} style={{ display: 'none' }} />
                             </div>
                             
@@ -1071,14 +1071,14 @@ function DashboardAlbumDetailPage() {
                                 </div>
                             )}
                             
-                            {isUploadingVideos && <p className="modal-uploading-text">⏳ A enviar vídeo {uploadProgressVideos} de {stagedVideos.length} em lotes...</p>}
+                            {isUploadingVideos && <p className="modal-uploading-text">A enviar vídeo {uploadProgressVideos} de {stagedVideos.length} em lotes...</p>}
                             
                             <div className="modal-actions-row">
                                 <button type="button" onClick={() => setActiveGlobalModal(null)} className='button-outline modal-btn-half'>
                                     Voltar
                                 </button>
                                 <button onClick={handleVideoSubmit} className="create-button modal-btn-half" disabled={isUploadingVideos || stagedVideos.length === 0} style={{ opacity: isUploadingVideos ? 0.6 : 1 }}>
-                                    {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} Vídeo(s)`}
+                                    {isUploadingVideos ? 'A enviar...' : `Enviar ${stagedVideos.length} vídeo(s)`}
                                 </button>
                             </div>
 
@@ -1091,13 +1091,13 @@ function DashboardAlbumDetailPage() {
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content">
                         <div className="dash-modal-header">
-                            <h3 className="dash-modal-title">Preço de Todas as Fotos</h3>
+                            <h3 className="dash-modal-title">Preço de todas as fotos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} className="dash-modal-close">✖</button>
                         </div>
                         <form onSubmit={handleBulkUpdatePhotos} className="modal-form-flex">
                             <p className="modal-desc-text">Atualizar o preço de <strong>todas</strong> as fotos deste álbum de uma só vez.</p>
                             <input type="number" step="0.01" min="0" value={newPhotoPrice} onChange={(e) => setNewPhotoPrice(e.target.value)} placeholder="Novo preço (R$)" required className="modal-input modal-input-large" />
-                            <button type="submit" className="create-button modal-btn-large">Confirmar Alteração</button>
+                            <button type="submit" className="create-button modal-btn-large">Confirmar alteração</button>
                         </form>
                     </div>
                 </div>
@@ -1107,13 +1107,13 @@ function DashboardAlbumDetailPage() {
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content">
                         <div className="dash-modal-header">
-                            <h3 className="dash-modal-title">Preço de Todos os Vídeos</h3>
+                            <h3 className="dash-modal-title">Preço de todos os vídeos</h3>
                             <button onClick={() => setActiveGlobalModal(null)} className="dash-modal-close">✖</button>
                         </div>
                         <form onSubmit={handleBulkUpdateVideos} className="modal-form-flex">
                             <p className="modal-desc-text">Atualizar o preço de <strong>todos</strong> os vídeos deste álbum de uma só vez.</p>
                             <input type="number" step="0.01" min="0" value={newVideoPrice} onChange={(e) => setNewVideoPrice(e.target.value)} placeholder="Novo preço (R$)" required className="modal-input modal-input-large" />
-                            <button type="submit" className="create-button modal-btn-large">Confirmar Alteração</button>
+                            <button type="submit" className="create-button modal-btn-large">Confirmar alteração</button>
                         </form>
                     </div>
                 </div>
@@ -1123,7 +1123,7 @@ function DashboardAlbumDetailPage() {
                 <div className="dash-modal-overlay">
                     <div className="dash-modal-content dash-modal-small">
                         <h3 className="modal-action-title">
-                            Opções da {actionModalType === 'foto' ? 'Foto' : 'Vídeo'}
+                            Opções da {actionModalType === 'foto' ? 'foto' : 'vídeo'}
                         </h3>
                         <div className="modal-action-list">
                             {actionModalType === 'foto' && (
@@ -1153,15 +1153,15 @@ function DashboardAlbumDetailPage() {
                 <div className="dash-modal-overlay" style={{zIndex: 9999}}>
                     <div className="dash-modal-content dash-modal-small">
                         <div className="dash-modal-header" style={{marginBottom: '15px'}}>
-                            <h3 className="dash-modal-title" style={{fontSize: '1.2rem'}}>Opções do Álbum</h3>
+                            <h3 className="dash-modal-title" style={{fontSize: '1.2rem'}}>Opções do álbum</h3>
                             <button onClick={() => setIsMobileActionsMenuOpen(false)} className="dash-modal-close">✖</button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <Link to="/dashboard/albuns" className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Voltar aos Álbuns</Link>
-                            <button onClick={() => { setActiveGlobalModal('uploadFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Fotos</button>
-                            <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar Vídeos</button>
-                            <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Fotos)</button>
-                            <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar Preço (Vídeos)</button>
+                            <Link to="/dashboard/albuns" className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Voltar aos álbuns</Link>
+                            <button onClick={() => { setActiveGlobalModal('uploadFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar fotos</button>
+                            <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar vídeos</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar preço (fotos)</button>
+                            <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar preço (vídeos)</button>
                             <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Click & Share</Link>
                             
                             <hr style={{width: '100%', border: 'none', borderTop: '1px solid var(--border-color)', margin: '5px 0'}}/>
@@ -1171,7 +1171,7 @@ function DashboardAlbumDetailPage() {
                                 style={{ padding: '12px', borderColor: isSelectionMode ? '#dc3545' : 'var(--primary-purple)', color: isSelectionMode ? '#dc3545' : 'var(--primary-purple)' }}
                                 onClick={() => { setIsSelectionMode(!isSelectionMode); setIsMobileActionsMenuOpen(false); }}
                             >
-                                {isSelectionMode ? '❌ Cancelar Seleção Múltipla' : 'Ativar Seleção Múltipla'}
+                                {isSelectionMode ? 'Cancelar seleção múltipla' : 'Ativar seleção múltipla'}
                             </button>
                         </div>
                     </div>

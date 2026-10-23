@@ -172,11 +172,11 @@ const DashboardLayout = () => {
                             
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
                             <MenuListItem to="/dashboard/carrinhos-ativos" icon={<IconCart />} label="Carrinhos" onClick={() => setIsMenuOpen(false)} />
-                            <MenuListItem to="/dashboard/propostas" icon={<IconPropostas />} label="Propostas e Negociações" hasBadge={hasPropostaUpdate} onClick={() => { setIsMenuOpen(false); setHasPropostaUpdate(false); }} />
-                            <MenuListItem to="/dashboard/saques" icon={<IconSaques />} label="Meus Saques" hasBadge={hasSaqueUpdate} onClick={() => { setIsMenuOpen(false); setHasSaqueUpdate(false); }} />
-                            <MenuListItem to="/dashboard/cupons" icon={<IconTicket />} label="Cupons de Desconto" onClick={() => setIsMenuOpen(false)} />
-                            <MenuListItem to="/dashboard/watermark-tool" icon={<IconTool />} label="Ferramenta de Marcas" onClick={() => setIsMenuOpen(false)} />
-                            <MenuListItem onClick={logout} icon={<IconLogout />} label="Sair da Conta" isDanger={true} isLast={true} />
+                            <MenuListItem to="/dashboard/propostas" icon={<IconPropostas />} label="Propostas e negociações" hasBadge={hasPropostaUpdate} onClick={() => { setIsMenuOpen(false); setHasPropostaUpdate(false); }} />
+                            <MenuListItem to="/dashboard/saques" icon={<IconSaques />} label="Meus saques" hasBadge={hasSaqueUpdate} onClick={() => { setIsMenuOpen(false); setHasSaqueUpdate(false); }} />
+                            <MenuListItem to="/dashboard/cupons" icon={<IconTicket />} label="Cupons de desconto" onClick={() => setIsMenuOpen(false)} />
+                            <MenuListItem to="/dashboard/watermark-tool" icon={<IconTool />} label="Ferramenta de marcas" onClick={() => setIsMenuOpen(false)} />
+                            <MenuListItem onClick={logout} icon={<IconLogout />} label="Sair da conta" isDanger={true} isLast={true} />
                         </div>
                 </div>
             )}

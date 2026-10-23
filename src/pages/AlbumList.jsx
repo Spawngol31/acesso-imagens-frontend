@@ -189,7 +189,7 @@ function AlbumList() {
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z"/>
               </svg>
-              {isFiltroAberto ? 'Ocultar Filtros' : 'Pesquisar e Filtrar'}
+              {isFiltroAberto ? 'Ocultar filtros' : 'Pesquisar e filtrar'}
               
               {/* Mostra um número de filtros ativos (ex: "2") */}
               {contarFiltrosAtivos() > 0 && (
@@ -204,7 +204,7 @@ function AlbumList() {
               
               {/* LINHA 1: Nome do Álbum (Ocupa 100% da largura) */}
               <div style={{ width: '100%' }}>
-                  <label className="filtros-label">Nome do Álbum</label>
+                  <label className="filtros-label">Nome do álbum</label>
                   <input 
                       type="text" 
                       name="nome_album"
@@ -236,7 +236,7 @@ function AlbumList() {
                   </div>
 
                   <div className="filtros-grupo">
-                      <label className="filtros-label">Local do Evento</label>
+                      <label className="filtros-label">Local do evento</label>
                       <input 
                           type="text" 
                           name="local"
@@ -248,7 +248,7 @@ function AlbumList() {
                   </div>
 
                   <div className="filtros-grupo">
-                      <label className="filtros-label">Data do Evento</label>
+                      <label className="filtros-label">Data do evento</label>
                       <input 
                           type="date" 
                           name="data"

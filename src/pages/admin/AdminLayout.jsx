@@ -124,11 +124,11 @@ const AdminLayout = () => {
                         </div>
                             
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <MenuListItem to="/admin/saques" icon={<IconSaques />} label="Gestão de Saques" badgeCount={saquesPendentesCount} onClick={() => setIsMenuOpen(false)} />
-                            <MenuListItem to="/admin/jornais" icon={<IconNewspaper />} label="Jornais & Servidores FTP" onClick={() => setIsMenuOpen(false)} />
-                            <MenuListItem to="/admin/avaliacoes" icon={<IconStar />} label="Avaliações do Sistema" onClick={() => setIsMenuOpen(false)} />
-                            <MenuListItem to="/admin/limpeza-albuns" icon={<IconArchive />} label="Limpeza de Albuns" onClick={() => setIsMenuOpen(false)} />
-                            <MenuListItem onClick={logout} icon={<IconLogout />} label="Sair da Conta Admin" isDanger={true} isLast={true} />
+                            <MenuListItem to="/admin/saques" icon={<IconSaques />} label="Gestão de saques" badgeCount={saquesPendentesCount} onClick={() => setIsMenuOpen(false)} />
+                            <MenuListItem to="/admin/jornais" icon={<IconNewspaper />} label="Jornais & servidores FTP" onClick={() => setIsMenuOpen(false)} />
+                            <MenuListItem to="/admin/avaliacoes" icon={<IconStar />} label="Avaliações do sistema" onClick={() => setIsMenuOpen(false)} />
+                            <MenuListItem to="/admin/limpeza-albuns" icon={<IconArchive />} label="Limpeza de álbuns" onClick={() => setIsMenuOpen(false)} />
+                            <MenuListItem onClick={logout} icon={<IconLogout />} label="Sair da conta admin" isDanger={true} isLast={true} />
                         </div>
                 </div>
             )}

@@ -16,7 +16,7 @@ function AdminUserDetailPage() {
                 const response = await axiosInstance.get(`/admin/users/${id}/`);
                 setUser(response.data);
             } catch (error) {
-                console.error("Erro ao buscar detalhes do utilizador:", error);
+                console.error("Erro ao buscar detalhes do usuário:", error);
             } finally {
                 setLoading(false);
             }
@@ -24,8 +24,8 @@ function AdminUserDetailPage() {
         fetchUser();
     }, [id]);
 
-    if (loading) return <div className="page-subtitle" style={{ padding: '40px', textAlign: 'center' }}>A carregar detalhes do utilizador...</div>;
-    if (!user) return <div className="page-subtitle text-danger" style={{ padding: '40px', textAlign: 'center' }}>Utilizador não encontrado.</div>;
+    if (loading) return <div className="page-subtitle" style={{ padding: '40px', textAlign: 'center' }}>A carregar detalhes do usuário...</div>;
+    if (!user) return <div className="page-subtitle text-danger" style={{ padding: '40px', textAlign: 'center' }}>Usuário não encontrado.</div>;
 
     // --- IDENTIFICA QUAL PERFIL MOSTRAR ---
     const perfil = user.perfil_fotografo || user.perfil_cliente || {};
@@ -41,7 +41,7 @@ function AdminUserDetailPage() {
                         ← Voltar
                     </button>
                     <h2 className="user-detail-main-title">
-                        {user.nome_completo || 'Utilizador sem nome'}
+                        {user.nome_completo || 'Usuário sem nome'}
                     </h2>
                 </div>
                 

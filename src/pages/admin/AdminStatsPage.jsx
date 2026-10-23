@@ -178,7 +178,7 @@ function AdminStatsPage() {
                     <h2 className="stats-card-value">{stats.geral.fotos_vendidas_total}</h2>
                 </div>
                 <div className="stats-data-card">
-                    <p className="stats-card-label">Utilizadores totais</p>
+                    <p className="stats-card-label">Usuários totais</p>
                     <h2 className="stats-card-value">{stats.geral.utilizadores_total}</h2>
                 </div>
                 <div className="stats-data-card">
