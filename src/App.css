@@ -198,10 +198,12 @@ a {
   background-color: var(--bg-header);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   top: 0;
-  z-index: 1000;
-  padding-top: 0;
-  padding-bottom: 0;
+  z-index: 900;
+  padding: 15px 20px;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -933,7 +935,7 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
    ========================================================================== */
 
 /* --- Header Container e Logo --- */
-.header-container { display: flex; justify-content: space-between; align-items: center; height: 70px; }
+.header-container { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; height: 50px;  width: 100%; box-sizing: border-box; }
 .header-logo-img { height: 32px !important; object-fit: contain; }
 
 /* --- Ações do Cabeçalho (Carrinho, Menu, Perfil) --- */
@@ -955,7 +957,7 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .dropdown-notification-dot { position: absolute; top: 0; right: -5px; width: 8px; height: 8px; background-color: #dc3545; border-radius: 50%; box-shadow: 0 0 5px rgba(220, 53, 69, 0.8); }
 .dropdown-badge-nova { position: absolute; right: 20px; color: #dc3545; font-size: 12px; font-weight: bold; }
 
-.dropdown-menu-box { position: absolute; top: 100%; right: 0; margin-top: 0; background-color: var(--dropdown-bg); border-top: none; border-radius: 0 0 8px 8px; box-shadow: var(--box-shadow); min-width: 250px; overflow: hidden; z-index: 1001; border: 1px solid var(--border-color); padding-top: 5px; animation: slideDownMenu 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.dropdown-menu-box { position: absolute; top: 50px; right: 0; margin-top: 0; background-color: var(--dropdown-bg); border-top: none; border-radius: 0 0 8px 8px; box-shadow: var(--box-shadow); min-width: 250px; overflow: hidden; z-index: 1001; border: 1px solid var(--border-color); padding-top: 5px; animation: slideDownMenu 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
 .dropdown-greeting-box { padding: 15px 20px 10px; }
 .dropdown-greeting-text { margin: 0; font-size: 14px; color: var(--text-muted); }
 .dropdown-greeting-text strong { color: var(--text-main); }
@@ -3056,7 +3058,7 @@ button.theme-badge-btn:hover {
 .admin-logo-link { display: block; }
 
 /* Cabeçalho Topo */
-.admin-header { background-color: var(--bg-card); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 900; }
+.admin-header { background-color: var(--bg-header); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 900; }
 .admin-header-content { max-width: 1200px; margin: 0 auto; padding: 15px 20px; height: 50px; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; }
 .admin-header-actions {  display: flex; flex-direction: row; align-items: center; gap: 15px; }
 .admin-header-badge { font-size: 13px; font-weight: bold; color: var(--primary-purple); background-color: var(--bg-secondary); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color); }
@@ -3079,7 +3081,7 @@ button.theme-badge-btn:hover {
 .menu-badge-pulse { padding: 2px 8px; background-color: var(--vermelho-wd-mode-color); color: #fff; border-radius: 8px; font-size: 11px; font-weight: bold; box-shadow: 0 0 8px rgba(220, 53, 69, 0.6); animation: pulse 2s infinite; }
 .menu-list-item.menu-item-danger.border-none svg { color: var(--vermelho-wd-mode-color);}
 /* Barra de Navegação Inferior */
-.admin-footer { background-color: var(--bg-card); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); position: fixed; z-index: 1000; bottom: 0; left: 0; right: 0; }
+.admin-footer { background-color: var(--bg-header); padding: 15px 0; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); position: fixed; z-index: 1000; bottom: 0; left: 0; right: 0; }
 .admin-bottom-nav { max-width: 1200px; margin: 0 auto; padding: 15px 20px; height: 50px; display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; }
 .nav-item-link { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-decoration: none; color: var(--text-muted); transition: color 0.2s; padding: 10px 0; cursor: pointer; }
 .nav-item-link:hover {color: var(--hover-purple-light); }
@@ -4199,7 +4201,7 @@ button.theme-badge-btn:hover {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 65px;
+    height: 80px;
     background-color: var(--bg-header);
     border-top: 1px solid var(--border-color);
     box-shadow: var(--box-shadow);
@@ -4208,7 +4210,7 @@ button.theme-badge-btn:hover {
     align-items: center;
     padding-bottom: env(safe-area-inset-bottom); /* Evita sobreposição na barra do iPhone */
 }
-
+.admin-footer { justify-content: space-between; bottom: 0; left: 0; right: 0; }
 .bottom-nav-item {
     display: flex;
     flex-direction: column;
@@ -4553,7 +4555,7 @@ input[type="date"] {
    ========================================================================== */
 @media (max-width: 860px) {
   .home-split-layout { grid-template-columns: 1fr !important; gap: 40px; padding: 0 15px; }
-  .main-header .header-container { flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-between !important; padding: 0 15px !important; height: 60px !important; }
+  /*.main-header .header-container { flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-between !important; padding: 0 15px !important; height: 60px !important; }*/
   .header-logo-img { height: 32px !important; }
   /*.conta-trigger-clean .menu-arrow { display: none !important; }*/
   .header-actions { gap: 12px; }
@@ -4570,7 +4572,7 @@ input[type="date"] {
     flex-direction: column;
     position: fixed;
     top: auto;
-    bottom: 60px; /* Encosta no topo da barra inferior */
+    bottom: 79px; /* Encosta no topo da barra inferior */
     left: auto; /* Desativa o esticamento para a esquerda */
     right: 0; /* Alinha no canto direito onde fica o botão Menu */
     min-width: 220px;
@@ -4640,7 +4642,7 @@ input[type="date"] {
         width: 100%;
     }
     .whatsapp-fab {
-        bottom: 85px; 
+        bottom: 100px;
         z-index: 999;
     }
     .header-actions .cart-link {
