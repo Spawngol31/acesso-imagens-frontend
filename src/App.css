@@ -438,7 +438,57 @@ a {
 /*.category-section { padding: 2rem 0; }
 .category-section h2 .album-list-container h1 { text-align: center; font-size: 2rem; margin-bottom: 2rem; color: var(--primary-purple); }*/
 
-.album-grid, .photo-grid, .purchase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+/* =========================================
+   TOGGLE DE ABAS (FOTOS / VÍDEOS)
+   ========================================= */
+
+/* Container principal das abas */
+.media-view-toggle {
+    background-color: var(--bg-secondary); /* Fundo escuro do container unificado */
+    border-radius: 8px;       /* Bordas arredondadas externas */
+    padding: 5px;              /* Espaço interno para as abas não colarem na borda */
+    border: 1px solid var(--border-color); /* Borda sutil ao redor de tudo */
+    
+    /* Sobrescrevendo o style inline do React para unir os botões */
+    gap: 3px !important; 
+    max-width: 500px;          /* Limita a largura para não esticar muito no PC */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Estilo BASE compartilhado pelos dois botões (Ativo e Inativo) */
+.create-button-fto, 
+.button-outline-fto {
+    flex: 1;                   /* Faz os botões dividirem o espaço 50/50 */
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid transparent; /* Remove a borda padrão */
+    border-radius: 8px;        /* Bordas arredondadas do botão interno */
+    cursor: pointer;
+    outline: none;
+}
+
+/* 
+   Botão ATIVO (Equivalente à imagem 2 e 3)
+   Fundo roxo bem escuro com destaque 
+*/
+.create-button-fto {  background-color: var(--light-purple); color: var(--primary-purple); border-bottom: 4px solid var(--primary-purple); }
+.create-button-fto:hover { color: var(--bg-main); border-bottom: 4px solid var(--light-purple);}
+/* 
+   Botão INATIVO
+   Sem fundo, texto acinzentado
+*/
+.button-outline-fto { background-color: transparent; cursor: pointer; color: var(--text-muted); border-bottom: 4px solid transparent; }
+
+/* Efeito suave ao passar o mouse no botão inativo */
+.button-outline-fto:hover 
+    { color: var(--bg-main); border-bottom: 4px solid var(--primary-purple);}
+
+
+.album-grid, .purchase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
 
 .album-card { text-decoration: none; color: var(--text-main); background-color: var(--bg-card); border-radius: 8px; overflow: hidden; box-shadow: var(--box-shadow); border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; }
 .album-card:hover { transform: translateY(-8px); box-shadow: var(--box-shadow); }
@@ -517,8 +567,10 @@ a {
 .photo-card:hover .photo-overlay { opacity: 1; }
 .photo-overlay p { margin: 0; font-weight: bold; }
 
-.photo-overlay button { background-color: transparent; color: white; border: 1px solid white; padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background-color 0.2s, color 0.2s; }
+.photo-overlay button { background-color: transparent; color: white; border: 1px solid white; padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, color 0.2s; }
 .photo-overlay button:hover { background-color: var(--primary-purple); border: 1px solid var(--primary-purple); color: var(--bg-main); }
+
+.bottom-nav-icon-svg-cart { width: 20px; height: 20px;}
 
 .page-container { padding: 0.5rem 0.5rem 1.5rem; max-width: 1400px; margin: 0 auto; }
 .page-container h1 { color: var(--primary-purple); text-align: center; margin-bottom: 2rem; font-size: 2.5rem; }
@@ -2950,11 +3002,6 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .saque-receipt-link:hover { background-color: var(--primary-purple); color: var(--bg-main); }
 .saque-obs-text { margin-top: 5px; }
 
-/* Dark Mode Fixes darkmode*/
-@media (prefers-color-scheme: dark) {
-    
-}
-
 /* ==========================================================================
    39. MEUS CUPONS (DASHBOARD)
    ========================================================================== */
@@ -4565,6 +4612,14 @@ input[type="date"] {
   .hero-overlay { padding: 40px 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; padding-top: 2rem; padding-bottom: 3rem; }
   .hero-title { font-size: 1.4rem; margin-bottom: 1.5rem; }
   
+  .cart-album-group {
+    margin-left: auto;
+    margin-right: 20px;
+    }
+  .cart-summary {
+    margin-right: 20px;
+    }
+
   .public-nav { display: none; }
   /*.mobile-menu-btn { display: block !important; }*/
   .public-nav.open {
@@ -4593,7 +4648,15 @@ input[type="date"] {
   /*.main-nav { flex-wrap: wrap; justify-content: center; gap: 1rem; }*/
   
   .album-grid { display: grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem; }
-  .photo-grid, .purchase-grid, .promo-section { grid-template-columns: 1fr; }
+  .purchase-grid, .promo-section { grid-template-columns: 1fr; }
+  .photo-grid { grid-template-columns:repeat(3, 1fr); }
+  .photo-overlay { padding: 0.4rem 1rem; }
+  .photo-overlay button { background-color: transparent; color: white; border: 1px solid white; padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background-color 0.2s, color 0.2s; }
+  .photo-overlay button:hover { background-color: var(--primary-purple); border: 1px solid var(--primary-purple); color: var(--bg-main); }
+
+  .video-overlay button { padding: 0.2rem 0.9rem; }
+  .video-overlay p { font-size: 12px; }
+
   .cart-layout { grid-template-columns: 1fr; }
   .cart-summary-wrapper { position: static; width: 100%; }  
   
@@ -4808,5 +4871,24 @@ input[type="date"] {
     }
     .floating-action-bar {
         margin-bottom: 63px;
+    }
+}
+
+@media (max-width: 600px) {
+    .photo-grid { grid-template-columns:repeat(2, 1fr); }
+    .photo-overlay { padding: 5px; }
+    .photo-overlay p { font-size: 12px; }
+    .photo-overlay button { padding: 0.2rem 0.9rem; }
+    .bottom-nav-icon-svg-cart { width: 15px; height: 15px;}
+
+    .video-overlay p { font-size: 12px; }
+    .video-overlay button { padding: 0.2rem 0.9rem; }
+
+    .cart-album-group {
+    margin-left: auto;
+    margin-right: 20px;
+    }
+    .cart-summary {
+        margin-right: 20px;
     }
 }

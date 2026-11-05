@@ -6,6 +6,8 @@ import axiosInstance from '../api/axiosInstance';
 import Lightbox from '../components/Lightbox';
 import { toast } from 'react-toastify';
 
+const IconCart = () => (<svg className="bottom-nav-icon-svg-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>);
+
 const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
     const videoRef = React.useRef(null);
     const [isHovered, setIsHovered] = React.useState(false);
@@ -56,7 +58,7 @@ const VideoPreviewCard = ({ video, user, handleAddToCartClick }) => {
             <div className="video-overlay">
                 <p>R$ {video.preco}</p>
                 {(!user || user.papel === 'CLIENTE') && (
-                    <button onClick={(e) => handleAddToCartClick(e, video)}>Adicionar ao carrinho</button>
+                    <button onClick={(e) => handleAddToCartClick(e, video)}><IconCart /></button>
                 )}
             </div>
         </div>
@@ -124,7 +126,10 @@ function AlbumDetail() {
   const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // 🚀 NOVO ESTADO: Controla o Menu Mobile
+  // 🚀 NOVO ESTADO: Controla se estamos vendo Fotos ou Vídeos
+  const [mediaView, setMediaView] = useState('fotos'); 
+
+  // Estado: Controla o Menu Mobile
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Estados da Busca Facial
@@ -163,9 +168,7 @@ function AlbumDetail() {
   }, [getAlbumDetail]);
 
   const handleShareClick = () => {
-    // Se o menu mobile estiver aberto, fecha-o
     setIsMobileMenuOpen(false);
-
     let apiUrl = import.meta.env.VITE_API_URL;
     if (apiUrl.endsWith('/')) {
         apiUrl = apiUrl.slice(0, -1);
@@ -184,7 +187,6 @@ function AlbumDetail() {
   const handleAddToCartClick = async (e, media) => {
       e.preventDefault(); 
       e.stopPropagation(); 
-      
       try {
           await addToCart(media); 
       } catch (error) {
@@ -221,6 +223,7 @@ function AlbumDetail() {
 
       setIsSearchingFaces(true);
       setShowUnidentifiedOnly(false);
+      setMediaView('fotos'); // 🚀 Força a visualização para fotos ao buscar rostos
 
       const formData = new FormData();
       formData.append('imagem_referencia', referenceImage);
@@ -239,7 +242,7 @@ function AlbumDetail() {
               toast.success(`${response.data.length} foto(s) sua(s) encontrada(s)!`);
           }
           
-          setIsFaceSearchModalOpen(false); // Fecha o Modal após sucesso
+          setIsFaceSearchModalOpen(false);
 
       } catch (err) {
           console.error("Erro na busca facial no álbum:", err);
@@ -250,14 +253,14 @@ function AlbumDetail() {
   };
 
   const handleUnidentifiedMediaClick = () => {
-      setIsMobileMenuOpen(false); // Fecha o menu mobile se estiver aberto
-
+      setIsMobileMenuOpen(false);
       setReferenceImage(null);
       setPreviewUrl('');
       setFaceSearchResults(null);
       
       setShowUnidentifiedOnly(true);
       setCurrentPage(1);
+      setMediaView('fotos'); // 🚀 Força a visualização para fotos
 
       if (galleryRef.current) {
           galleryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -275,13 +278,14 @@ function AlbumDetail() {
       setIsPropostaModalOpen(true);
   };
 
+  // 🚀 LÓGICA DE CATEGORIAS: Agora depende se está vendo Fotos ou Vídeos
   const todasCategorias = new Set();
-  if (album?.fotos) {
+  if (mediaView === 'fotos' && album?.fotos) {
       album.fotos.forEach(f => {
           if (f.categoria && f.categoria.trim() !== '') todasCategorias.add(f.categoria.trim());
       });
   }
-  if (album?.videos) {
+  if (mediaView === 'videos' && album?.videos) {
       album.videos.forEach(v => {
           if (v.categoria && v.categoria.trim() !== '') todasCategorias.add(v.categoria.trim());
       });
@@ -294,6 +298,7 @@ function AlbumDetail() {
       setCurrentVideoPage(1);
   };
 
+  // Manipulação de Listas (Fotos e Vídeos)
   let rawPhotoList = album?.fotos || [];
   if (faceSearchResults !== null) {
       rawPhotoList = faceSearchResults;
@@ -387,7 +392,6 @@ function AlbumDetail() {
   return (
     <div className="page-container">
       <header className="album-detail-header page-header-detail">
-        
         <div className="header-title-section">
             <h1 className="album-title">{album.titulo}</h1>
             {album.descricao && <p className="album-desc">{album.descricao}</p>}
@@ -398,40 +402,19 @@ function AlbumDetail() {
             </p>
         </div>
         
-        {/* =========================================
-            BARRA DE BOTÕES (DESKTOP)
-            Visível no PC, escondida via CSS no Mobile
-            ========================================= */}
         <div className="album-action-buttons">
-            <button onClick={openFaceSearch} className="button-outline">
-                Busca facial
-            </button>
-            <button onClick={handleUnidentifiedMediaClick} className="button-outline">
-                Fotos não identificadas
-            </button>
-            <button onClick={openProposta} className="button-outline">
-                Fazer proposta
-            </button>
-            <button onClick={handleShareClick} className="button-outline">
-                Copiar link
-            </button>
+            <button onClick={openFaceSearch} className="button-outline">Busca facial</button>
+            <button onClick={handleUnidentifiedMediaClick} className="button-outline">Fotos não identificadas</button>
+            <button onClick={openProposta} className="button-outline">Fazer proposta</button>
+            <button onClick={handleShareClick} className="button-outline">Copiar link</button>
         </div>
 
-        {/* =========================================
-            BOTÃO DE OPÇÕES (MOBILE)
-            Escondido no PC, visível via CSS no Mobile
-            ========================================= */}
-        <button 
-            onClick={() => setIsMobileMenuOpen(true)} 
-            className="create-button btn-mobile-options"
-        >
-            Opções do Álbum
+        <button onClick={() => setIsMobileMenuOpen(true)} className="create-button btn-mobile-options">
+            Opções do álbum
         </button>
-
       </header>
 
       <main>
-        
         {(album.qtd_desconto_1 > 0 || album.qtd_desconto_2 > 0 || album.qtd_desconto_3 > 0) && (
             <div className="discount-promo-banner discount-box">
                 <div className="discount-promo-header">
@@ -460,6 +443,26 @@ function AlbumDetail() {
             </div>
         )}
 
+        {/* 🚀 NOVO: Botões para Alternar entre Fotos e Vídeos */}
+        <div className="media-view-toggle" style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
+            <button 
+                onClick={() => { setMediaView('fotos'); setSelectedTab('Todas'); setCurrentPage(1); }}
+                className={mediaView === 'fotos' ? 'create-button-fto' : 'button-outline-fto'}
+            >
+                Fotos ({rawPhotoList.length})
+            </button>
+            
+            {rawVideoList.length > 0 && (
+                <button 
+                    onClick={() => { setMediaView('videos'); setSelectedTab('Todas'); setCurrentVideoPage(1); }}
+                    className={mediaView === 'videos' ? 'create-button-fto' : 'button-outline-fto'}
+                >
+                    Vídeos ({rawVideoList.length})
+                </button>
+            )}
+        </div>
+
+        {/* Abas de Categoria */}
         {tabs.length > 1 && (
             <div className="album-tabs-container">
                 {tabs.map(tab => {
@@ -477,82 +480,96 @@ function AlbumDetail() {
             </div>
         )}
 
-        <div ref={galleryRef} className="section-header">
-          <h2>
-             {faceSearchResults !== null 
-                ? `Resultados da Busca (${basePhotoList.length})` 
-                : showUnidentifiedOnly 
-                  ? `Fotos Não Identificadas (${basePhotoList.length})`
-                  : `Fotos (${basePhotoList.length})`
-             }
-          </h2>
-          
-          <div className="section-header-actions">
-            {(showUnidentifiedOnly || faceSearchResults !== null) && (
-                <button onClick={clearFaceSearch} className="btn-all-midias-pill">
-                    Ver Todas
-                </button>
-            )}
-            <Link to="/eventos" className="button-outline">Voltar a galeria</Link>
-          </div>
-        </div>
+        {/* 🚀 RENDENRIZAÇÃO CONDICIONAL (FOTOS OU VÍDEOS) */}
+        {mediaView === 'fotos' ? (
+            // ==================== BLOCO DE FOTOS ====================
+            <div ref={galleryRef}>
+                <div className="section-header">
+                    <h2>
+                        {faceSearchResults !== null 
+                            ? `Resultados da Busca (${basePhotoList.length})` 
+                            : showUnidentifiedOnly 
+                            ? `Fotos Não Identificadas (${basePhotoList.length})`
+                            : `Fotos: (${basePhotoList.length})`
+                        }
+                    </h2>
+                    
+                    <div className="section-header-actions">
+                        {(showUnidentifiedOnly || faceSearchResults !== null) && (
+                            <button onClick={clearFaceSearch} className="btn-all-midias-pill">
+                                Ver Todas
+                            </button>
+                        )}
+                        <Link to="/eventos" className="button-outline">Voltar a galeria</Link>
+                    </div>
+                </div>
 
-        <div className="photo-grid">
-          {currentPhotos.map(foto => (
-            <div key={foto.id} className="photo-card" onClick={() => setSelectedImage(foto)}>
-              <img src={foto.imagem_url} alt={foto.legenda || `Foto ${foto.id}`} className="photo-grid-img"/>
-              <div className="photo-overlay">
-                <p>R$ {foto.preco}</p>
-                {(!user || user.papel === 'CLIENTE') && (
-                  <button onClick={(e) => handleAddToCartClick(e, foto)}>Adicionar ao carrinho</button>
+                <div className="photo-grid">
+                    {currentPhotos.map(foto => (
+                        <div key={foto.id} className="photo-card" onClick={() => setSelectedImage(foto)}>
+                            <img src={foto.imagem_url} alt={foto.legenda || `Foto ${foto.id}`} className="photo-grid-img"/>
+                            <div className="photo-overlay">
+                                <p>R$ {foto.preco}</p>
+                                {(!user || user.papel === 'CLIENTE') && (
+                                    <button onClick={(e) => handleAddToCartClick(e, foto)}><IconCart /></button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <CustomPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+
+                {faceSearchResults !== null && currentPhotos.length === 0 && (
+                    <div className="empty-state-message">
+                        <p>Não encontramos o seu rosto nestas fotos. Experimente usar uma selfie mais clara e com o rosto bem iluminado.</p>
+                        <button onClick={clearFaceSearch} className="button-outline">Ver todas as fotos do álbum</button>
+                    </div>
                 )}
-              </div>
-            </div>
-          ))}
-        </div>
 
-        <CustomPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-
-        {faceSearchResults !== null && currentPhotos.length === 0 && (
-            <div className="empty-state-message">
-                <p>Não encontramos o seu rosto nestas fotos. Experimente usar uma selfie mais clara e com o rosto bem iluminado.</p>
-                <button onClick={clearFaceSearch} className="button-outline">Ver todas as fotos do álbum</button>
+                {showUnidentifiedOnly && currentPhotos.length === 0 && (
+                    <div className="empty-state-message">
+                        <p>Ótimo! O sistema conseguiu identificar rostos em todas as fotos deste álbum.</p>
+                        <button onClick={() => setShowUnidentifiedOnly(false)} className="button-outline">Ver todas as fotos do álbum</button>
+                    </div>
+                )}
             </div>
-        )}
+        ) : (
+            // ==================== BLOCO DE VÍDEOS ====================
+            <div ref={galleryRef}>
+                <div className="section-header videos-section">
+                    <h2>Vídeos: ({baseVideoList.length})</h2>
+                    <div className="section-header-actions">
+                        <Link to="/eventos" className="button-outline">Voltar a galeria</Link>
+                    </div>
+                </div>
+                
+                <div className="photo-grid">
+                    {currentVideos.map(video => (
+                        <VideoPreviewCard key={video.id} video={video} user={user} handleAddToCartClick={handleAddToCartClick} />
+                    ))}
+                </div>
 
-        {showUnidentifiedOnly && currentPhotos.length === 0 && (
-            <div className="empty-state-message">
-                <p>Ótimo! O sistema conseguiu identificar rostos em todas as fotos deste álbum.</p>
-                <button onClick={() => setShowUnidentifiedOnly(false)} className="button-outline">Ver todas as fotos do álbum</button>
+                <CustomPagination currentPage={currentVideoPage} totalPages={totalVideoPages} onPageChange={handleVideoPageChange} />
+                
+                {baseVideoList.length === 0 && (
+                    <div className="empty-state-message">
+                        <p>Nenhum vídeo encontrado nesta categoria.</p>
+                    </div>
+                )}
             </div>
-        )}
-
-        {faceSearchResults === null && baseVideoList.length > 0 && (
-          <>
-            <div className="section-header videos-section">
-              <h2>Vídeos ({baseVideoList.length})</h2>
-            </div>
-            
-            <div className="photo-grid">
-              {currentVideos.map(video => (
-                  <VideoPreviewCard key={video.id} video={video} user={user} handleAddToCartClick={handleAddToCartClick} />
-              ))}
-            </div>
-
-            <CustomPagination currentPage={currentVideoPage} totalPages={totalVideoPages} onPageChange={handleVideoPageChange} />
-          </>
         )}
       </main>
 
+      {/* Restante dos modais inalterados... */}
       {selectedImage && (
         <Lightbox image={selectedImage} onClose={() => setSelectedImage(null)} onNext={handleNextImage} onPrev={handlePrevImage} />
       )}
       
-      {/* 🚀 MODAL DE MENU MOBILE */}
       {isMobileMenuOpen && (
           <div className="modal-overlay" onClick={() => setIsMobileMenuOpen(false)}>
               <div className="modal-content mobile-options-modal" onClick={e => e.stopPropagation()}>
-                  <h3 style={{ textAlign: 'center' }}>Opções do Álbum</h3>
+                  <h3 style={{ textAlign: 'center' }}>Opções do álbum</h3>
                   
                   <div className="mobile-options-menu-list">
                       <button onClick={openFaceSearch} className="create-button btn-busca-facial-modal">
@@ -580,7 +597,6 @@ function AlbumDetail() {
           </div>
       )}
 
-      {/* 🚀 MODAL DE BUSCA FACIAL */}
       {isFaceSearchModalOpen && (
           <div className="modal-overlay">
               <div className="modal-content proposta-modal-box face-search-modal">
@@ -620,7 +636,6 @@ function AlbumDetail() {
           </div>
       )}
 
-      {/* 🚀 MODAL DE PROPOSTA */}
       {isPropostaModalOpen && (
           <div className="modal-overlay">
               <div className="modal-content proposta-modal-box">
