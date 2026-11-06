@@ -27,17 +27,30 @@ function Layout() {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
+    const mobileMenuRef = useRef(null);
     const [hasPropostaUpdate, setHasPropostaUpdate] = useState(false);
 
     // Fechar dropdown ao clicar fora
+    // Fechar dropdown e menu mobile ao clicar fora
     useEffect(() => {
         function handleClickOutside(event) {
+            // Se clicar fora do menu do usuário, fecha ele
             if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
                 setIsUserMenuOpen(false);
             }
+            // 🚀 NOVO: Se clicar fora do menu mobile e do botão que o abre, fecha o menu mobile
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+                setIsMobileMenuOpen(false);
+            }
         }
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        // Também é bom adicionar para touch (celulares)
+        document.addEventListener("touchstart", handleClickOutside); 
+        
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
     }, []);
 
     // Fechar menus ao mudar de página
@@ -206,7 +219,7 @@ function Layout() {
             {/* ====================================================
                 BOTTOM NAVIGATION (Aparece apenas em Mobile)
                 ==================================================== */}
-            <nav className="bottom-nav-bar">
+            <nav className="bottom-nav-bar" ref={mobileMenuRef}>
                 <NavLink to="/" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`} end>
                     <IconHome />
                     <span className="bottom-nav-text">Início</span>

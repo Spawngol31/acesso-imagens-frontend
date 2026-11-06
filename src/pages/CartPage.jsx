@@ -112,7 +112,7 @@ function CartPage() {
             
             <div className="cart-layout">
                 {/* Lado Esquerdo: Lista de Fotos Agrupadas */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className='cart-layout-div'>
                     {Object.values(itensAgrupados).map(grupo => (
                         <div key={grupo.albumId} className="cart-album-group">
                             
@@ -133,12 +133,12 @@ function CartPage() {
                                 )}
                             </div>
 
-                            <div className="cart-grid cart-grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+                            <div className="cart-grid cart-grid-responsive">
                                 {grupo.itens.map(item => {
                                     const mediaVisual = item.foto || item.video; 
                                     return (
                                         <div key={item.id} className="purchase-card">
-                                            <div className="purchase-card-image purchase-card-image-styled" style={{ position: 'relative', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div className="purchase-card-image purchase-card-image-styled">
                                             
                                             {mediaVisual?.imagem_url || mediaVisual?.miniatura_url ? (
                                                 <img 

@@ -267,6 +267,26 @@ function DashboardAlbumDetailPage() {
 
     const [isMobileActionsMenuOpen, setIsMobileActionsMenuOpen] = useState(false);
 
+    // Função para copiar o link público do álbum
+    const handleCopyAlbumLink = () => {
+        setIsMobileActionsMenuOpen(false); // Fecha o menu mobile se estiver aberto
+        let apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
+        if (apiUrl.endsWith('/')) {
+            apiUrl = apiUrl.slice(0, -1);
+        }
+        
+        // Se a sua URL pública for diferente da API, ajuste aqui.
+        // Geralmente a URL pública no React é origin + rota, ex: https://meusite.com/album/123
+        const publicUrl = `${window.location.origin}/album/${id}`;
+        
+        navigator.clipboard.writeText(publicUrl)
+            .then(() => toast.success("Link do álbum copiado para a área de transferência!"))
+            .catch(err => {
+                console.error("Erro ao copiar o link: ", err);
+                toast.error("Erro ao copiar o link. Tente novamente.");
+            });
+    };
+
     const itensPorPagina = 20;
 
     const fetchAlbumDetails = useCallback(async () => {
@@ -735,6 +755,7 @@ function DashboardAlbumDetailPage() {
                         <button onClick={() => setActiveGlobalModal('uploadVideos')} className="button-outline">+ Vídeos</button>
                         <button onClick={() => setActiveGlobalModal('bulkEditFotos')} className="button-outline">Editar R$ (Fotos)</button>
                         <button onClick={() => setActiveGlobalModal('bulkEditVideos')} className="button-outline">Editar R$ (Vídeos)</button>
+                        <button onClick={handleCopyAlbumLink} className="button-outline">Copiar Link</button>
                         <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline">Click & Share</Link>
                         
                         <button 
@@ -1162,6 +1183,7 @@ function DashboardAlbumDetailPage() {
                             <button onClick={() => { setActiveGlobalModal('uploadVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Adicionar vídeos</button>
                             <button onClick={() => { setActiveGlobalModal('bulkEditFotos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar preço (fotos)</button>
                             <button onClick={() => { setActiveGlobalModal('bulkEditVideos'); setIsMobileActionsMenuOpen(false); }} className="button-outline" style={{ padding: '12px' }}>Editar preço (vídeos)</button>
+                            <button onClick={handleCopyAlbumLink} className="button-outline" style={{ padding: '12px' }}>Copiar link do álbum</button>
                             <Link to={`/dashboard/albuns/${id}/arte-promocional`} className="button-outline" style={{ textAlign: 'center', textDecoration: 'none', padding: '12px' }}>Click & Share</Link>
                             
                             <hr style={{width: '100%', border: 'none', borderTop: '1px solid var(--border-color)', margin: '5px 0'}}/>

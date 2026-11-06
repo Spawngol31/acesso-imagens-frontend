@@ -623,7 +623,11 @@ input[type="file"] { width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; 
 /* ==========================================================================
    9. LOJA: CARRINHO E CHECKOUT E PROPOSTAS
    ========================================================================== */
-.cart-album-group {
+.cart-layout-div {
+    display: flex; flex-direction: column; gap: 20px; 
+}
+
+   .cart-album-group {
     background-color: var(--bg-card);
     border-radius: 8px;
     border: 1px solid var(--border-color);
@@ -653,7 +657,7 @@ input[type="file"] { width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; 
 .change-payment-btn:hover { background-color: var(--hover-bg) !important; color: var(--text-main) !important; }*/
 
 .cart-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: flex-start; }
-.cart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+.cart-grid.cart-grid-responsive { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; padding: 8px; }
 
 .cart-link { position: relative; display: flex; align-items: center; padding: 0.5rem; text-decoration: none; }
 /*
@@ -754,7 +758,7 @@ input[type="file"] { width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; 
 .create-button { background-color: transparent; color: var(--primary-purple); border: 1px solid var(--primary-purple); padding: 0.4rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
 .create-button:hover { background-color: var(--primary-purple); color: var(--bg-main); }
 .button-outline { background-color: transparent; border: 1px solid var(--primary-purple); color: var(--primary-purple); padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-.button-outline:hover { background-color: var(--primary-purple); color: var(--bg-main); }
+.button-outline:hover { background-color: var(--primary-purple); color: var(--bg-main) !important; }
 .button-outline.btn-close { border: 1px solid var(--vermelho-wd-mode-color); color: var(--vermelho-wd-mode-color); }
 .button-outline.btn-close:hover { background-color: var(--vermelho-wd-mode-color); color: #fff;}
 
@@ -3363,7 +3367,7 @@ button.theme-badge-btn:hover {
 .no-underline { text-decoration: none;}
 
 /* Layout dos Álbuns no Carrinho 
-.cart-albums-list { display: flex; flex-direction: column; gap: 20px;}*/
+.cart-albums-list { display: flex; flex-direction: column; gap: 20px;}
 .cart-grid-responsive { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));}
 
 /* Botões
@@ -4259,6 +4263,7 @@ button.theme-badge-btn:hover {
 }
 
 .bottom-nav-item {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -4291,11 +4296,13 @@ button.theme-badge-btn:hover {
     font-family: inherit;
     transition: color 0.2s;
 }
-
+.bottom-nav-item:hover {
+    color: var(--hover-purple-light)
+}
 .bottom-nav-item-menu:hover {
     background-color: transparent;
     border: none;
-    color: var(--text-muted);
+    color: var(--hover-purple-light);
 }
 
 /* Cor quando o botão está ativo (Página atual) */
@@ -4318,8 +4325,9 @@ button.theme-badge-btn:hover {
 /* A bolinha do carrinho na barra inferior */
 .bottom-nav-badge {
     position: absolute;
-    top: 5px;
-    right: 25px;
+    top: -10px;
+    left: calc(50% + 10px); /* Joga para o meio da tela, e empurra 5px para a direita do ícone */
+    right: auto;
     background-color: var(--primary-purple);
     color: var(--bg-main);
     border-radius: 50%;
@@ -4612,10 +4620,6 @@ input[type="date"] {
   .hero-overlay { padding: 40px 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; padding-top: 2rem; padding-bottom: 3rem; }
   .hero-title { font-size: 1.4rem; margin-bottom: 1.5rem; }
   
-  .cart-album-group {
-    margin-left: auto;
-    margin-right: 20px;
-    }
   .cart-summary {
     margin-right: 20px;
     }
@@ -4872,6 +4876,61 @@ input[type="date"] {
     .floating-action-bar {
         margin-bottom: 63px;
     }
+
+    .purchase-card-info p {
+        font-size: 14px;
+        margin: 8px 0;
+    }
+
+    .cart-layout {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100vw; /* Impede a rolagem lateral que corta o cabeçalho */
+        box-sizing: border-box;
+        padding: 0 15px; /* Descola o conteúdo das bordas da tela */
+        overflow-x: hidden;
+    }
+
+    .cart-layout-div,
+    .cart-album-group,
+    .cart-summary-wrapper,
+    .cart-summary {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .cart-summary-wrapper {
+        padding-bottom: 100px;
+    }
+
+    .coupon-form {
+        display: flex;
+        flex-direction: column; /* Coloca um item embaixo do outro */
+        gap: 10px;              /* Cria um espaço entre o input e o botão */
+        width: 100%;
+    }
+
+    /* Faz com que tanto o campo de digitar quanto o botão ocupem 100% do espaço */
+    .coupon-form input,
+    .coupon-form button {
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0;              /* Remove margens extras que possam empurrar para fora */
+    }
+
+    .cart-grid.cart-grid-responsive { grid-template-columns:repeat(3, 1fr); }
+
+    .purchase-card-info .delete-button-pill {
+        font-size: 12px;
+        padding: 6px 0;
+        width: 100%; /* Faz o botão preencher toda a largura da sua coloninha */
+        text-align: center;
+        box-sizing: border-box;
+    }
 }
 
 @media (max-width: 600px) {
@@ -4884,11 +4943,9 @@ input[type="date"] {
     .video-overlay p { font-size: 12px; }
     .video-overlay button { padding: 0.2rem 0.9rem; }
 
-    .cart-album-group {
-    margin-left: auto;
-    margin-right: 20px;
-    }
     .cart-summary {
         margin-right: 20px;
     }
+
+    .cart-grid.cart-grid-responsive { grid-template-columns:repeat(2, 1fr); }
 }
