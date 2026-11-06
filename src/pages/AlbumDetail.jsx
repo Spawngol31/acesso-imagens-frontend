@@ -169,14 +169,11 @@ function AlbumDetail() {
 
   const handleShareClick = () => {
     setIsMobileMenuOpen(false);
-    let apiUrl = import.meta.env.VITE_API_URL;
-    if (apiUrl.endsWith('/')) {
-        apiUrl = apiUrl.slice(0, -1);
-    }
-    const cacheBuster = `?v=${new Date().getTime()}`;
-    const shareLink = `${apiUrl}/share/album/${album.id}/${cacheBuster}`;
+    
+    // Pega a URL pública atual, removendo qualquer parâmetro de busca que possa existir (como ?v=123)
+    const publicUrl = window.location.origin + window.location.pathname;
 
-    navigator.clipboard.writeText(shareLink)
+    navigator.clipboard.writeText(publicUrl)
       .then(() => toast.success("Link copiado!"))
       .catch(err => {
         console.error("Erro ao copiar o link: ", err);
