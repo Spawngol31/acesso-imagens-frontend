@@ -54,7 +54,7 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
         onClick={handleBackdropClick}
         style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            backgroundColor: 'rgba(0, 0, 0, 0.85)', zIndex: 99999,
+            backgroundColor: 'rgba(0, 0, 0, 0.92)', zIndex: 99999,
             display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
         }}
     >
@@ -128,12 +128,12 @@ function Lightbox({ image, onClose, onNext, onPrev }) {
             className="create-button" 
             style={{
               position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
-              zIndex: 100000, backgroundColor: '#6c0463', color: '#fff',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.5)', border: 'none', padding: '12px 30px',
-              borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1rem'
+              zIndex: 100000,
+              padding: '12px 30px', borderColor: '#fff',
+              cursor: 'pointer'
             }}
           >
-            Adicionar ao carrinho (R$ {parseFloat(image.preco || 0).toFixed(2)})
+            Add ao carrinho (R$ {parseFloat(image.preco || 0).toFixed(2)})
           </button>
       )}
 

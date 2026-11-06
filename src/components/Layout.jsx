@@ -230,13 +230,15 @@ function Layout() {
                     <span className="bottom-nav-text">Álbuns</span>
                 </NavLink>
 
-                <NavLink to="/carrinho" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
-                    <IconCart />
-                    <span className="bottom-nav-text">Carrinho</span>
-                    {cartItemCount > 0 && (
-                        <span className="bottom-nav-badge">{cartItemCount}</span>
-                    )}
-                </NavLink>
+                {(!user || user.papel === 'CLIENTE') && (
+                    <NavLink to="/carrinho" className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
+                        <IconCart />
+                        <span className="bottom-nav-text">Carrinho</span>
+                        {cartItemCount > 0 && (
+                            <span className="bottom-nav-badge">{cartItemCount}</span>
+                        )}
+                    </NavLink>
+                )}
 
                 <button className="bottom-nav-item-menu" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                     <IconMenu />

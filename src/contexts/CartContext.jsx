@@ -111,7 +111,7 @@ export function CartProvider({ children }) {
                 localItems.push(newItem);
                 localStorage.setItem('guestCart', JSON.stringify(localItems));
                 setCart(getGuestCart()); 
-                toast.success(`🛒 Sucesso! ${isVideo ? 'Vídeo' : 'Foto'} adicionado(a) ao carrinho.`);
+                toast.success(`Sucesso! ${isVideo ? 'Vídeo' : 'Foto'} adicionado(a) ao carrinho.`);
             } else {
                 toast.warning(`Este ${isVideo ? 'vídeo' : 'item'} já está no seu carrinho!`);
             }

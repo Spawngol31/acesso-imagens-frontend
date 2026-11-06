@@ -497,9 +497,9 @@ a {
 .album-card-info h3 { margin: 0; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--primary-purple); transition: color 0.2s; }
 .album-card:hover .album-card-info h3 { color: var(--hover-purple-light); }
 
-.photo-card { background-color: var(--bg-card); border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; aspect-ratio: 1/1; }
+.photo-card { background-color: var(--bg-card); border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; aspect-ratio: 1/1.5; }
 .photo-card:hover { transform: translateY(-8px); box-shadow: var(--box-shadow); }
-.photo-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.photo-card img { width: 100%; aspect-ratio: 1 / 1.5; object-fit: cover; display: block; }
 
 .video-card { background-color: var(--bg-card); border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; aspect-ratio: 1/1.5; }
 .video-overlay { position: absolute; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: center; opacity: 0; transition: opacity 0.2s;  }
@@ -567,7 +567,7 @@ a {
 .photo-card:hover .photo-overlay { opacity: 1; }
 .photo-overlay p { margin: 0; font-weight: bold; }
 
-.photo-overlay button { background-color: transparent; color: white; border: 1px solid white; padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, color 0.2s; }
+.photo-overlay button { background-color: transparent; color: white; border: 1px solid white; padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; transition: background-color 0.2s, color 0.2s; margin-top: 8px; margin-bottom: 8px; }
 .photo-overlay button:hover { background-color: var(--primary-purple); border: 1px solid var(--primary-purple); color: var(--bg-main); }
 
 .bottom-nav-icon-svg-cart { width: 20px; height: 20px;}
@@ -4655,7 +4655,7 @@ input[type="date"] {
   .purchase-grid, .promo-section { grid-template-columns: 1fr; }
   .photo-grid { grid-template-columns:repeat(3, 1fr); }
   .photo-overlay { padding: 0.4rem 1rem; }
-  .photo-overlay button { background-color: transparent; color: white; border: 1px solid white; padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background-color 0.2s, color 0.2s; }
+  .photo-overlay button { background-color: transparent; color: white; border: 1px solid white; padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background-color 0.2s, color 0.2s; margin-top: 6px; margin-bottom: 6px; }
   .photo-overlay button:hover { background-color: var(--primary-purple); border: 1px solid var(--primary-purple); color: var(--bg-main); }
 
   .video-overlay button { padding: 0.2rem 0.9rem; }
