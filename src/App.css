@@ -1410,6 +1410,7 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .news-featured-image-container {
     width: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
@@ -1429,9 +1430,10 @@ img { -webkit-user-drag: none; user-select: none; pointer-events: auto; }
 .image-credits {
     font-size: 13px;
     color: var(--text-muted);
-    text-align: right;
+    text-align: center;
     margin-top: 8px;
     font-style: italic;
+    width: 100%;
 }
 
 /* Protege o conteúdo vindo do WordPress para usar as cores do sistema */
